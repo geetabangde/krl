@@ -18,7 +18,7 @@
 
                
 
-                <!-- Consignment Booking -->
+                <!-- Consignment  pod update Booking -->
                 @if (hasAdminPermission('manage order_booking') || hasAdminPermission('manage lr_consignment') || hasAdminPermission('manage freight_bill'))
                     <li>
                         <a href="javascript:void(0);" class="has-arrow">
@@ -41,6 +41,9 @@
                         </ul>
                     </li>
                 @endif
+
+
+                
 
                 <!-- Fleet -->
                 @if (hasAdminPermission('manage vehicles') || hasAdminPermission('manage maintenance') || hasAdminPermission('manage tyres'))
