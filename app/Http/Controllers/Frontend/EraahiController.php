@@ -9,10 +9,10 @@ use App\Http\Controllers\Controller;
 class EraahiController extends Controller
 {
     protected $subscriptionKey = 'AL5e2V9g1I2p9h4U3e';
-    protected $username = 'AL001';
-    protected $plainPassword = 'Alankit@123';
+    protected $username = 'Road3050';
+    protected $plainPassword = 'Road@3050';
 
-    // ERAAHI public key - इसे ऐसे ही multi-line string में रखें
+    
 
 
     public function getAccessToken()
@@ -31,8 +31,8 @@ lQIDAQAB
   
 $RequestPayload = json_encode([
     'action' => 'ACCESSTOKEN',
-    'username' => 'AL001',
-    'password' => 'Alankit@123',
+    'username' => 'Road3050',
+    'password' => 'Road@3050',
     'app_key' => 'RZbiPYuN3VTF2hMhQcMMBo0MfH4UVNZaSrIeTrpKopE='
 ]);
 
@@ -56,7 +56,7 @@ openssl_public_encrypt($data, $encryptedData, $publicKey);
 
     $response = Http::withHeaders([
         'Content-Type' => 'application/json',
-        'gstin' => '07AGAPA5363L002',
+        'gstin' => '23AABFM6400F1ZX',
         'Ocp-Apim-Subscription-Key' => 'AL5e2V9g1I2p9h4U3e',
         'Authorization' => 'Bearer YOUR_ACCESS_TOKEN_HERE', // Replace with real token
     ])->withBody(json_encode($payload), 'application/json')
