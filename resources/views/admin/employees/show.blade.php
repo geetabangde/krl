@@ -18,6 +18,7 @@
                 <div class="card-body">
                     <h4>👨‍💼 Employee Details</h4>
                     <div class="row mb-2">
+                      
                         <div class="col-md-4"><strong>👤 First Name:</strong> {{ $employee->first_name }}</div>
                         <div class="col-md-4"><strong>👤 Last Name:</strong> {{ $employee->last_name }}</div>
                         <div class="col-md-4"><strong>📧 Email:</strong> {{ $employee->email }}</div>

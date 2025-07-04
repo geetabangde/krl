@@ -12,6 +12,7 @@
    right: 6px;
    }
 </style>
+{{-- @dd($vehicles); --}}
 <!-- Order Booking Add Page -->
 <div class="row order-booking-form">
 <div class="col-12">
@@ -57,22 +58,23 @@
                <div class="mb-3">
                   <label class="form-label">👤 Freight A/c</label>
                   <select name="customer_id" id="customer_id" class="form-select" onchange="setCustomerDetails()" required>
-                     <option value="">Select Customer</option>
-                     @foreach($users as $user)
-                     @php
-                     $addresses = json_decode($user->address, true);
-                     @endphp
-                     @if(!empty($addresses) && is_array($addresses))
-                     @foreach($addresses as $address)
-                     <option value="{{ $user->id }}"
-                        data-gst="{{ $address['gstin'] ?? '' }}"  
-                        data-address="{{ $address['billing_address'] ?? '' }}"> 
-                        {{ $user->name }} - {{ $address['city'] ?? '' }}
-                     </option>
-                     @endforeach
-                     @endif
-                     @endforeach
-                  </select>
+                    <option value="">Select Customer</option>
+                    @foreach($users as $user)
+                        @php
+                        $addresses = is_string($user->address) ? json_decode($user->address, true) : $user->address;
+                        @endphp
+                        @if(!empty($addresses) && is_array($addresses))
+                            @foreach($addresses as $address)
+                                <option value="{{ $user->id }}"
+                                    data-gst="{{ $address['gstin'] ?? '' }}"  
+                                    data-address="{{ $address['billing_address'] ?? '' }}"> 
+                                    {{ $user->name }} - {{ $address['city'] ?? '' }}
+                                </option>
+                            @endforeach
+                        @endif
+                    @endforeach
+                </select>
+
                </div>
             </div>
             <!-- GST NUMBER (Auto-filled) -->
@@ -209,7 +211,7 @@
     <option value="">Select Consignor Name</option>
     @foreach($users as $user)
         @php
-            $addresses = json_decode($user->address, true);
+            $addresses = is_string($user->address) ? json_decode($user->address, true) : $user->address;
         @endphp
         @if(!empty($addresses) && is_array($addresses))
             @foreach($addresses as $address)
@@ -230,7 +232,8 @@
             @endforeach
         @endif
     @endforeach
-   </select>
+</select>
+
    
    <div class="mb-3">
     <label class="form-label">Consignor Loading Address</label>
@@ -260,7 +263,7 @@
     <option value="">Select Consignee Name</option>
     @foreach($users as $user)
         @php
-            $addresses = json_decode($user->address, true);
+            $addresses = is_string($user->address) ? json_decode($user->address, true) : $user->address;
         @endphp
         @if(!empty($addresses) && is_array($addresses))
             @foreach($addresses as $address)
@@ -281,7 +284,8 @@
             @endforeach
         @endif
     @endforeach
-   </select>
+</select>
+
    
                   
                   <div class="mb-3">
@@ -426,12 +430,12 @@
                                              <th>Description</th>
                                              <th>Actual Weight (kg)</th>
                                              <th>Charged Weight (kg)</th>
-                                            <th >  &nbsp;Unit&nbsp;&nbsp;    </th>
+                                            <th>  &nbsp;Unit&nbsp;&nbsp;</th>
                                              <th>Document No.</th>
                                              <th>Document Name</th>
                                              <th>Document Date</th>
                                              <th>Document Upload</th>
-                                             <th>Eway Bill</th>
+                                          
                                              <th>Valid Upto</th>
                                              <th>declared value</th>
                                             
@@ -465,7 +469,7 @@
                                               <td><input type="text" class="form-control" name="lr[${counter}][cargo][0][document_name]"  placeholder="Doc Name" required></td>
                                               <td><input type="date" class="form-control" name="lr[${counter}][cargo][0][document_date]" required></td>
                                               <td><input type="file" class="form-control" name="lr[${counter}][cargo][0][document_file]"></td>
-                                              <td><input type="text" class="form-control" name="lr[${counter}][cargo][0][eway_bill]"  placeholder="Eway Bill No." required></td>
+                                              
                                               <td><input type="date" class="form-control" name="lr[${counter}][cargo][0][valid_upto]" required></td>
                                               <td>
                                                   <input type="number" name="lr[${counter}][cargo][0][declared_value]" class="form-control declared-value" min="0"  placeholder="0" oninput="calculateTotalDeclaredValue(${counter})">
@@ -758,13 +762,17 @@
          const to_location = document.querySelector(`select[name="lr[${counter}][to_location]"]`).value;
          const customer_id = document.getElementById('customer_id').value;
    
+  //  alert(customer_id);
+  //  alert(from_location);
+  //  alert(to_location);
+  //  alert(vehicle_type);
          // Check order method
          const orderMethod = document.querySelector('input[name="order_method"]:checked')?.value;
    
          if (orderMethod === 'contract') {
              // Fetch rate for this specific lr entry
              fetch('/admin/get-rate', {
-                 method: 'POST',
+                method: 'POST',
                  headers: {
                      'Content-Type': 'application/json',
                      'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
@@ -778,12 +786,16 @@
              })
                  .then(res => res.json())
                  .then(data => {
+                 
+
+                  //  alert("Response Data:\n" + JSON.stringify(data, null, 2));
                      const rateInput = document.getElementById(`rate_input${counter}`);
+                     
                      window.lrRates = window.lrRates || {};
                      if (data.rate) {
                          rateInput.value = data.rate;
                          window.lrRates[counter] = parseFloat(data.rate) || 0;
-                         showContractAmountAlert(data.rate, counter); // Trigger contract amount update
+                         showContractAmountAlert(data.rate, counter); 
                      } else {
                          rateInput.value = 0;
                          window.lrRates[counter] = 0;
@@ -791,7 +803,7 @@
                      }
                  })
                  .catch(err => {
-                     console.error('Error:', err);
+                    //  console.error('Error:', err);
                  });
          } else if (orderMethod === 'order') {
              // Apply the current order amount to this lr's rate input
@@ -963,8 +975,8 @@
        const gst = selected.options[selected.selectedIndex].getAttribute('data-gst');
        const address = selected.options[selected.selectedIndex].getAttribute('data-address');
    
-       document.getElementById('gst_number').value = gst || '';  // Set GST number
-       document.getElementById('customer_address').value = address || '';  // Set customer address
+       document.getElementById('gst_number').value = gst || '';  
+       document.getElementById('customer_address').value = address || ''; 
    }
 </script>
 <script>

@@ -17,9 +17,40 @@
                                 </div>
                                 <form method="POST" action="{{ route('admin.employees.update',$employee->id) }}" style="padding: 20px;" enctype="multipart/form-data" >
                                     @csrf
+                                    
                                  
                                     <div class="row">
-                                       
+                                       <div class="col-md-6 form-group">
+                                            <label for="role" class="form-label">User Role<span class="required"></span></label>
+                                            <select name="role" id="role" class="form-control @error('role') is-invalid @enderror" required>
+                                                <option value="">Select Role</option>
+                                                @foreach ($roles as $role )
+                                                <option value="{{ $role->id }}" {{ $employee->role == $role->id ? 'selected' : '' }}>
+                                                    {{ $role->name }}
+                                                </option>
+                                                @endforeach
+                                            </select>
+                                            @error('role')
+                                                <small class="invalid-role text-danger">{{ $message }}</small>
+                                            @enderror
+                                        </div>
+
+                                        <!-- <div class="col-md-5 mb-3 form-group mt-4">
+                                            <label for="password_switch">Update Password</label>
+                                            <div class="form-check form-switch custom-switch-v1 float-end">
+                                                <input type="checkbox" name="password_switch" class="form-check-input" value="on" id="password_switch" {{ old('password_switch') == 'on' ? 'checked' : '' }}>
+                                                <label class="form-check-label" for="password_switch"></label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 ps_div {{ old('password_switch') == 'on' ? '' : 'd-none' }}">
+                                            <div class="form-group">
+                                                <label for="password" class="form-label">Password<span class="required"></span></label>
+                                                <input type="password" name="password" id="password" class="form-control @error('password') is-invalid @enderror" placeholder="Enter New Password" minlength="6">
+                                                @error('password')
+                                                    <small class="invalid-password text-danger">{{ $message }}</small>
+                                                @enderror
+                                            </div>
+                                        </div> -->
                                         <!-- First Name -->
                                         <div class="col-md-6 mb-3">
                                             <label class="form-label">🏢 First Name</label>
@@ -264,4 +295,25 @@
 
 
 </script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Toggle password field visibility
+        document.getElementById('password_switch').addEventListener('change', function () {
+            document.querySelector('.ps_div').classList.toggle('d-none', !this.checked);
+        });
+
+        // Bootstrap form validation
+        (function () {
+            'use strict';
+            const form = document.querySelector('.needs-validation');
+            form.addEventListener('submit', function (event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        })();
+    </script>
 @endsection

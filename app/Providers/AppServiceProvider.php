@@ -21,6 +21,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+      
         // ✅ API Routes ko yahan manually load karein
         Route::prefix('api')
             ->middleware('api')

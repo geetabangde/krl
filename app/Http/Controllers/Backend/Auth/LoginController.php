@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
 use Laravel\Sanctum\HasApiTokens;
 use App\Models\Admin; 
+use App\Models\Employee;
 
 
 
@@ -32,7 +33,8 @@ class LoginController extends Controller
             // $token = $admin->createToken('admin-token')->plainTextToken;
            
 
-            $token = $admin->createToken('admin-token', ['*'], Carbon::now()->addYears(2))->plainTextToken;
+            // $token = $admin->createToken('admin-token', ['*'], Carbon::now()->addYears(2))->plainTextToken;
+              $token = $admin->createToken('admin-token', ['*'])->plainTextToken;
     
             return response()->json([
                 'token' => $token,
@@ -43,7 +45,30 @@ class LoginController extends Controller
         return response()->json(['message' => 'Invalid credentials'], 401);
     }
 
-    public function login(Request $request)
+//     public function login(Request $request)
+// {
+//     // Validate request data
+//     $request->validate([
+//         'email' => 'required|email',
+//         'password' => 'required|min:6',
+//     ]);
+
+//     // Check if admin exists
+//     $admin = Admin::where('email', $request->email)->first();
+
+//     if (!$admin) {
+//         return back()->withErrors(['email' => 'Admin not found.']); // ✅ Admin exists nahi to error
+//     }
+
+//     // Attempt login only if admin exists
+//     if (Auth::guard('admin')->attempt(['email' => $request->email, 'password' => $request->password])) {
+//         return redirect()->route('admin.dashboard');
+//     }
+
+//     return back()->withErrors(['email' => 'Invalid credentials.']); // ✅ Agar password galat to error
+// }
+
+public function login(Request $request)
 {
     // Validate request data
     $request->validate([
@@ -51,20 +76,25 @@ class LoginController extends Controller
         'password' => 'required|min:6',
     ]);
 
-    // Check if admin exists
-    $admin = Admin::where('email', $request->email)->first();
+    $email = $request->email;
+    $password = $request->password;
 
-    if (!$admin) {
-        return back()->withErrors(['email' => 'Admin not found.']); // ✅ Admin exists nahi to error
+    // Try to login as Admin
+    $admin = Admin::where('email', $email)->first();
+    if ($admin && Auth::guard('admin')->attempt(['email' => $email, 'password' => $password])) {
+        return redirect()->route('admin.dashboard');
     }
-
-    // Attempt login only if admin exists
-    if (Auth::guard('admin')->attempt(['email' => $request->email, 'password' => $request->password])) {
+   
+    // Try to login as Employee
+    $employee = Employee::where('email', $email)->first();
+    if ($employee && Auth::guard('employee')->attempt(['email' => $email, 'password' => $password])) {
         return redirect()->route('admin.dashboard');
     }
 
-    return back()->withErrors(['email' => 'Invalid credentials.']); // ✅ Agar password galat to error
+    // If neither matches
+    return back()->withErrors(['email' => 'Invalid credentials or user not found.']);
 }
+
 
 
         

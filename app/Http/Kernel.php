@@ -26,8 +26,8 @@ class Kernel extends HttpKernel
         \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class, 
         'throttle:api',
         \Illuminate\Routing\Middleware\SubstituteBindings::class,
-        \App\Http\Middleware\AdminTokenToSession::class,   // ← इसे जोड़ें
-        \App\Http\Middleware\VerifyCsrfToken::class,   // ← इसे जोड़ें
+        \App\Http\Middleware\AdminTokenToSession::class,  
+        \App\Http\Middleware\VerifyCsrfToken::class,  
         ],
     ];
 
@@ -54,6 +54,10 @@ class Kernel extends HttpKernel
         'role' => \Spatie\Permission\Middlewares\RoleMiddleware::class,
         'permission' => \Spatie\Permission\Middlewares\PermissionMiddleware::class,
         'role_or_permission' => \Spatie\Permission\Middlewares\RoleOrPermissionMiddleware::class,
+        'auth.admin_or_employee' => \App\Http\Middleware\AuthenticateAdminOrEmployee::class,
+        // new middlewr
+        'admin.token.session' => \App\Http\Middleware\AdminTokenSession::class,
+         'guest.user' => \App\Http\Middleware\RedirectIfAuthenticatedUser::class,
     ];
        
 

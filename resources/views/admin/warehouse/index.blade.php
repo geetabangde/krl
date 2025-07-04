@@ -80,20 +80,35 @@
                                                 @if (hasAdminPermission('edit warehouse') || hasAdminPermission('delete warehouse') || hasAdminPermission('view warehouse') )
                                                 <td>
                                                     @if (hasAdminPermission('view warehouse'))
-                                                   <button class="btn btn-sm btn-light view-btn" data-bs-toggle="modal"
-                                                        data-bs-target="#viewWarehouseModal">
-                                                        <i class="fas fa-eye text-primary"></i>
-                                                    </button>
+                                                <button class="btn btn-sm btn-light view-btn"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#viewWarehouseModal"
+                                                        data-name="{{ $warehouse->warehouse_name }}"
+                                                        data-address="{{ $warehouse->address }}"
+                                                        data-incharge="{{ $warehouse->incharge }}">
+                                                    <i class="fas fa-eye text-primary"></i>
+                                                </button>
+
                                                     @endif
                                                     @if (hasAdminPermission('edit warehouse'))
-                                                    <button class="btn btn-sm btn-light edit-btn edit-warehouse-btn" data-bs-toggle="modal"
-                                                    data-bs-target="#editWarehouseModal" data-id="{{ $warehouse->id }}"><i
-                                                        class="fas fa-pen text-warning"></i></button>
+                                                    <button class="btn btn-sm btn-light edit-btn edit-warehouse-btn"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#editWarehouseModal"
+                                                            data-id="{{ $warehouse->id }}"
+                                                            data-name="{{ $warehouse->warehouse_name }}"
+                                                            data-address="{{ $warehouse->address }}"
+                                                            data-incharge="{{ $warehouse->incharge }}">
+                                                        <i class="fas fa-pen text-warning"></i>
+                                                    </button>
                                                         @endif
                                                     @if (hasAdminPermission('delete warehouse'))
-                                                    <button class="btn btn-sm btn-light delete-btn" onclick="return confirm('Are you sure you want to delete this warehouse?') ? window.location.href='{{ route('admin.warehouse.delete', $warehouse->id) }}' : false;">
-                                                            <i class="fas fa-trash text-danger"></i>
-                                                    </button>
+                                                   
+                                                     <button class="btn btn-sm btn-light delete-btn" data-bs-toggle="tooltip" 
+                                                    title="delete warehouse"><a
+                                                        href="{{ route('admin.warehouse.delete', $warehouse->id) }}"  onclick="return confirm('Are you sure you want to delete this warehouse record?')"> <i
+                                                            class="fas fa-trash text-danger"></i>
+                                                    </a>
+                                                </button>
                                                         @endif
                                                 </td>
                                                 @endif
@@ -234,42 +249,39 @@
 
     <!-- JAVASCRIPT -->
   
-    <script>
+  <script>
+document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".view-btn").forEach(button => {
+        button.addEventListener("click", function () {
+            // Set modal content using data attributes
+            document.getElementById("viewwarehouse_name").textContent = this.dataset.name || 'N/A';
+            document.getElementById("viewaddress").textContent = this.dataset.address || 'N/A';
+            document.getElementById("incharge").textContent = this.dataset.incharge || 'N/A';
 
-        document.addEventListener("DOMContentLoaded", function () {
-            document.querySelectorAll(".view-btn").forEach(button => {
-                button.addEventListener("click", function () {
-                    let row = button.closest("tr");
-                  
-                    document.getElementById("viewwarehouse_name").textContent = row.cells[1].textContent;
-                    document.getElementById("viewaddress").textContent = row.cells[2].textContent;
-                    document.getElementById("incharge").textContent = row.cells[3].textContent;
-    
-                    var viewModal = new bootstrap.Modal(document.getElementById("viewWarehouseModal"));
-                    viewModal.show();
-                });
-            });
+            // DO NOT manually call .show() since Bootstrap handles it
         });
-        
-    </script>
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            document.querySelectorAll(".edit-warehouse-btn").forEach(button => {
-                button.addEventListener("click", function () {
-                    let row = this.closest("tr"); // Get the row of the clicked button
-        
-                    // Populate modal fields with existing data from the row
-                    document.getElementById("editWarehouseName").value = row.cells[1].textContent.trim();
-                    document.getElementById("editAddress").value = row.cells[2].textContent.trim();
-                    document.getElementById("editIncharge").value = row.cells[3].textContent.trim();
-        
-                    // Update form action with the correct warehouse ID
-                    let form = document.getElementById("editWarehouseForm");
-                    form.action = `/admin/warehouses/${this.dataset.id}`;
-                });
-            });
+    });
+});
+</script>
+
+
+   <script>
+document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".edit-warehouse-btn").forEach(button => {
+        button.addEventListener("click", function () {
+            // Use data-* attributes for reliability
+            document.getElementById("editWarehouseName").value = this.dataset.name || '';
+            document.getElementById("editAddress").value = this.dataset.address || '';
+            document.getElementById("editIncharge").value = this.dataset.incharge || '';
+
+            // Set form action
+            let form = document.getElementById("editForm");
+            form.action = `/admin/warehouses/${this.dataset.id}`;
         });
-        </script>
+    });
+});
+</script>
+
         <script>
             document.addEventListener('DOMContentLoaded', function() {
                 // Select all edit buttons

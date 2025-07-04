@@ -14,15 +14,15 @@ class LoginController extends Controller
         return view('frontend.auth.login');
     }
 
-    public function login(Request $request)
+     public function login(Request $request)
    {
         $credentials = $request->validate([
-            'mobile_number' => 'required',
+            'email' => 'required',
             'password' => 'required',
         ]);
 
         // Custom credentials check
-        if (Auth::attempt(['mobile_number' => $credentials['mobile_number'], 'password' => $credentials['password']])) {
+        if (Auth::attempt(['email' => $credentials['email'], 'password' => $credentials['password']])) {
             $request->session()->regenerate();
             return redirect()->route('user.dashboard'); // 👈 Correct route name
         }
@@ -31,6 +31,7 @@ class LoginController extends Controller
             'mobile_number' => 'Invalid credentials.',
         ]);
    }
+
 
     public function logout(Request $request)
     {

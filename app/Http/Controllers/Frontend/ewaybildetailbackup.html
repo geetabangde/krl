@@ -1,0 +1,75 @@
+<?php
+
+namespace App\Http\Controllers\Frontend;
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
+use App\Http\Controllers\Controller;
+
+class EwayBillDetailController extends Controller
+{
+    protected $subscriptionKey = 'AL5e2V9g1I2p9h4U3e';
+    protected $username = 'AL001';
+    protected $plainPassword = 'Alankit@123';
+
+
+public function getEwayBillDetail($ewbNo)
+{
+    // Static or load from env/db
+    $authToken = '1Bvb0v6GAaUxEpnc2nkUtlMiS'; 
+    $encryptedSek = 'ew1LfdVGuTBKnDxKi6m7OCU6vJr/XTpKYrn52X3hmq5GgCjhGmGONERdukDluIoA'; 
+    $appKey = 'RZbiPYuN3VTF2hMhQcMMBo0MfH4UVNZaSrIeTrpKopE='; 
+    $gstin = '07AGAPA5363L002'; 
+    $subscriptionKey = 'AL5e2V9g1I2p9h4U3e'; 
+
+    $ciphering = 'AES-256-ECB';
+    $options = OPENSSL_RAW_DATA;
+
+    // Step 1: Decrypt SEK using appKey
+    $decryptionKey = base64_decode($appKey);
+    $sek = openssl_decrypt(base64_decode($encryptedSek), $ciphering, $decryptionKey, $options);
+
+    if (!$sek) {
+        return response()->json(['error' => 'SEK decryption failed'], 500);
+    }
+
+    // Step 2: API Request
+    $url = "https://developers.eraahi.com/api/ewaybillapi/v1.03/ewayapi/GetEwayBill?ewbNo={$ewbNo}";
+
+    $headers = [
+        'Content-Type' => 'application/json',
+        'gstin' => $gstin,
+        'Ocp-Apim-Subscription-Key' => $subscriptionKey,
+        'authtoken' => $authToken,
+    ];
+
+    $response = Http::withHeaders($headers)->get($url);
+    $jsonResponse = $response->json();
+
+    if (!$response->successful() || !isset($jsonResponse['data'], $jsonResponse['rek'])) {
+        return response()->json(['error' => 'Invalid or failed API response'], 500);
+    }
+
+    // Step 3: Decrypt rek using SEK
+    $rek = openssl_decrypt(base64_decode($jsonResponse['rek']), $ciphering, $sek, $options);
+
+    if (!$rek) {
+        return response()->json(['error' => 'Failed to decrypt rek'], 500);
+    }
+
+    // Step 4: Decrypt response data using rek
+    $decryptedData = openssl_decrypt(base64_decode($jsonResponse['data']), $ciphering, $rek, $options);
+
+    if (!$decryptedData) {
+        return response()->json(['error' => 'Failed to decrypt data'], 500);
+    }
+
+    $finalData = json_decode($decryptedData, true);
+
+    return response()->json([
+        'success' => true,
+        'ewaybill_data' => $finalData
+    ]);
+}
+
+}

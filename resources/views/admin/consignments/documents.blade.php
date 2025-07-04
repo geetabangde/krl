@@ -4,6 +4,16 @@
 
 <div class="page-content">
    <div class="container-fluid">
+    <div class="card-header d-flex justify-content-between align-items-center mt-5">
+   <div>
+      <h4>🛒 Consignments  Documents </h4>
+      <p class="mb-0">Enter the required details for the order.</p>
+   </div>
+   <a href="{{ route('admin.consignments.index') }}" class="btn" id="backToListBtn"
+      style="background-color: #ca2639; color: white; border: none;">
+   ⬅ Back to Listing
+   </a>
+</div>
       <!-- start page title -->
       <div class="row">
          <div class="col-12">
@@ -81,16 +91,19 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
+                       <tr>
                             <td>{{ $lrEntries['lr_number'] ?? 'N/A' }}</td>
                             <td>
-                                @if (!empty($lrEntries['pod_files']))
-                                    <a href="{{ asset($lrEntries['pod_files']) }}" target="_blank">View POD</a>
+                                @if (!empty($lrEntries['pod_files']) && is_array($lrEntries['pod_files']))
+                                    @foreach ($lrEntries['pod_files'] as $podFile)
+                                        <a href="{{ asset($podFile) }}" target="_blank">View POD</a><br>
+                                    @endforeach
                                 @else
                                     No POD uploaded
                                 @endif
                             </td>
                         </tr>
+
                     </tbody>
                 </table>
             </div>

@@ -31,10 +31,12 @@ return [
     | indicate that via the expire_on_close configuration option.
     |
     */
+    'lifetime' => 105120, // in minutes => 2 years
+    'expire_on_close' => false,
 
-    'lifetime' => (int) env('SESSION_LIFETIME', 120),
+    // 'lifetime' => (int) env('SESSION_LIFETIME', 120),
 
-    'expire_on_close' => env('SESSION_EXPIRE_ON_CLOSE', false),
+    // 'expire_on_close' => env('SESSION_EXPIRE_ON_CLOSE', false),
 
     /*
     |--------------------------------------------------------------------------

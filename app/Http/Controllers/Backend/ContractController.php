@@ -1,7 +1,5 @@
 <?php
-
 namespace App\Http\Controllers\Backend;
-
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
@@ -11,7 +9,6 @@ use App\Models\Contract;
 use App\Models\VehicleType;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
-
 
 class ContractController extends Controller implements HasMiddleware
 
@@ -33,8 +30,8 @@ class ContractController extends Controller implements HasMiddleware
         $users = User::all();
         $contracts = Contract::all();
         // Fetch related data for mapping
-        $vehicles = \App\Models\VehicleType::pluck('vehicletype', 'id')->toArray(); // [id => type]
-        $locations = \App\Models\Destination::pluck('destination', 'id')->toArray(); // [id => name]
+        $vehicles = VehicleType::pluck('vehicletype', 'id')->toArray(); // [id => type]
+        $locations = Destination::pluck('destination', 'id')->toArray(); // [id => name]
         $contracts = Contract::with('vehicle', 'fromDestination', 'toDestination')->get();
 
         return view('admin.contract.index', compact('users','contracts','vehicles','locations'));
@@ -56,6 +53,7 @@ class ContractController extends Controller implements HasMiddleware
 
     public function getRate(Request $request)
     {
+        // return response()->json($request->all());
         try {
             // Get values from the request
             $customer_id = $request->customer_id; // Customer ID
@@ -68,8 +66,7 @@ class ContractController extends Controller implements HasMiddleware
                             ->where('from_destination_id', $from_location)
                             ->where('to_destination_id', $to_location)
                             ->where('user_id', $customer_id)
-                            ->value('rate')
-                            ->value('description');
+                            ->value('rate');
                            
             // Return rate if found
             if ($rate) {
@@ -82,6 +79,7 @@ class ContractController extends Controller implements HasMiddleware
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
+    
     
 
     public function store(Request $request)
@@ -115,7 +113,7 @@ class ContractController extends Controller implements HasMiddleware
                     }
     
                     // Store in DB
-                    \App\Models\Contract::create([
+                  Contract::create([
                         'type_id' => $vehicleType,
                         'from_destination_id' => $fromDestination,
                         'to_destination_id' => $toDestination,
@@ -175,30 +173,16 @@ class ContractController extends Controller implements HasMiddleware
         }
     }
 
-    // Now you can dump the entire array after processing all files
-    // After processing files, store paths in database
         if (!empty($documentPaths)) {
             $contract->documents = json_encode($documentPaths); // Save paths as JSON
         }
     }
-       
-
-    
     $contract->save();
     
 
     return redirect()->back()->with('success', 'Contract updated successfully.');
 }
-
-
-
-    
-    
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy($id)
+       public function destroy($id)
     {
         try {
 

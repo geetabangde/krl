@@ -4,6 +4,7 @@
 @section('content')
 <div class="card-header d-flex justify-content-between align-items-center mt-5">
    <div>
+    <br><br>
       <h4>🛒 Order edit </h4>
       <p class="mb-0">Enter the required details for the order.</p>
    </div>
@@ -32,36 +33,29 @@
                <label>📅 Date</label>
                <input type="date" name="order_date" class="form-control" value="{{ $order->order_date }}" required>
             </div>
-            <!-- <div class="col-md-3">
-               <label>📊 Status</label>
-               <select name="status" class="form-select" required>
-                  <option value="Pending" {{ $order->status == 'Pending' ? 'selected' : '' }}>Pending</option>
-                  <option value="Processing" {{ $order->status == 'Processing' ? 'selected' : '' }}>Processing</option>
-                  <option value="Completed" {{ $order->status == 'Completed' ? 'selected' : '' }}>Completed</option>
-                  <option value="Cancelled" {{ $order->status == 'Cancelled' ? 'selected' : '' }}>Cancelled</option>
-               </select>
-            </div> -->
+            
             <div class="col-md-3">
                <div class="mb-3">
                   <label class="form-label">👤 Freight A/c</label>
                   <select name="customer_id" id="customer_id" class="form-select" onchange="setCustomerDetails()" required>
-                     <option value="">Select Customer</option>
-                     @foreach($users as $user)
+                    <option value="">Select Customer</option>
+                    @foreach($users as $user)
                         @php
-                        $addresses = json_decode($user->address, true);
+                            $addresses = is_string($user->address) ? json_decode($user->address, true) : $user->address;
                         @endphp
                         @if(!empty($addresses) && is_array($addresses))
-                           @foreach($addresses as $address)
-                              <option value="{{ $user->id }}"
-                                 data-gst="{{ $address['gstin'] ?? '' }}"
-                                 data-address="{{ $address['billing_address'] ?? '' }}"
-                                 @if($user->id == $order->customer_id) selected @endif>
-                                 {{ $user->name }} - {{ $address['city'] ?? '' }}
-                              </option>
-                           @endforeach
+                            @foreach($addresses as $address)
+                                <option value="{{ $user->id }}"
+                                    data-gst="{{ $address['gstin'] ?? '' }}"
+                                    data-address="{{ $address['billing_address'] ?? '' }}"
+                                    @if($user->id == $order->customer_id) selected @endif>
+                                    {{ $user->name }} - {{ $address['city'] ?? '' }}
+                                </option>
+                            @endforeach
                         @endif
-                     @endforeach
-                  </select>
+                    @endforeach
+                </select>
+
                </div>
             </div>
             <div class="col-md-3">
@@ -76,6 +70,7 @@
                   <input type="text" name="customer_address" id="customer_address" value="{{ old('customer_address', $order->customer_address ?? '') }}" class="form-control" readonly required>
                </div>
             </div>
+            
             <div class="col-md-3">
                <div class="mb-3">
                   <label class="form-label">📊 Order Type</label>
@@ -149,24 +144,25 @@
                </div>
                <div class="col-md-3">
                   <label class="form-label">🚚 Consignor Name</label>
-                  <select name="lr[{{ $index }}][consignor_id]" id="consignor_id_{{ $index }}" class="form-select" onchange="setConsignorDetailsExisting({{ $index }})" required>
-                     <option value="">Select Consignor Name</option>
-                     @foreach($users as $user)
-                        @php
-                        $addresses = json_decode($user->address, true);
-                        @endphp
-                        @if(!empty($addresses) && is_array($addresses))
-                           @foreach($addresses as $address)
-                              <option value="{{ $user->id }}"
-                                 data-gst-consignor="{{ $address['gstin'] ?? '' }}"
-                                 data-address-consignor="{{ $address['billing_address'] ?? '' }}"
-                                 {{ old("lr.$index.consignor_id", $lr['consignor_id'] ?? '') == $user->id ? 'selected' : '' }}>
-                                 {{ $user->name }} - {{ $address['city'] ?? '' }}
-                              </option>
-                           @endforeach
-                        @endif
-                     @endforeach
-                  </select>
+                    <select name="lr[{{ $index }}][consignor_id]" id="consignor_id_{{ $index }}" class="form-select" onchange="setConsignorDetailsExisting({{ $index }})" required>
+                        <option value="">Select Consignor Name</option>
+                        @foreach($users as $user)
+                            @php
+                                $addresses = is_string($user->address) ? json_decode($user->address, true) : $user->address;
+                            @endphp
+                            @if(!empty($addresses) && is_array($addresses))
+                                @foreach($addresses as $address)
+                                    <option value="{{ $user->id }}"
+                                        data-gst-consignor="{{ $address['gstin'] ?? '' }}"
+                                        data-address-consignor="{{ $address['billing_address'] ?? '' }}"
+                                        {{ old("lr.$index.consignor_id", $lr['consignor_id'] ?? '') == $user->id ? 'selected' : '' }}>
+                                        {{ $user->name }} - {{ $address['city'] ?? '' }}
+                                    </option>
+                                @endforeach
+                            @endif
+                        @endforeach
+                    </select>
+
                </div>
                <div class="col-md-3">
                   <label class="form-label">🧾 Consignor GST</label>
@@ -179,23 +175,24 @@
                <div class="col-md-3">
                   <label class="form-label">🏢 Consignee Name</label>
                   <select name="lr[{{ $index }}][consignee_id]" id="consignee_id_{{ $index }}" class="form-select" onchange="setConsigneeDetailsExisting({{ $index }})" required>
-                     <option value="">Select Consignee Name</option>
-                     @foreach($users as $user)
-                        @php
-                        $addresses = json_decode($user->address, true);
-                        @endphp
-                        @if(!empty($addresses) && is_array($addresses))
-                           @foreach($addresses as $address)
-                              <option value="{{ $user->id }}"
-                                 data-gst-consignee="{{ $address['gstin'] ?? '' }}"
-                                 data-address-consignee="{{ $address['billing_address'] ?? '' }}"
-                                 {{ old("lr.$index.consignee_id", $lr['consignee_id'] ?? '') == $user->id ? 'selected' : '' }}>
-                                 {{ $user->name }} - {{ $address['city'] ?? '' }}
-                              </option>
-                           @endforeach
-                        @endif
-                     @endforeach
-                  </select>
+                        <option value="">Select Consignee Name</option>
+                        @foreach($users as $user)
+                            @php
+                                $addresses = is_string($user->address) ? json_decode($user->address, true) : $user->address;
+                            @endphp
+                            @if(!empty($addresses) && is_array($addresses))
+                                @foreach($addresses as $address)
+                                    <option value="{{ $user->id }}"
+                                        data-gst-consignee="{{ $address['gstin'] ?? '' }}"
+                                        data-address-consignee="{{ $address['billing_address'] ?? '' }}"
+                                        {{ old("lr.$index.consignee_id", $lr['consignee_id'] ?? '') == $user->id ? 'selected' : '' }}>
+                                        {{ $user->name }} - {{ $address['city'] ?? '' }}
+                                    </option>
+                                @endforeach
+                            @endif
+                        @endforeach
+                    </select>
+
                </div>
                <div class="col-md-3">
                   <label class="form-label">🧾 Consignee GST</label>
@@ -243,6 +240,7 @@
                             <option value="door_delivery" {{ old("lr.$index.delivery_mode", $lr['delivery_mode'] ?? '') == 'door_delivery' ? 'selected' : '' }}>Door Delivery</option>
                             <option value="godown_delivery" {{ old("lr.$index.delivery_mode", $lr['delivery_mode'] ?? '') == 'godown_delivery' ? 'selected' : '' }}>Godown Delivery</option>
                         </select>
+
                     </div>
 
                </div>
@@ -319,9 +317,7 @@
                @php
                $cargoData = isset($lr['cargo']) && is_array($lr['cargo']) ? collect($lr['cargo'])->filter(fn($item) => isset($item['packages_no']) && $item['packages_no'] !== null)->values() : collect();
                @endphp
-
-               
-               <div class="col-12" data-lr-index="{{ $index }}">
+                <div class="col-12" data-lr-index="{{ $index }}">
                   <h5 class="mb-3 pb-3">📦 Cargo Description (LR #{{ $index }})</h5>
                   <div class="table-responsive">
                      <table class="table table-bordered align-middle text-center">
@@ -337,7 +333,7 @@
                               <th>Document Name</th>
                               <th>Document Date</th>
                               <th>Document Upload</th>
-                              <th>Eway Bill</th>
+                              
                               <th>Valid Upto</th>
                               <th>Declared Value</th>
                               <th>Action</th>
@@ -347,8 +343,6 @@
                            @foreach ($cargoData as $cargoIndex => $cargo)
                            <tr>
                               <td><input type="number" name="lr[{{ $index }}][cargo][{{ $cargoIndex }}][packages_no]" class="form-control" value="{{ $cargo['packages_no'] ?? '' }}"  min="0" step="0.01" required></td>
-                              
-
                               <td>
                                     <select name="lr[{{ $index }}][cargo][{{ $cargoIndex }}][package_type]"  class="form-select" required>
                                        <option value="">Select Packaging Type</option>
@@ -376,7 +370,7 @@
                                  <input type="file" name="lr[{{ $index }}][cargo][{{ $cargoIndex }}][document_file]" class="form-control">
                                  <input type="hidden" name="lr[{{ $index }}][cargo][{{ $cargoIndex }}][old_document_file]" value="{{ $cargo['document_file'] ?? '' }}">
                               </td>
-                              <td><input type="text" name="lr[{{ $index }}][cargo][{{ $cargoIndex }}][eway_bill]" class="form-control" value="{{ $cargo['eway_bill'] ?? '' }}" required></td>
+                               
                               <td><input type="date" name="lr[{{ $index }}][cargo][{{ $cargoIndex }}][valid_upto]" class="form-control" value="{{ $cargo['valid_upto'] ?? '' }}" required></td>
                               <td>
                                  <input name="lr[{{ $index }}][cargo][{{ $cargoIndex }}][declared_value]" placeholder="0"  min="0" step="0.01" type="number" value="{{ $cargo['declared_value'] ?? '' }}" class="form-control declared-value" placeholder="0" required oninput="calculateTotalsExisting({{ $index }})">
@@ -505,10 +499,7 @@
                 </div>
 
                <!-- vehical description -->
-
-
-
-               <div class="row mt-3">
+                <div class="row mt-3">
                   <div class="col-md-6">
                      <div class="mt-3">
                      
@@ -519,6 +510,13 @@
                   </div>
                </div>
             </div>
+             <div class="d-flex justify-content-end gap-2 mt-3">
+            <a href="{{ route('admin.orders.deleteLR', [$order->order_id, $lr['lr_number']]) }}">
+             <button type="button" class="btn btn-outline-warning btn-sm removeLRBtn" >
+            <i class="fas fa-trash-alt"></i> Remove LR</a>
+          </button>
+
+         </div>
          @endforeach
          <div id="lr_container"></div>
          <div class="d-flex justify-content-end gap-2 mt-3">
@@ -527,10 +525,11 @@
             </button>
          </div>
          <div class="row mt-4 mb-4">
-            <div class="col-12 text-center">
-               <button type="submit" class="btn btn-primary">
+            <div class="col-12 text-center" style="padding-bottom:20px;">
+               <button type="submit" class="btn btn-primary" >
                   <i class="fas fa-save"></i> Update Consignment
                </button>
+               
             </div>
          </div>
       </div>
@@ -794,18 +793,18 @@ function toggleFreightTableExisting(index) {
 }
 
 // Toggle insurance input for existing LRs
-// function toggleInsuranceInputExisting(index) {
-//     const insuranceInput = document.getElementById(`insurance_input_${index}`);
-//     const insuranceYes = document.getElementById(`insurance_yes_${index}`);
+function toggleInsuranceInputExisting(index) {
+    const insuranceInput = document.getElementById(`insurance_input_${index}`);
+    const insuranceYes = document.getElementById(`insurance_yes_${index}`);
     
-//     if (insuranceYes.checked) {
-//         insuranceInput.classList.remove('d-none');
-//         insuranceInput.focus();
-//     } else {
-//         insuranceInput.classList.add('d-none');
-//         insuranceInput.value = '';
-//     }
-// }
+    if (insuranceYes.checked) {
+        insuranceInput.classList.remove('d-none');
+        insuranceInput.focus();
+    } else {
+        insuranceInput.classList.add('d-none');
+        insuranceInput.value = '';
+    }
+}
 
 function toggleInsuranceInputExisting(index) {
     const insuranceInputWrapper = document.getElementById(`insurance_input_${index}`);
@@ -845,14 +844,12 @@ function addCargoRowExisting(index) {
     row.innerHTML = `
         <td><input type="number" name="lr[${index}][cargo][${cargoIndex}][packages_no]" class="form-control" placeholder="0" required></td>
         <td>
-            
-        
-        <select name="lr[$[index][cargo][${cargoIndex}][package_type]"  class="form-select" >
-        <option value="">Select Packaging Type</option>
-        @foreach($package as $type)
-        <option value="{{ $type->id }}">{{ $type->package_type }}</option>
-        @endforeach
-   </select>
+         <select name="lr[$[index][cargo][${cargoIndex}][package_type]"  class="form-select" >
+            <option value="">Select Packaging Type</option>
+            @foreach($package as $type)
+            <option value="{{ $type->id }}">{{ $type->package_type }}</option>
+            @endforeach
+        </select>
    </td>
         <td><input type="text" name="lr[${index}][cargo][${cargoIndex}][package_description]" class="form-control" placeholder="Enter description" required></td>
         <td><input type="number" name="lr[${index}][cargo][${cargoIndex}][actual_weight]" class="form-control" placeholder="0" required></td>
@@ -868,7 +865,7 @@ function addCargoRowExisting(index) {
         <td><input type="text" name="lr[${index}][cargo][${cargoIndex}][document_name]" class="form-control" placeholder="Doc Name" required></td>
         <td><input type="date" name="lr[${index}][cargo][${cargoIndex}][document_date]" class="form-control" required></td>
         <td><input type="file" name="lr[${index}][cargo][${cargoIndex}][document_file]" class="form-control"></td>
-        <td><input type="text" name="lr[${index}][cargo][${cargoIndex}][eway_bill]" class="form-control" placeholder="Eway Bill No." required></td>
+        
         <td><input type="date" name="lr[${index}][cargo][${cargoIndex}][valid_upto]" class="form-control" required></td>
         <td><input type="number" name="lr[${index}][cargo][${cargoIndex}][declared_value]" class="form-control declared-value" placeholder="0" required oninput="calculateTotalsExisting(${index})"></td>
         <td><button type="button" class="btn btn-danger btn-sm" onclick="removeRowExisting(this, ${index})">🗑</button></td>
@@ -943,7 +940,7 @@ function addLrRow() {
                     <option value="">Select Consignor</option>
                     @foreach($users as $user)
                         @php
-                            $addresses = json_decode($user->address, true);
+                            $addresses = is_string($user->address) ? json_decode($user->address, true) : $user->address;
                         @endphp
                         @if(!empty($addresses) && is_array($addresses))
                             @foreach($addresses as $address)
@@ -956,6 +953,7 @@ function addLrRow() {
                         @endif
                     @endforeach
                 </select>
+
             </div>
             <div class="col-md-3">
                 <label class="form-label">Consignor GST</label>
@@ -971,7 +969,7 @@ function addLrRow() {
                     <option value="">Select Consignee Name</option>
                     @foreach($users as $user)
                         @php
-                            $addresses = json_decode($user->address, true);
+                            $addresses = is_string($user->address) ? json_decode($user->address, true) : $user->address;
                         @endphp
                         @if(!empty($addresses) && is_array($addresses))
                             @foreach($addresses as $address)
@@ -984,6 +982,7 @@ function addLrRow() {
                         @endif
                     @endforeach
                 </select>
+
             </div>
             <div class="col-md-3">
                 <label class="form-label">Consignee Unloading Address</label>
@@ -1025,9 +1024,10 @@ function addLrRow() {
                 <select name="lr[${lrIndex}][delivery_mode]" class="form-select" required>
                     <option value="">Select Mode</option>
                     <option value="door_delivery">Door Delivery</option>
-                    <option value="godown_delivery">Godown Delivery</option>
+                    <option value="godwon_deliver">Godown Delivery</option>
                 </select>
             </div>
+
             <div class="col-md-4 mb-3">
                 <label class="form-label">📍 From (Origin)</label>
                 <select name="lr[${lrIndex}][from_location]" id="from_location_${lrIndex}" class="form-select" onchange="fetchRateForLRNew(${lrIndex})" required>
@@ -1090,7 +1090,7 @@ function addLrRow() {
                                 <th>Document Name</th>
                                 <th>Document Date</th>
                                 <th>Document Upload</th>
-                                <th>Eway Bill</th>
+                             
                                 <th>Valid Upto</th>
                                 <th>Declared Value</th>
                                 <th>Action</th>
@@ -1124,7 +1124,7 @@ function addLrRow() {
                                 <td><input type="text" class="form-control" name="lr[${lrIndex}][cargo][0][document_name]" placeholder="Doc Name" required></td>
                                 <td><input type="date" class="form-control" name="lr[${lrIndex}][cargo][0][document_date]" required></td>
                                 <td><input type="file" class="form-control" name="lr[${lrIndex}][cargo][0][document_file]"></td>
-                                <td><input type="text" class="form-control" name="lr[${lrIndex}][cargo][0][eway_bill]" placeholder="Eway Bill No." required></td>
+                                
                                 <td><input type="date" class="form-control" name="lr[${lrIndex}][cargo][0][valid_upto]" required></td>
                                 <td>
                                     <input type="number" class="form-control declared-value" name="lr[${lrIndex}][cargo][0][declared_value]" step="0.01" placeholder="0" oninput="calculateTotalsNew(${lrIndex})">
@@ -1535,7 +1535,7 @@ function updateFreightAndTotalsNew(index) {
    <td><input type="text" class="form-control" name="lr[${lrIndex}][cargo][${rowCount}][document_name]" placeholder="Doc Name" required></td>
    <td><input type="date" class="form-control" name="lr[${lrIndex}][cargo][${rowCount}][document_date]" required></td>
    <td><input type="file" class="form-control" name="lr[${lrIndex}][cargo][${rowCount}][document_file]" required></td>
-   <td><input type="text" class="form-control" name="lr[${lrIndex}][cargo][${rowCount}][eway_bill]" placeholder="Eway Bill No." required></td>
+    
    <td><input type="date" class="form-control" name="lr[${lrIndex}][cargo][${rowCount}][valid_upto]" required></td>
    <td>
     <input

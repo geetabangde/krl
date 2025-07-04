@@ -20,6 +20,8 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
+        'deductor',
+        'group_id',
         'password',
         'email',
         'pan_number',
@@ -32,7 +34,7 @@ class User extends Authenticatable
     // ✅ JSON से Array में Convert करने के लिए
     protected $casts = [
         'address' => 'array',
-        'gst_number' => 'array',
+        
     ];
 
     /**
@@ -58,9 +60,16 @@ class User extends Authenticatable
         ];
     }
     // User.php
-public function contracts()
-{
-    return $this->hasMany(Contract::class);
-}
-
+    public function contracts()
+    {
+        return $this->hasMany(Contract::class);
+    }
+    public function group()
+    {
+        return $this->belongsTo(Group::class, 'group_id'); 
+    }
+    public function parent()
+    {
+        return $this->belongsTo(Group::class, 'parent_id'); 
+    }
 }

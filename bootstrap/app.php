@@ -19,6 +19,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
             'admin.permission' => \App\Http\Middleware\AdminHasPermission::class,
             'admin.guest' => \App\Http\Middleware\RedirectIfAuthenticatedAdmin::class,
+            //new Middleware
+            'admin.token.session' => \App\Http\Middleware\AdminTokenSession::class,
+            'guest.user' => \App\Http\Middleware\RedirectIfAuthenticatedUser::class,
 
         ]);
     })

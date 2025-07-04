@@ -21,6 +21,8 @@ use Spatie\Permission\Models\Permission;
     protected $guarded = [];
     public function permission()
     {
+        // dd( $this->belongsToMany(Permission::class, 'role_has_permissions'));
+
         return $this->belongsToMany(Permission::class, 'role_has_permissions');
     }
     

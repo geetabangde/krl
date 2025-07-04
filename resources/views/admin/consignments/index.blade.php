@@ -54,6 +54,7 @@
                               <th>S.No</th>
                               <th>Order ID</th>
                               <th>LR NO</th>
+                              <th>Customer</th>
                               <th>Consignor</th>
                               <th>Consignee</th>
                               <th>Date</th>
@@ -65,6 +66,7 @@
                            </tr>
                         </thead>
                         <tbody>
+                           {{-- @dd($orders); --}}
                            @php $rowCount = 1; @endphp
                            @foreach($orders as $order)
                            @php
@@ -72,13 +74,22 @@
                            @endphp
                            @if(!empty($lrDetails) && count($lrDetails) > 0)
                            @foreach($lrDetails as $lr)
-                           <tr class="lr-row" data-id="{{ $order->id }}">
+                           <tr class="lr-row" data-id="{{ $order->id }}" data-customer-id="{{ $lr['customer_id'] ?? $order->customer_id }}">
+
+                           <!-- <tr class="lr-row" data-id="{{ $order->id }}" data-customer-id="{{ $order->customer_id }}"> -->
                               <td>
                                  <input type="checkbox" class="lr-checkbox" value="{{ $order->order_id }}|{{ $lr['lr_number'] ?? '' }}">
                               </td>
                               <td>{{ $rowCount++ }}</td>
                               <td>{{ $order->order_id }}</td>
                               <td>{{ $lr['lr_number'] ?? '-' }}</td>
+                              <td>
+                                 @php
+                                 $customerUser = \App\Models\User::find($lr['customer_id'] ?? null);
+                                 $customerName = $order->customer->name ?? ($customerUser->name ?? '-');
+                                 @endphp
+                                 {{ $customerName }}
+                              </td>
                               <td>
                                  @php
                                  $consignorUser = \App\Models\User::find($lr['consignor_id'] ?? null);
@@ -100,25 +111,47 @@
                               @endphp
                               <td>{{ $fromDestination->destination ?? '-' }}</td>
                               <td>{{ $toDestination->destination ?? '-' }}</td>
-
-                              
+                             
                               @if (hasAdminPermission('edit lr_consignment') || hasAdminPermission('delete lr_consignment')|| hasAdminPermission('view lr_consignment'))
                               <td>
-                                 @if (hasAdminPermission('view lr_consignment'))
+                              
+                              @if (hasAdminPermission('view lr_consignment'))
+                               
                                  <a href="{{ route('admin.consignments.documents', $lr['lr_number']) }}" class="btn btn-sm btn-light" data-bs-toggle="tooltip" title="View Documents"><i class="fas fa-file-alt text-primary"></i></a>
-                                 @endif
-                                 @if (hasAdminPermission('view lr_consignment'))
+                              @endif
+                              @if (hasAdminPermission('view lr_consignment'))
                                  <a href="{{ route('admin.consignments.view', $lr['lr_number']) }}" class="btn btn-sm btn-light" data-bs-toggle="tooltip" title="View Details"><i class="fas fa-eye text-primary"></i></a>
                                  @endif
-                                 @if (hasAdminPermission('edit lr_consignment'))
-                                 <a href="{{ route('admin.consignments.edit', $order->order_id) }}" class="btn btn-sm btn-light" data-bs-toggle="tooltip" title="Edit Consignment"><i class="fas fa-pen text-warning"></i></a>
-                                 @endif
-                                 @if (hasAdminPermission('delete lr_consignment'))
-                                 <a href="{{ route('admin.consignments.delete', $order->order_id) }}" class="btn btn-sm btn-light" data-bs-toggle="tooltip" title="Delete Consignment"><i class="fas fa-trash text-danger"></i></a>
-                                 @endif
-                              </td>
-                              @endif
+                        
+                              @if (hasAdminPermission('edit lr_consignment'))
+                                 @php
+                                    $isPodUploaded = $lr['pod_uploaded'] ?? 0;
+                                    $lrNumber = $lr['lr_number'] ?? null;
+                                 @endphp
 
+                                 @if ($isPodUploaded)
+                                    <button class="btn btn-sm btn-secondary" disabled>
+                                          <i class="fas fa-pen text-warning"></i>
+                                    </button>
+                                 @elseif ($lrNumber)
+                                    <a href="{{ route('admin.consignments.edit', [$order->order_id, $lrNumber]) }}"
+                                       class="btn btn-sm btn-light" data-bs-toggle="tooltip" title="Edit Consignments">
+                                          <i class="fas fa-pen text-warning"></i>
+                                    </a>
+                                 @else
+                                    <button class="btn btn-sm btn-light" disabled>
+                                          <i class="fas fa-exclamation-circle text-danger" title="LR Number missing"></i>
+                                    </button>
+                                 @endif
+                              @endif
+                              @if (hasAdminPermission('delete lr_consignment'))
+                              <a href="{{ route('admin.consignments.delete', [$order->order_id, $lr['lr_number']]) }}" class="btn btn-sm btn-light" data-bs-toggle="tooltip" title="Delete Consignments"><i class="fas fa-trash text-danger"></i></a>
+                              @endif
+                              <a href="{{ route('admin.consignments.assign', [$lr['lr_number']]) }}" class="btn btn-sm btn-light" data-bs-toggle="tooltip" title="Assign eWay Bill">
+                              <i class="fas fa-random text-danger"></i>
+                              </a>
+                              </td>
+                           @endif
                            </tr>
                            @endforeach
                            @endif
@@ -136,54 +169,91 @@
 <!-- end main content-->
 <!-- Add this before any script that uses jQuery -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<!-- Script to collect selected order IDs and submit the form -->
-<!-- Add this where scripts are loaded, usually in layouts/app.blade.php -->
-
 
 
 <!-- JavaScript -->
 <script>
-   const generateBtn = document.getElementById("generateBtn");
-   const orderInputHidden = document.getElementById("orderInputHidden");
-   
-   function updateSelectedLRs() {
-     const selectedData = [];
-   
-     document.querySelectorAll(".lr-checkbox:checked").forEach(cb => {
-       const [order_id, lr_number] = cb.value.split("|");
-       selectedData.push({ order_id, lr_number });
-     });
-   
-     orderInputHidden.value = JSON.stringify(selectedData);
-     generateBtn.style.display = selectedData.length > 0 ? "inline-block" : "none";
-   }
-   
-   // Individual checkbox
-   document.querySelectorAll(".lr-checkbox").forEach(cb =>
-     cb.addEventListener("change", updateSelectedLRs)
-   );
-   
-   // Select All checkbox
-   document.getElementById("selectAll").addEventListener("change", function () {
-     document.querySelectorAll(".lr-checkbox").forEach(cb => cb.checked = this.checked);
-     updateSelectedLRs();
-   });
-   
-   // On button click
-   generateBtn.addEventListener("click", function (e) {
-     e.preventDefault();
-     document.getElementById("lrForm").submit();
-   });
-   
-   // Initially hide
-   generateBtn.style.display = "none";
+const generateBtn = document.getElementById("generateBtn");
+const orderInputHidden = document.getElementById("orderInputHidden");
+
+function updateSelectedLRs() {
+  const selectedData = [];
+  const selectedCustomerIds = new Set();
+  const selectedCheckboxes = document.querySelectorAll(".lr-checkbox:checked");
+
+  let customerIdRef = null;
+  let isValid = true;
+
+  selectedCheckboxes.forEach(cb => {
+    const row = cb.closest("tr");
+    const customerId = row.getAttribute("data-customer-id");
+
+    // First selected customer
+    if (!customerIdRef) {
+      customerIdRef = customerId;
+    }
+
+    // If customer mismatch, uncheck this checkbox
+    if (customerId !== customerIdRef) {
+      cb.checked = false; // ❌ Uncheck only mismatched customer checkbox
+      isValid = false;
+    } else {
+      // ✅ Only push valid customer LRs
+      const [order_id, lr_number] = cb.value.split("|");
+      selectedData.push({ order_id, lr_number });
+      if (customerId !== null && customerId !== "") {
+        selectedCustomerIds.add(customerId);
+      }
+    }
+  });
+
+  if (!isValid) {
+    alert("Different customers selected. Freight bill cannot be generated.");
+  }
+
+  // Update hidden input and button
+  if (selectedData.length > 0 && selectedCustomerIds.size === 1) {
+    orderInputHidden.value = JSON.stringify(selectedData);
+    generateBtn.style.display = "inline-block";
+  } else {
+    orderInputHidden.value = '';
+    generateBtn.style.display = "none";
+  }
+}
+
+
+
+// Individual checkbox change
+document.querySelectorAll(".lr-checkbox").forEach(cb =>
+  cb.addEventListener("change", updateSelectedLRs)
+);
+
+// Select All checkbox
+document.getElementById("selectAll").addEventListener("change", function () {
+  document.querySelectorAll(".lr-checkbox").forEach(cb => cb.checked = this.checked);
+  updateSelectedLRs();
+});
+
+// Submit
+generateBtn.addEventListener("click", function (e) {
+  e.preventDefault();
+  if (generateBtn.style.display !== "none") {
+    document.getElementById("lrForm").submit();
+  }
+});
+
+// Initially hidden
+generateBtn.style.display = "none";
 </script>
+
+
 <script>
    document.getElementById('selectAll').addEventListener('change', function() {
        const checkboxes = document.querySelectorAll('input[name="selected_rows[]"]');
        checkboxes.forEach(cb => cb.checked = this.checked);
    });
 </script>
+
 <script>
    document.addEventListener('DOMContentLoaded', function () {
        document.querySelectorAll('.delete-btn').forEach(button => {

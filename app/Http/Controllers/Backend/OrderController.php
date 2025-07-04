@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use App\Models\Order;
+use App\Models\Contract;
 use App\Models\Vehicle;
 use App\Models\VehicleType;
 use App\Models\Destination;
@@ -32,7 +33,7 @@ class OrderController extends Controller implements HasMiddleware
     public function  index(){
 
     $orders = Order::latest()->get();
-//    dd($orders);
+//    return($orders);
 
     return view('admin.orders.index', compact('orders'));
     }
@@ -40,11 +41,12 @@ class OrderController extends Controller implements HasMiddleware
     public function create()
    {
     $vehicles = Vehicle::all();
+    // $contract = Contract::all();
     $package = PackageType::all();
     $vehiclesType = VehicleType::all();
     $destination = Destination::all();
     $users = User::all();
-    return view('admin.orders.create', compact('package','vehicles', 'users','vehiclesType','destination'));
+    return view('admin.orders.create', compact('package','vehicles', 'users','vehiclesType','destination' ));
    }
 
    public function edit($order_id)
@@ -59,14 +61,13 @@ class OrderController extends Controller implements HasMiddleware
        if (!empty($order) && isset($order->lr) && is_string($order->lr)) {
         $order->lr = json_decode($order->lr, true);
     }
- 
-   
-       return view('admin.orders.edit', compact('package','order', 'vehicles', 'users','vehiclesType','destination'));
+      return view('admin.orders.edit', compact('package','order', 'vehicles', 'users','vehiclesType','destination'));
    }
    
 
     public function show($order_id){
-    
+          $destination = Destination::all();
+     $vehiclesType = VehicleType::all();
         $vehicles = Vehicle::all();
         $users = User::all();
         $package = PackageType::all();
@@ -77,7 +78,7 @@ class OrderController extends Controller implements HasMiddleware
             $order->lr = json_decode($order->lr, true);
         }
 
-        return view('admin.orders.view', compact('package','order','vehicles','users'));
+        return view('admin.orders.view', compact('package','order','vehicles','users','vehiclesType','destination'));
     }
     public function docView($order_id){
     
@@ -111,14 +112,14 @@ class OrderController extends Controller implements HasMiddleware
         $order->pickup_addresss = $request->pickup_addresss;
         $order->order_method = $request->order_method;
         $order->byorder = $request->byOrder;
-
+       $order->status ='Processing';
          // 🔥 Default status chain
         // ✅ Default Status Chain
-        $order->status = [
-            ['status' => 'Material Collected', 'timestamp' => now()],
-            ['status' => 'In Transit', 'timestamp' => null],
-            ['status' => 'Delivered', 'timestamp' => null],
-        ];
+        // $order->status = [
+        //     ['status' => 'Material Collected', 'timestamp' => now()],
+        //     ['status' => 'In Transit', 'timestamp' => null],
+        //     ['status' => 'Delivered', 'timestamp' => null],
+        // ];
 
        
         // Prepare LR Data
@@ -150,7 +151,7 @@ class OrderController extends Controller implements HasMiddleware
                             'document_date'       => $cargo['document_date'] ?? null,
                             'document_file'       => $documentFilePath,
                             'declared_value'      => $cargo['declared_value'] ?? null,
-                            'eway_bill'           => $cargo['eway_bill'] ?? null,
+                            
                             'valid_upto'          => $cargo['valid_upto'] ?? null,
                             'unit'                => $cargo['unit'] ?? null,
                         ];
@@ -218,33 +219,6 @@ class OrderController extends Controller implements HasMiddleware
         ->with('success', 'Order stored with nested LR and cargo arrays successfully!');
     }
 
-
-    
-    public function getRate(Request $request)
-    {
-     
-       
-
-            $rate = Contract::where('user_id', $request->customer_id)
-                ->where('type_id', $request->vehicle_type)
-                ->where('from_destination_id', $request->from_location)
-                ->where('to_destination_id', $request->to_location)
-                ->value('rate');
-
-        if ($rate) {
-            return response()->json([
-                'rate' => $rate, 
-            ]);
-        } else {
-            return response()->json([
-                'rate' => null,
-            ]);
-        }
-    }
-
-
-    
-
     public function update(Request $request, $order_id)
     {
         // Find the existing order by order_id
@@ -268,6 +242,7 @@ class OrderController extends Controller implements HasMiddleware
     
         // Prepare LR Data
         $lrArray = [];
+     if (!empty($request->lr) && is_array($request->lr)) {
         foreach ($request->lr as $key => $lr) {
         $cargoArray = [];
         $vehicleArray = [];
@@ -293,14 +268,12 @@ class OrderController extends Controller implements HasMiddleware
                     'document_date'       => $cargo['document_date'] ?? null,
                     'document_file'       => $documentFilePath,
                     'declared_value'      => $cargo['declared_value'] ?? null,
-                    'eway_bill'           => $cargo['eway_bill'] ?? null,
+                    
                     'valid_upto'          => $cargo['valid_upto'] ?? null,
                     'unit'                => $cargo['unit'] ?? null,
                 ];
             }
         }
-
-        // ✅ Handle nested vehicles
         // ✅ Handle nested vehicles
         if (isset($lr['vehicle']) && is_array($lr['vehicle'])) {
             $selectedVehicleIndex = $lr['selected_vehicle'] ?? null;
@@ -313,62 +286,61 @@ class OrderController extends Controller implements HasMiddleware
                 ];
             }
         }
+        // Charges
+         $freight_amount = $lr_charges = $hamali = $other_charges = $gst_amount = $total_freight = $less_advance = $balance_freight = null;
 
+        if (($lr['freightType'] ?? null) !== 'to_be_billed') {
+            $freight_amount = $lr['freight_amount'] ?? null;
+            $lr_charges = $lr['lr_charges'] ?? null;
+            $hamali = $lr['hamali'] ?? null;
+            $other_charges = $lr['other_charges'] ?? null;
+            $gst_amount = $lr['gst_amount'] ?? null;
+            $total_freight = $lr['total_freight'] ?? null;
+            $less_advance = $lr['less_advance'] ?? null;
+            $balance_freight = $lr['balance_freight'] ?? null;
+        }
 
-            // Charges
-            $freight_amount = $lr_charges = $hamali = $other_charges = $gst_amount = $total_freight = $less_advance = $balance_freight = null;
+        $lrArray[$key] = [
+            'lr_number'            => $lr['lr_number'] ?? ('LR-' . time() . '-' . $key),
+            'lr_date'              => $lr['lr_date'] ?? null,
+            'vehicle_no'           => $lr['vehicle_no'] ?? null,
+            'vehicle_type'         => $lr['vehicle_type'] ?? null,
+            'vehicle_ownership'    => $lr['vehicle_ownership'] ?? null,
+            'delivery_mode'        => $lr['delivery_mode'] ?? null,
+            'from_location'        => $lr['from_location'] ?? null,
+            'to_location'          => $lr['to_location'] ?? null,
+            'consignor_id'         => $lr['consignor_id'] ?? null,
+            'consignor_gst'        => $lr['consignor_gst'] ?? null,
+            'consignor_loading'    => $lr['consignor_loading'] ?? null,
+            'consignee_id'         => $lr['consignee_id'] ?? null,
+            'consignee_gst'        => $lr['consignee_gst'] ?? null,
+            'consignee_unloading'  => $lr['consignee_unloading'] ?? null,
+            'freightType'          => $lr['freightType'] ?? null,
+            'freight_amount'       => $freight_amount,
+            'lr_charges'           => $lr_charges,
+            'hamali'               => $hamali,
+            'other_charges'        => $other_charges,
+            'gst_amount'           => $gst_amount,
+            'total_freight'        => $total_freight,
+            'less_advance'         => $less_advance,
+            'balance_freight'      => $balance_freight,
+            'total_declared_value' => $lr['total_declared_value'] ?? null,
+            'insurance_description'=> $lr['insurance_description'] ?? null,
+            'insurance_status'     => $lr['insurance_status'] ?? null,
+            'order_rate'           => $lr['order_rate'] ?? null,
+            'cargo'                => $cargoArray,
+            'vehicle'              => $vehicleArray,
+        ];
 
-            if (($lr['freightType'] ?? null) !== 'to_be_billed') {
-                $freight_amount = $lr['freight_amount'] ?? null;
-                $lr_charges = $lr['lr_charges'] ?? null;
-                $hamali = $lr['hamali'] ?? null;
-                $other_charges = $lr['other_charges'] ?? null;
-                $gst_amount = $lr['gst_amount'] ?? null;
-                $total_freight = $lr['total_freight'] ?? null;
-                $less_advance = $lr['less_advance'] ?? null;
-                $balance_freight = $lr['balance_freight'] ?? null;
-            }
-
-            $lrArray[$key] = [
-                'lr_number'            => $lr['lr_number'] ?? ('LR-' . time() . '-' . $key),
-                'lr_date'              => $lr['lr_date'] ?? null,
-                'vehicle_no'           => $lr['vehicle_no'] ?? null,
-                'vehicle_type'         => $lr['vehicle_type'] ?? null,
-                'vehicle_ownership'    => $lr['vehicle_ownership'] ?? null,
-                'delivery_mode'        => $lr['delivery_mode'] ?? null,
-                'from_location'        => $lr['from_location'] ?? null,
-                'to_location'          => $lr['to_location'] ?? null,
-                'consignor_id'         => $lr['consignor_id'] ?? null,
-                'consignor_gst'        => $lr['consignor_gst'] ?? null,
-                'consignor_loading'    => $lr['consignor_loading'] ?? null,
-                'consignee_id'         => $lr['consignee_id'] ?? null,
-                'consignee_gst'        => $lr['consignee_gst'] ?? null,
-                'consignee_unloading'  => $lr['consignee_unloading'] ?? null,
-                'freightType'          => $lr['freightType'] ?? null,
-                'freight_amount'       => $freight_amount,
-                'lr_charges'           => $lr_charges,
-                'hamali'               => $hamali,
-                'other_charges'        => $other_charges,
-                'gst_amount'           => $gst_amount,
-                'total_freight'        => $total_freight,
-                'less_advance'         => $less_advance,
-                'balance_freight'      => $balance_freight,
-                'total_declared_value' => $lr['total_declared_value'] ?? null,
-                'insurance_description'=> $lr['insurance_description'] ?? null,
-                'insurance_status'     => $lr['insurance_status'] ?? null,
-                'order_rate'           => $lr['order_rate'] ?? null,
-                'cargo'                => $cargoArray,
-                'vehicle'              => $vehicleArray,
-            ];
-    }
-
-    
-        // Update LR data
+    } }
+    // Update LR data
         $order->lr = $lrArray ?? [];
         $order->save();
+        // dd($order);
     
         return redirect()->route('admin.orders.index')
             ->with('success', 'Order updated with nested LR and cargo arrays successfully!');
+
     }
 
     
@@ -396,18 +368,20 @@ public function destroy($order_id)
         foreach ($orders as $order) {
             $order->delete();
         }
+ return redirect()->route('admin.orders.index')
+            ->with('success', 'All entries under this Order ID deleted successfully!');
 
-        return response()->json(['status' => 'success', 'message' => 'All entries under this Order ID deleted successfully.']);
+        // return response()->json(['status' => 'success', 'message' => 'All entries under this Order ID deleted successfully.']);
     } catch (\Exception $e) {
-        return response()->json(['status' => 'error', 'message' => 'Error while deleting entries.'], 500);
+         return redirect()->route('admin.orders.index')
+            ->with('error', 'Error while deleting entries!');
+
+        // return response()->json(['status' => 'error', 'message' => 'Error while deleting entries.'], 500);
     }
 }
 
-
-
 public function updateStatus(Request $request, $order_id)
 {
-    // order_id से order ढूंढें
     $order = Order::where('order_id', $order_id)->first();
 
     if (!$order) {
@@ -417,30 +391,56 @@ public function updateStatus(Request $request, $order_id)
         ], 404);
     }
 
-    // status JSON decode करें (array बनाएं)
-    $currentStatusArray = is_array($order->status) ? $order->status : json_decode($order->status, true);
-
-    if (!is_array($currentStatusArray)) {
-        $currentStatusArray = [];
-    }
-
-    // नया status और current timestamp जोड़ें
-    $currentStatusArray[] = [
-        'status' => $request->status,
-        'timestamp' => now()->toDateTimeString(),
-    ];
-
-    // JSON encode करके database में सेव करें
-    $order->status = json_encode($currentStatusArray);
+    $order->status = $request->status;
     $order->save();
 
-    return response()->json([
-        'success' => true,
-        'message' => 'Status updated successfully.',
-        'status_history' => $currentStatusArray, // optionally send back updated history
-    ]);
+   
+    return redirect()->back()->with('message', 'Status updated successfully.');
+
 }
+   public function destroyLR($order_id, $lr_number)
+{
+    try {
+        
+        $order = Order::findOrFail($order_id);
 
+        
+        $lrEntriesArray = $order->lr;
 
+        if (is_string($lrEntriesArray)) {
+            $lrEntries = json_decode($lrEntriesArray, true);
+        } else {
+            $lrEntries = is_object($lrEntriesArray) ? (array) $lrEntriesArray : $lrEntriesArray;
+        }
+
+       
+        if (!is_array($lrEntries) || empty($lrEntries)) {
+                  return redirect()->back()->with('error', 'No found order id');
+
+        }
+
+        
+        $filteredLrEntries = array_filter($lrEntries, function ($lr) use ($lr_number) {
+            return isset($lr['lr_number']) && $lr['lr_number'] != $lr_number;
+        });
+
+       
+        if (count($lrEntries) == count($filteredLrEntries)) {
+                    return redirect()->back()->with('error', 'Error while deleting LR entry.');
+
+        }
+
+      
+        $order->lr = json_encode(array_values($filteredLrEntries)); // reindex array
+        $order->save();
+
+       
+        return redirect()->back()->with('success', 'LR entry deleted successfully.');
+    } catch (\Exception $e) {
+      
+        return redirect()->back()->with('error', 'Error while deleting LR entry.');
+
+    }
+}
 
 }

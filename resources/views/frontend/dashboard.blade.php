@@ -2,6 +2,7 @@
 @section('title') {{ 'contact' }} @endsection
 @section('content')
 <main class="main">
+   
         <section class="res">
             <div class="container">
                 <div class="row">
@@ -9,23 +10,15 @@
                         <div class="portfolio-sidebar">
                             <div class="widget">
                                 <h4 class="title">Total No. of Order</h4>
-                                <h3>102</h3>
+                                <h3>{{$ordersCount}}</h3>
                             </div>
                         </div>
                     </div>
                     <div class="col-xl-3 col-lg-3 col-md-6 col-sm-6 col-custom mb-4">
                         <div class="portfolio-sidebar">
                             <div class="widget">
-                                <h4 class="title">Recent Order</h4>
-                                <h3>06</h3>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-xl-3 col-lg-3 col-md-6 col-sm-6 col-custom mb-4">
-                        <div class="portfolio-sidebar">
-                            <div class="widget">
-                                <h4 class="title">Order Confirmed</h4>
-                                <h3>89</h3>
+                                <h4 class="title">Total LR</h4>
+                                <h3>{{$totalLrCount}}</h3>
                             </div>
                         </div>
                     </div>
@@ -33,7 +26,15 @@
                         <div class="portfolio-sidebar">
                             <div class="widget">
                                 <h4 class="title">Order Completed</h4>
-                                <h3>86</h3>
+                                <h3>{{$completedCount}}</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-lg-3 col-md-6 col-sm-6 col-custom mb-4">
+                        <div class="portfolio-sidebar">
+                            <div class="widget">
+                                <h4 class="title">Order Processing</h4>
+                                <h3>{{$processingCount}}</h3>
                             </div>
                         </div>
                     </div>
@@ -71,37 +72,65 @@
                             </tr>
                         </thead>
                         <tbody>
+                            {{-- @dd($orders); --}}
                             @forelse($orders as $order)
                                 <tr>
                                     <td>{{ $loop->iteration }}</td>
                                     <td>{{ $order->order_id }}</td>
                                     <td>{{ $order->description }}</td>
                                     <td>{{ \Carbon\Carbon::parse($order->order_date)->format('Y-m-d') }}</td>
-                                    <td>
                                         @php
-                                            // Bootstrap badge class based on status
-                                            switch(strtolower($order->status)) {
-                                                case 'pending':
-                                                    $badge = 'warning text-dark';
+                                        // Fetch Freight Bills (order_id is JSON)
+                                        $freightBill = DB::table('freight_bill')
+                                            ->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(JSON_UNQUOTE(order_id), '$[0]')) = ?", [$order->order_id])
+                                            ->get();
+                                        
+                                        // Check if any Invoice exists for the Freight Bills
+                                        $hasInvoice = false;
+                                        if (!empty($freightBill)) {
+                                            foreach ($freightBill as $billCheck) {
+                                                $invoiceCheck = \App\Models\Invoice::where('freight_bill_id', $billCheck->id)->first();
+                                                if ($invoiceCheck) {
+                                                    $hasInvoice = true;
                                                     break;
-                                                case 'processing':
-                                                case 'confirmed':
-                                                    $badge = 'success';
-                                                    break;
-                                                case 'completed':
-                                                    $badge = 'primary';
-                                                    break;
-                                                case 'cancelled':
-                                                    $badge = 'danger';
-                                                    break;
-                                                default:
-                                                    $badge = 'secondary';
+                                                }
                                             }
+                                        }
+                                        
+                                        $statusString = strtolower($order->status);
+                                        // dd($statusString);
+                                        $badgeClass = 'bg-secondary';
+                                        
+                                        if ($statusString === 'request-invioce') {
+                                            $badgeClass = $hasInvoice ? 'bg-success' : 'bg-danger';
+                                        
+                                        } elseif ($statusString === 'request-freeghtbill') {
+                                            $badgeClass = (!empty($freightBill) && count($freightBill) > 0) ? 'bg-success' : 'bg-danger';
+                                        
+                                        } elseif ($statusString === 'request-lr') {
+                                            $badgeClass = $order->lr ? 'bg-success' : 'bg-danger';
+                                        
+                                        } elseif ($statusString === 'pending') {
+                                            $badgeClass = 'bg-warning text-dark';
+                                        
+                                        } elseif (in_array($statusString, ['processing', 'confirmed'])) {
+                                            $badgeClass = 'bg-info';
+                                        
+                                        } elseif ($statusString === 'completed') {
+                                            $badgeClass = 'bg-primary';
+                                        
+                                        } elseif ($statusString === 'cancelled') {
+                                            $badgeClass = 'bg-danger';
+                                        }
+                                        
+                                        $statusFormatted = ucwords(str_replace(['-', '_'], ' ', $order->status));
                                         @endphp
-                                        <span class="badge bg-{{ $badge }}">
-                                            {{ ucfirst($order->status) }}
-                                        </span>
-                                    </td>
+                                        
+                                        <td class="status-cell">
+                                            <span class="badge {{ $badgeClass }}">{{ $statusFormatted }}</span>
+                                        </td>
+
+
                                     <td>
                                         <a href="{{ route('user.order-details', $order->order_id) }}">
                                             <button class="btn btn-sm btn-light text-primary">
@@ -118,6 +147,7 @@
                         </tbody>
                     </table>
                 </div>
+
             </div>
         </section>
 
@@ -138,7 +168,7 @@
 
                     <form action="{{ route('order.save') }}" method="POST">
                             {{-- Hidden user_id --}}
-                            <input type="hidden" name="user_id" value="{{ auth()->id() }}">
+                            <input type="hidden" name="customer_id" value="{{ auth()->id() }}">
                             @csrf
                             <div class="modal-body">
                                 <div class="mb-3">

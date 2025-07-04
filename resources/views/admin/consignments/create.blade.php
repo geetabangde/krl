@@ -17,8 +17,6 @@
 </style>
 <!-- Order Booking Add Page -->
 
-
-
 <!-- LR / Consignment add Form -->
 <div class="row add-form">
    <div class="col-12">
@@ -39,45 +37,82 @@
                <div class="row">
                   <!-- Consignor Details -->
                   <div class="col-md-6">
-                     <!-- <div class="mb-3">
-                        <label class="form-label">Lr Number</label>
-                        <input type="text" name="lr_number"class="form-control"
-                            placeholder="Enter lr number" required>
-                        </div> -->
+                     <!-- CUSTOMER NAME DROPDOWN -->
+                    
+                          <h5>👤 Freight A/c</h5>
+                           
+                           <select name="customer_id" id="customer_id" class="form-select" onchange="setCustomerDetails()" required>
+                           <option value="">Select Customer</option>
+                           @foreach($users as $user)
+                                 @php
+                                 $addresses = is_string($user->address) ? json_decode($user->address, true) : $user->address;
+                                 @endphp
+                                 @if(!empty($addresses) && is_array($addresses))
+                                    @foreach($addresses as $address)
+                                       <option value="{{ $user->id }}"
+                                             data-gst="{{ $address['gstin'] ?? '' }}"  
+                                             data-address="{{ $address['billing_address'] ?? '' }}"> 
+                                             {{ $user->name }} - {{ $address['city'] ?? '' }}
+                                       </option>
+                                    @endforeach
+                                 @endif
+                           @endforeach
+                        </select>
+
+                        
+                     <!-- GST NUMBER (Auto-filled) -->
+                     
+                        <div class="mb-3">
+                           <label class="form-label">🧾 GST NUMBER</label>
+                           <input type="text" name="gst_number" id="gst_number" class="form-control"  placeholder="GST number" readonly required>
+                        </div>
+                     
+                     <!-- CUSTOMER ADDRESS (Auto-filled) -->
+                     
+                        <div class="mb-3">
+                           <label class="form-label">📍 CUSTOMER ADDRESS</label>
+                           <input type="text" name="customer_address" id="customer_address" class="form-control"  placeholder="Customer address" readonly required>
+                        </div>
+                        <div class="mb-3">
+                        <label class="form-label">Lr date</label>
+                        <input type="date" name="lr_date" class="form-control"
+                           placeholder="Enter Lr date">
+                     </div>
+                       </div>
+                      <div class="col-md-6">
+                     <!-- end -->
                         {{-- @dd($users); --}}
                      <h5>📦 Consignor (Sender)</h5>
                      <select name="consignor_id" id="consignor_id" class="form-select my-select" onchange="setConsignorDetails()" required>
-                        <option value="">Select Consignor Name</option>
-                        @foreach($users as $user)
-                        @php
-                            $addresses = json_decode($user->address, true); // decode JSON string to PHP array
-                        @endphp
-                    
-                        @if(!empty($addresses) && is_array($addresses))
-                            @foreach($addresses as $address)
-                                @php
-                                    $formattedAddress = trim(
-                                        ($address['billing_address'] ?? '') . ', ' .
-                                        ($address['city'] ?? '') . ', ' .
-                                        ($address['consignment_address'] ?? '')
-                                    );
-                                @endphp
-                                <option 
-                                    value="{{ $user->id }}"
-                                    data-gst-consignor="{{ $address['gstin'] ?? '' }}"
-                                    data-address-consignor="{{ $formattedAddress }}"
-                                    data-mobile="{{ $address['mobile_number'] ?? '' }}"
-                                    data-email="{{ $address['email'] ?? '' }}"
-                                    data-poc="{{ $address['poc'] ?? '' }}"
-                                >
-                                    {{ $user->name }} - {{ $address['city'] ?? '' }}
-                                </option>
-                            @endforeach
-                        @endif
-                    @endforeach
-                    
-                    
-                     </select>
+                           <option value="">Select Consignor Name</option>
+                           @foreach($users as $user)
+                              @php
+                                    $addresses = is_string($user->address) ? json_decode($user->address, true) : $user->address;
+                              @endphp
+
+                              @if(!empty($addresses) && is_array($addresses))
+                                    @foreach($addresses as $address)
+                                       @php
+                                          $formattedAddress = trim(
+                                                ($address['billing_address'] ?? '') . ', ' .
+                                                ($address['city'] ?? '') . ', ' .
+                                                ($address['consignment_address'] ?? '')
+                                          );
+                                       @endphp
+                                       <option 
+                                          value="{{ $user->id }}"
+                                          data-gst-consignor="{{ $address['gstin'] ?? '' }}"
+                                          data-address-consignor="{{ $formattedAddress }}"
+                                          data-mobile="{{ $address['mobile_number'] ?? '' }}"
+                                          data-email="{{ $address['email'] ?? '' }}"
+                                          data-poc="{{ $address['poc'] ?? '' }}"
+                                       >
+                                          {{ $user->name }} - {{ $address['city'] ?? '' }}
+                                       </option>
+                                    @endforeach
+                              @endif
+                           @endforeach
+                        </select>
                      <div class="mb-3">
                         <label class="form-label">Consignor Loading Address</label>
                         <textarea name="consignor_loading" id="consignor_loading" class="form-control" rows="2"
@@ -92,45 +127,43 @@
                         <input type="number" name="order_rate" step="0.01" class="form-control" placeholder="Enter Amount" id="byoder">
                      </div>
                   </div>
+                                       </div>
                   <!-- Consignee Details -->
                   <div class="col-md-6">
-                     <div class="mb-3">
-                        <label class="form-label">Lr date</label>
-                        <input type="date" name="lr_date" class="form-control"
-                           placeholder="Enter Lr date">
-                     </div>
+                     
                      <h5>📦 Consignee (Receiver)</h5>
                      <select name="consignee_id" id="consignee_id" class="form-select my-select" onchange="setConsigneeDetails()" required>
-                        <option value="">Select Consignee Name</option>
-                    
-                        @foreach($users as $user)
-                            @php
-                                $addresses = json_decode($user->address, true);
-                            @endphp
-                    
-                            @if(!empty($addresses) && is_array($addresses))
-                                @foreach($addresses as $address)
-                                    @php
-                                        $formattedAddress = trim(
-                                            ($address['billing_address'] ?? '') . ', ' .
-                                            ($address['city'] ?? '') . ', ' .
-                                            ($address['consignment_address'] ?? '')
-                                        );
-                                    @endphp
-                                    <option 
-                                        value="{{ $user->id }}"
-                                        data-gst-consignee="{{ $address['gstin'] ?? '' }}"
-                                        data-address-consignee="{{ $formattedAddress }}"
-                                        data-mobile="{{ $address['mobile_number'] ?? '' }}"
-                                        data-email="{{ $address['email'] ?? '' }}"
-                                        data-poc="{{ $address['poc'] ?? '' }}"
-                                    >
-                                        {{ $user->name }} - {{ $address['city'] ?? '' }}
-                                    </option>
-                                @endforeach
-                            @endif
-                        @endforeach
-                    </select>
+                           <option value="">Select Consignee Name</option>
+
+                           @foreach($users as $user)
+                              @php
+                                    $addresses = is_string($user->address) ? json_decode($user->address, true) : $user->address;
+                              @endphp
+
+                              @if(!empty($addresses) && is_array($addresses))
+                                    @foreach($addresses as $address)
+                                       @php
+                                          $formattedAddress = trim(
+                                                ($address['billing_address'] ?? '') . ', ' .
+                                                ($address['city'] ?? '') . ', ' .
+                                                ($address['consignment_address'] ?? '')
+                                          );
+                                       @endphp
+                                       <option 
+                                          value="{{ $user->id }}"
+                                          data-gst-consignee="{{ $address['gstin'] ?? '' }}"
+                                          data-address-consignee="{{ $formattedAddress }}"
+                                          data-mobile="{{ $address['mobile_number'] ?? '' }}"
+                                          data-email="{{ $address['email'] ?? '' }}"
+                                          data-poc="{{ $address['poc'] ?? '' }}"
+                                       >
+                                          {{ $user->name }} - {{ $address['city'] ?? '' }}
+                                       </option>
+                                    @endforeach
+                              @endif
+                           @endforeach
+                        </select>
+
                     
                     <!-- Consignee Unloading Address -->
                     <div class="mb-3">
@@ -208,7 +241,7 @@
                         <select name="from_location" class="form-select my-select" required>
                            <option selected>Select Origin</option>
                            @foreach ($destination as $loc)
-                           <option value="{{ $loc->id }}">{{ $loc->destination }}</option>
+                           <option value="{{$loc->id}}">{{ $loc->destination }}</option>
                            @endforeach
                         </select>
                      </div>
@@ -273,7 +306,7 @@
                                  <th>Document Name</th>
                                  <th>Document Date</th>
                                  <th>Document Upload</th>
-                                 <th>Eway Bill</th>
+                                 <!-- <th>Eway Bill</th> -->
                                  <th>Valid Upto</th>
                                  <th>Declared value</th>
                                  <th>Action</th>
@@ -306,7 +339,7 @@
                                  <td><input name="cargo[0][document_name]" type="text" class="form-control" placeholder="Doc Name" required></td>
                                  <td><input name="cargo[0][document_date]" type="date" class="form-control" required></td>
                                  <td><input name="cargo[0][document_file]" type="file" class="form-control"></td>
-                                 <td><input name="cargo[0][eway_bill]" type="text" class="form-control" placeholder="Eway Bill No." required></td>
+                                 <!-- <td><input name="cargo[0][eway_bill]" type="text" class="form-control" placeholder="Eway Bill No." required></td> -->
                                  <td><input name="cargo[0][valid_upto]" type="date" class="form-control" required></td>
                                  <td><input name="cargo[0][declared_value]" type="number" class="form-control"  min="0" placeholder="0" required></td>
                                  <td>
@@ -617,6 +650,17 @@
    });
    </script>
    
+   <script>
+  
+   function setCustomerDetails() {
+       const selected = document.getElementById('customer_id');
+       const gst = selected.options[selected.selectedIndex].getAttribute('data-gst');
+       const address = selected.options[selected.selectedIndex].getAttribute('data-address');
+   
+       document.getElementById('gst_number').value = gst || '';  
+       document.getElementById('customer_address').value = address || ''; 
+   }
+</script>
 <script>
    function setConsignorDetails() {
        const selected = document.getElementById('consignor_id');
@@ -627,6 +671,7 @@
        document.getElementById('consignor_loading').value = address || '';
    }
 </script>
+
 <script>
     function setConsigneeDetails() {
         const select = document.getElementById('consignee_id');

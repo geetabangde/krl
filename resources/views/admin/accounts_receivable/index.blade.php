@@ -41,23 +41,29 @@
                                                 <th>Invoice Date</th>
                                                 <th>Amount</th>
                                                 <th>Amount Received</th>
+                                                <th>Pending</th>
+                                                <th>Action</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <tr>
-                                                <td>1</td>
-                                                <td>XYZ Corp</td>
-                                                <td>12/12/2025</td>
-                                                <td>₹30,000</td>
-                                                <td>₹15,000</td>
-                                            </tr>
-                                            <tr>
-                                                <td>2</td>
-                                                <td>ABC Limited</td>
-                                                <td>15/12/2025</td>
-                                                <td>₹45,000</td>
-                                                <td>₹45,000</td>
-                                            </tr>
+                                           @foreach ($report as $index => $row)
+                                                <tr>
+                                                    <td>{{ $index + 1 }}</td>
+                                                    <td>{{ $row['customer_name'] }}</td>
+                                                    <td>{{ $row['invoice_date'] }}</td>
+                                                    <td>₹{{ number_format($row['amount'], 2) }}</td>
+                                                    <td>₹{{ number_format($row['received'], 2) }}</td>
+                                                    <td>₹{{ number_format($row['pending'], 2) }}</td>
+                                                    <td>
+            <a href="{{ route('admin.accounts_receivable.view', ['label' => urlencode($row['label'])]) }}"
+               class="btn btn-sm btn-light view-btn"
+               data-bs-toggle="tooltip"
+               title="View Account">
+                <i class="fas fa-eye text-primary"></i>
+            </a>
+        </td>
+                                                </tr>
+                                            @endforeach
                                             <!-- Add more rows as needed -->
                                         </tbody>
                                     </table>

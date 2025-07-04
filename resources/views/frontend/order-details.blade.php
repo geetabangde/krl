@@ -254,6 +254,7 @@
          <i class="fas fa-arrow-left me-1"></i>Back
          </a>
       </div>
+     
       <div class="row mb-3">
          <div class="col-md-6">
             <p><strong>Order ID:</strong> <span class="text-secondary-custom">{{ $order->order_id ?? 'N/A' }}</span></p>
@@ -264,7 +265,7 @@
          <div class="col-md-6">
             <p><strong>Date:</strong> <span class="text-secondary-custom">{{ $order->order_date ?? 'N/A' }}</span></p>
             <p><strong>To:</strong> <span class="text-secondary-custom">{{ $order->toDestination->destination ?? 'N/A' }}</span></p>
-            <p><strong>Status:</strong> <span class="badge bg-success">{{ ucfirst($order->status) ?? 'N/A' }}</span></p>
+           
          </div>
       </div>
       <hr>
@@ -273,10 +274,10 @@
       </h5>
       <ul>
       @php
-      $addresses = json_decode($order->user->address ?? '[]', true);
+         $userAddress = App\Models\User::find($order->customer_id);
       @endphp
-      @if (!empty($addresses) && is_array($addresses))
-      @foreach ($addresses as $address)
+      @if (!empty($userAddress->address) && is_array($userAddress->address))
+      @foreach ($userAddress->address as $address)
       <ul>
          <li><strong>Location:</strong> {{ $address['city'] ?? '' }}</li>
          <li><strong>GSTIN :</strong> {{ $address['gstin'] ?? '' }}</li>
@@ -296,60 +297,35 @@
          <h5 class="mb-0" style="color: #003F72;">
             <i class="fas fa-truck me-2"></i>LR
          </h5>
-         <button class="btn btn-sm in-btn" style="background-color: #c72336; color: white;" type="button"
+         <form action="{{ route('order.requests') }}" method="post">
+            @csrf
+         <input type="hidden" value="{{ $order->order_id}}" name="order_id">
+         <input type="hidden" value="Request-lr" name="status">
+         <!-- <button name="submit">req</button> -->
+           @if(empty($order->lr))
+         <button  type="submit" class="btn btn-sm in-btn" style="background-color: #c72336; color: white;" type="button"
             data-bs-toggle="collapse" data-bs-target="#lrSection" aria-expanded="false"
             aria-controls="lrSection">
          Request LR
          </button>
+         @endif
+         </form>
+        
       </div>
       <!-- Collapsible LR Section -->
       <div class="collapse show" id="lrSection">
          <div class="accordion" id="lrAccordion">
-            <!-- LR Item 1 -->
-            <div class="accordion-item">
-               <h2 class="accordion-header" id="lrHeading1">
-                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                     data-bs-target="#lrCollapse1" aria-expanded="false" aria-controls="lrCollapse1"
-                     style="color: #003F72;">
-                  LR #LR2025IND001
-                  </button>
-               </h2>
-               <div id="lrCollapse1" class="accordion-collapse collapse " aria-labelledby="lrHeading1"
-                  data-bs-parent="#lrAccordion">
-                  <div class="accordion-body">
-                     <div class="row align-items-center g-3">
-                        <div class="col-md-auto">
-                           <strong>LR Number:</strong> <span
-                              class="text-secondary-custom">LR2025IND001</span>
-                        </div>
-                        <div class="col-md-auto">
-                           <strong>LR Date:</strong> <span
-                              class="text-secondary-custom">2025-03-29</span>
-                        </div>
-                        <div class="col-md-auto">
-                           <strong>From:</strong> <span class="text-secondary-custom">Indore
-                           Warehouse</span>
-                        </div>
-                        <div class="col-md-auto">
-                           <strong>To:</strong> <span class="text-secondary-custom">Mumbai Depot</span>
-                        </div>
-                        <div class="col-md text-end">
-                           <a href="preview-lr-consignment.html" class="btn btn-sm px-3"
-                              style="background-color: #003F72; color: white;">
-                           <i class="fas fa-eye me-1"></i>View LR
-                           </a>
-                        </div>
-                     </div>
-                  </div>
-               </div>
-            </div>
-            <!-- LR Item 2 -->
+         @php
+         $lrData = is_array($order->lr) ? $order->lr : (json_decode($order->lr ?? '[]', true) ?? []);
+         @endphp
+         @if(!empty($order->lr))
+          @foreach($lrData as $index => $lr)
             <div class="accordion-item">
                <h2 class="accordion-header" id="lrHeading2">
                   <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                      data-bs-target="#lrCollapse2" aria-expanded="false" aria-controls="lrCollapse2"
                      style="color: #003F72;">
-                  LR #LR2025IND002
+                 {{ $lr['lr_number'] ?? '' }}
                   </button>
                </h2>
                <div id="lrCollapse2" class="accordion-collapse collapse" aria-labelledby="lrHeading2"
@@ -358,29 +334,37 @@
                      <div class="row align-items-center g-3">
                         <div class="col-md-auto">
                            <strong>LR Number:</strong> <span
-                              class="text-secondary-custom">LR2025IND002</span>
+                              class="text-secondary-custom"> {{ $lr['lr_number'] ?? '' }}</span>
                         </div>
                         <div class="col-md-auto">
                            <strong>LR Date:</strong> <span
-                              class="text-secondary-custom">2025-03-29</span>
+                              class="text-secondary-custom">{{ $lr['lr_date'] ?? '' }}</span>
+                        </div>
+                       
+                        <div class="col-md-auto">
+                              @php   
+                             $from = App\Models\Destination::find($lr['from_location']);
+                             $to = App\Models\Destination::find($lr['to_location']);
+                              @endphp
+                           <strong>From:</strong> <span class="text-secondary-custom">{{$from->destination ?? ''}}</span>
                         </div>
                         <div class="col-md-auto">
-                           <strong>From:</strong> <span class="text-secondary-custom">Indore
-                           Warehouse</span>
-                        </div>
-                        <div class="col-md-auto">
-                           <strong>To:</strong> <span class="text-secondary-custom">Mumbai Depot</span>
+                           <strong>To:</strong> <span class="text-secondary-custom">{{$to->destination ?? ''}}</span>
                         </div>
                         <div class="col-md text-end">
-                           <a href="preview-lr-consignment.html" class="btn btn-sm px-3"
+                         <a href="{{ route('user.lr_details', ['lr_number' => $lr['lr_number']]) }}" class="btn btn-sm px-3"
                               style="background-color: #003F72; color: white;">
-                           <i class="fas fa-eye me-1"></i>View LR
+                              <i class="fas fa-eye me-1"></i>View LR
                            </a>
                         </div>
                      </div>
                   </div>
                </div>
             </div>
+            @endforeach
+            @else
+            <h6 style="color: red;">No Found LR</h6>
+            @endif
             <!-- Add more LR items here as needed -->
          </div>
       </div>
@@ -389,113 +373,147 @@
          <h5 class="mb-0" style="color: #003F72;">
             <i class="fas fa-file-invoice me-2"></i>Freight Bill (FB)
          </h5>
-         <button class="btn btn-sm in-btn" style="background-color: #28a745; color: white;" type="button"
-            data-bs-toggle="collapse" data-bs-target="#fbSection" aria-expanded="false"
-            aria-controls="fbSection">
-         Send Request FB
-         </button>
+          <form action="{{ route('order.requests') }}" method="post">
+            @csrf
+         <input type="hidden" value="{{ $order->order_id}}" name="order_id">
+         <input type="hidden" value="Request-freeghtBill" name="status">
+         @if(empty($freightBill) || count($freightBill) == 0)
+      <button  type="submit" class="btn btn-sm in-btn" style="background-color: #28a745; color: white;" type="button"
+        data-bs-toggle="collapse" data-bs-target="#fbSection" aria-expanded="false"
+        aria-controls="fbSection">
+        Send Request FB
+    </button>
+     </form>
+@endif
+{{-- @dd($lrData ); --}}
       </div>
       <!-- Collapsible FB Section -->
-      <div class="collapse show" id="fbSection">
-         <div class="accordion" id="fbAccordion">
-            <!-- FB Item -->
-            <div class="accordion-item">
-               <h2 class="accordion-header" id="fbHeading1">
-                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                     data-bs-target="#fbCollapse1" aria-expanded="false" aria-controls="fbCollapse1"
-                     style="color: #003F72;">
-                  FB #FB2025IND001
-                  </button>
-               </h2>
-               <div id="fbCollapse1" class="accordion-collapse collapse" aria-labelledby="fbHeading1"
-                  data-bs-parent="#fbAccordion">
-                  <div class="accordion-body">
-                     <div class="d-flex flex-wrap align-items-center justify-content-between g-3">
-                        <div class="flex-fill">
-                           <p><strong>Bill To / Consignment Sent To:</strong></p>
-                           <p><span class="text-secondary-custom">[Party Name & Address Here]</span>
-                           </p>
-                        </div>
-                        <div class="flex-fill">
-                           <p><strong>Freight:</strong> <span
-                              class="text-secondary-custom">[Type]</span></p>
-                        </div>
-                        <div class="flex-fill">
-                           <p><strong>Bill No.:</strong> <span
-                              class="text-secondary-custom">__________</span></p>
-                        </div>
-                        <div class="flex-fill">
-                           <p><strong>Date:</strong> <span
-                              class="text-secondary-custom">____________</span></p>
-                        </div>
-                        <div class="text-end">
-                           <a href="preview-freight.html" class="btn btn-sm mt-2"
-                              style="background-color: #003F72; color: white;">
+     <div class="collapse show" id="fbSection">
+   <div class="accordion" id="fbAccordion">
+      @if(!empty($freightBill) && count($freightBill) > 0)
+         @foreach($freightBill as $index => $bill)
+          @foreach($lrData as $index => $lr)
+         <div class="accordion-item">
+            <h2 class="accordion-header" id="fbHeading{{ $index }}">
+               <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                  data-bs-target="#fbCollapse{{ $index }}" aria-expanded="false" aria-controls="fbCollapse{{ $index }}"
+                  style="color: #003F72;">
+               {{ $bill->freight_bill_number }}
+               </button>
+            </h2>
+            <div id="fbCollapse{{ $index }}" class="accordion-collapse collapse" aria-labelledby="fbHeading{{ $index }}"
+               data-bs-parent="#fbAccordion">
+               <div class="accordion-body">
+                  <div class="d-flex flex-wrap align-items-center justify-content-between g-3">
+                     <div class="flex-fill">
+                     @php
+                         $name = App\Models\User::find($lr['consignee_id']);
+                     @endphp   
+                        <p><strong>Consignment Sent To: <span  class="text-secondary-custom">{{ $name->name}}</span></strong></p>
+                        <p><span class="text-secondary-custom"><span style="color: black;">Address:</span> {{ $lr['consignee_unloading']}}</span></p>
+                     </div>
+                     <div class="flex-fill">
+                        <p><strong>Freight:</strong> <span class="text-secondary-custom">Order</span></p>
+                     </div>
+                     <div class="flex-fill">
+                        <p><strong>Bill No.:</strong> <span class="text-secondary-custom">{{ $bill->freight_bill_number }}</span></p>
+                     </div>
+                     <div class="flex-fill">
+                        <p><strong>Date:</strong> <span class="text-secondary-custom">{{ $bill->created_at }}</span></p>
+                     </div>
+                     <div class="text-end">
+                        <a href="{{ route('user.fb_details', ['order_id' => $order->order_id, 'id' => $bill->id]) }}" class="btn btn-sm mt-2"
+                           style="background-color: #003F72; color: white;">
                            <i class="fas fa-eye me-1"></i>View FB
-                           </a>
-                        </div>
+                        </a>
                      </div>
                   </div>
                </div>
             </div>
          </div>
-      </div>
-      <!-- Invoice Section Heading and Button -->
-      <div class="d-flex justify-content-between align-items-center mb-3 mt-4">
-         <h5 class="mb-0" style="color: #003F72;">
-            <i class="fas fa-file-invoice-dollar me-2"></i>Invoice
-         </h5>
-         <button class="btn in-btn btn-sm" style="background-color: #17a2b8; color: white;" type="button"
-            data-bs-toggle="collapse" data-bs-target="#invoiceSection" aria-expanded="false"
-            aria-controls="invoiceSection">
-         Pending Request
-         </button>
-      </div>
-      <!-- Collapsible Invoice Section -->
-      <div class="collapse show" id="invoiceSection">
-         <div class="accordion" id="invoiceAccordion">
-            <!-- Invoice Item -->
+         @endforeach
+         @endforeach
+      @else
+         <h6 style="color: red;">No Freight Bill Found</h6>
+      @endif
+   </div>
+</div>
+
+{{-- Invoice Section --}}
+<div class="d-flex justify-content-between align-items-center mb-3 mt-4">
+   <h5 class="mb-0" style="color: #003F72;">
+      <i class="fas fa-file-invoice-dollar me-2"></i>Invoice
+   </h5>
+   @php
+   $hasInvoice = false;
+   if (!empty($freightBill)) {
+       foreach ($freightBill as $billCheck) {
+           $invoiceCheck = \App\Models\Invoice::where('freight_bill_id', $billCheck->id)->first();
+           if ($invoiceCheck) {
+               $hasInvoice = true;
+               break;
+           }
+       }
+   }
+@endphp
+ <form action="{{ route('order.requests') }}" method="post">
+            @csrf
+         <input type="hidden" value="{{ $order->order_id}}" name="order_id">
+         <input type="hidden" value="Request-invioce" name="status">
+@if(!$hasInvoice)
+   <button  type="submit" class="btn in-btn btn-sm" style="background-color: #17a2b8; color: white;" type="button"
+      data-bs-toggle="collapse" data-bs-target="#invoiceSection" aria-expanded="false"
+      aria-controls="invoiceSection">
+      Pending Request
+   </button>
+    </form>
+   @endif
+</div>
+
+<div class="collapse show" id="invoiceSection">
+   <div class="accordion" id="invoiceAccordion">
+      @if(!empty($freightBill) && count($freightBill) > 0)
+         @foreach($freightBill as $index => $bill)
+            @php
+               $invoice = \App\Models\Invoice::where('freight_bill_id', $bill->id)->first();
+            @endphp
+            @if($invoice)
             <div class="accordion-item">
-               <h2 class="accordion-header" id="invoiceHeading1">
+               <h2 class="accordion-header" id="invoiceHeading{{ $index }}">
                   <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                     data-bs-target="#invoiceCollapse1" aria-expanded="false"
-                     aria-controls="invoiceCollapse1" style="color: #003F72;">
-                  Invoice #INV2025IND001
+                     data-bs-target="#invoiceCollapse{{ $index }}" aria-expanded="false"
+                     aria-controls="invoiceCollapse{{ $index }}" style="color: #003F72;">
+                  {{ $invoice->invoice_number }}
                   </button>
                </h2>
-               <div id="invoiceCollapse1" class="accordion-collapse collapse"
-                  aria-labelledby="invoiceHeading1" data-bs-parent="#invoiceAccordion">
+               <div id="invoiceCollapse{{ $index }}" class="accordion-collapse collapse"
+                  aria-labelledby="invoiceHeading{{ $index }}" data-bs-parent="#invoiceAccordion">
                   <div class="accordion-body">
                      <div class="row align-items-center g-3">
                         <div class="col-md-auto">
-                           <p><strong>Invoice Number:</strong> <span
-                              class="text-secondary-custom">INV2025IND001</span></p>
+                           <p><strong>Invoice Number:</strong> <span class="text-secondary-custom">{{ $invoice->invoice_number }}</span></p>
                         </div>
                         <div class="col-md-auto">
-                           <p><strong>Date:</strong> <span
-                              class="text-secondary-custom">2025-03-29</span></p>
-                        </div>
-                        <div class="col-md-auto">
-                           <p><strong>Bill To:</strong> <span class="text-secondary-custom">John Doe,
-                              456 Business Park, Mumbai</span>
-                           </p>
-                        </div>
-                        <div class="col-md-auto">
-                           <p><strong>Amount:</strong> <span
-                              class="text-secondary-custom">₹25,000</span></p>
+                           <p><strong>Date:</strong> <span class="text-secondary-custom">{{ $invoice->invoice_date }}</span></p>
                         </div>
                         <div class="col-md text-end">
-                           <a href="invoice-preview.html" class="btn btn-sm mt-2"
+                           <a href="{{ route('user.inv_details', $bill->id) }}" class="btn btn-sm mt-2"
                               style="background-color: #003F72; color: white;">
-                           <i class="fas fa-eye me-1"></i>View Invoice
+                              <i class="fas fa-eye me-1"></i>View Invoice
                            </a>
                         </div>
                      </div>
                   </div>
                </div>
             </div>
-         </div>
-      </div>
+            @endif
+         @endforeach
+      @else
+         <h6 style="color: red;">No Invoice Found</h6>
+      @endif
+   </div>
+</div>
+
    </div>
 </section>
 @endsection

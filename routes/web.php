@@ -1,7 +1,14 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Frontend\EraahiController;
+use App\Http\Controllers\Frontend\TrasporterauthController;
 use App\Http\Controllers\Frontend\HomeController;
+use App\Http\Controllers\Frontend\EwayBillGeberateController;
+use App\Http\Controllers\Frontend\EwayBillDetailController;
+use App\Http\Controllers\Frontend\EwayConsolidatedController;
+use App\Http\Controllers\Frontend\TransporterBillController;
+use App\Http\Controllers\Frontend\EwayVehicleDetailController;
 use App\Http\Controllers\Frontend\DashboardController;
 use App\Http\Controllers\Frontend\Auth\RegisterController as FrontendRegisterController;
 use App\Http\Controllers\Frontend\Auth\LoginController as FrontendLoginController;
@@ -12,17 +19,29 @@ use App\Http\Controllers\Backend\{
     ConsignmentNoteController, FreightBillController, StockTransferController, DriverController,
     AttendanceController, MaintenanceController, VehicleController, TaskManagmentController, ContractController,
     SettingsController, VehicleTypeController,RoleController,PermissionController,TestController,GroupController,ledgerMasterController,ledgerController,AccountsReceivableController,AccountsPayableController,
-    ProfitLossController,BalanceSheetController,CashFlowController,VoucherController
+    ProfitLossController,BalanceSheetController,CashFlowController,VoucherController,GstController
 };
+
+// Eway-Bill api
+
+Route::get('/ewaybill/auth', [EraahiController::class, 'getAccessToken']);
+Route::get('/ewaybill/Trasporter/auth', [TrasporterauthController::class, 'getTrasporterAuth']);
+Route::get('/ewaybill/generate', [EwayBillGeberateController::class, 'generateEwayBill']);
+Route::get('/ewaybill/transporter/list', [TransporterBillController::class, 'getEwayBillsForTransporter']);
+Route::get('/ewaybill/{ewbNo}', [EwayBillDetailController::class, 'getEwayBillDetail']);
+Route::get('/ewaybill/update/vehicle/number', [EwayVehicleDetailController::class, 'getVehicleNumber']);
+Route::get('/ewaybill/consolidated/generate', [EwayConsolidatedController::class, 'generateConsolidatedEwaybill']);
+
+
 
 // 🌐 Frontend Routes Group (user side)
 Route::prefix('user')->name('user.')->group(function () {
    // 👤 Register
-    Route::get('/register', [FrontendRegisterController::class, 'showRegisterForm'])->name('register');
+    Route::get('/register', [FrontendRegisterController::class, 'showRegisterForm'])->middleware('guest.user')->name('register');
     Route::post('/register', [FrontendRegisterController::class, 'register']);
 
     // 🔐 Login
-    Route::get('/login', [FrontendLoginController::class, 'showLoginForm'])->name('login');
+    Route::get('/login', [FrontendLoginController::class, 'showLoginForm'])->middleware('guest.user')->name('login');
     Route::post('/login', [FrontendLoginController::class, 'login']);
 
     // 🚪 Logout
@@ -34,17 +53,24 @@ Route::prefix('user')->name('user.')->group(function () {
         Route::get('/profile', [DashboardController::class, 'profile'])->name('profile');
         Route::post('/update', [DashboardController::class, 'updateProfile'])->name('update');
         Route::get('/order-details/{order_id}', [DashboardController::class, 'OrderDetails'])->name('order-details');
+        
+        
+        
 
     });
+        Route::get('/lr-details/{lr_number}', [DashboardController::class, 'lrDetails'])->name('lr_details');
+        Route::get('/fb-details/{order_id}/{id}', [DashboardController::class, 'fbDetails'])->name('fb_details');
+        Route::get('/invoice-details/{id}', [DashboardController::class, 'invDetails'])->name('inv_details');
 });
 
 
-Route::get('/', [HomeController::class, 'index'])->name('front.index');
+Route::get('/', [HomeController::class, 'index'])->middleware('guest.user')->name('front.index');
 Route::get('/about', [HomeController::class, 'about'])->name('front.about');
 Route::get('/contact', [HomeController::class, 'contact'])->name('front.contact');
 Route::get('/terms', [HomeController::class, 'terms'])->name('front.terms');
 Route::get('/privacy', [HomeController::class, 'privacy'])->name('front.privacy');
 Route::post('/save-order', [HomeController::class, 'saveOrder'])->name('order.save');
+Route::post('/request', [HomeController::class, 'requestStatus'])->name('order.requests');
 // 📄 User Profile
 // Authentication Routes
 Route::prefix('admin')->group(function () {
@@ -56,20 +82,21 @@ Route::prefix('admin')->group(function () {
 
     // Dashboard Route
     Route::get('/dashboard', [AdminDashboardController::class, 'index']) ->middleware('auth.admin')->name('admin.dashboard');
+  
 
     // User Management
-    Route::prefix('users')->middleware('auth.admin')->group(function () {
+    Route::prefix('users')->middleware('admin.token.session','auth.admin')->group(function () {
         Route::get('/', [UserController::class, 'index'])->name('admin.users.index');
         Route::get('/create', [UserController::class, 'create'])->name('admin.users.create');
         Route::post('/store', [UserController::class, 'store'])->name('admin.users.store');
         Route::get('/view/{id}', [UserController::class, 'show'])->name('admin.users.view');
-        // Route::get('/edit/{id}', [UserController::class, 'edit'])->name('admin.users.edit');
+        Route::get('/edit/{id}', [UserController::class, 'edit'])->name('admin.users.edit');
         Route::post('/update/{id}', [UserController::class, 'update'])->name('admin.users.update');
         Route::delete('/delete/{id}', [UserController::class, 'destroy'])->name('admin.users.delete');
     });
 
     // Vehicles Management
-    Route::prefix('vehicles')->middleware('auth.admin')->group(function () {
+    Route::prefix('vehicles')->middleware('admin.token.session','auth.admin')->group(function () {
         Route::get('/', [VehicleController::class, 'index'])->name('admin.vehicles.index');
         Route::get('/create', [VehicleController::class, 'create'])->name('admin.vehicles.create');
         Route::post('/store', [VehicleController::class, 'store'])->name('admin.vehicles.store');
@@ -80,7 +107,7 @@ Route::prefix('admin')->group(function () {
     });
 
    // Tyres Management
-    Route::prefix('tyres')->middleware('auth.admin')->group(function () {
+    Route::prefix('tyres')->middleware('admin.token.session','auth.admin')->group(function () {
         Route::get('/', [TyreController::class, 'index'])->name('admin.tyres.index');
         Route::post('/store', [TyreController::class, 'store'])->name('admin.tyres.store');
         Route::put('/update/{id}', [TyreController::class, 'update'])->name('admin.tyres.update');
@@ -89,7 +116,7 @@ Route::prefix('admin')->group(function () {
     });
     
     // PackageTypeController
-    Route::prefix('packagetype')->middleware('auth.admin')->group(function () {
+    Route::prefix('packagetype')->middleware('admin.token.session','auth.admin')->group(function () {
         Route::get('/', [PackageTypeController::class, 'index'])->name('admin.packagetype.index');
         Route::post('/store', [PackageTypeController::class, 'store'])->name('admin.packagetype.store');
         Route::put('/update/{id}', [PackageTypeController::class, 'update'])->name('admin.packagetype.update');
@@ -98,7 +125,7 @@ Route::prefix('admin')->group(function () {
     });
 
     // DestinationController
-    Route::prefix('destination')->middleware('auth.admin')->group(function () {
+    Route::prefix('destination')->middleware('admin.token.session','auth.admin')->group(function () {
         Route::get('/', [DestinationController::class, 'index'])->name('admin.destination.index');
         Route::post('/store', [DestinationController::class, 'store'])->name('admin.destination.store');
         Route::put('/update/{id}', [DestinationController::class, 'update'])->name('admin.destination.update');
@@ -108,18 +135,18 @@ Route::prefix('admin')->group(function () {
 
 
     // ContractController
-    Route::prefix('contract')->middleware('auth.admin')->group(function () {
+    Route::prefix('contract')->middleware('admin.token.session','auth.admin')->group(function () {
         Route::get('/', [ContractController::class, 'index'])->name('admin.contract.index');
         Route::get('/view/{id}', [ContractController::class, 'show'])->name('admin.contract.view');
         Route::post('/store', [ContractController::class, 'store'])->name('admin.contract.store');
         Route::put('/update/{id}', [ContractController::class, 'update'])->name('admin.contract.update');
         Route::get('/delete/{id}', [ContractController::class, 'destroy'])->name('admin.contract.delete');
     });
-    Route::post('/get-rate', [ContractController::class, 'getRate']);
+        Route::post('/get-rate', [ContractController::class, 'getRate']);
 
 
     // VehicleTypeController
-    Route::prefix('vehicletype')->middleware('auth.admin')->group(function () {
+    Route::prefix('vehicletype')->middleware('admin.token.session','auth.admin')->group(function () {
         Route::get('/', [VehicleTypeController::class, 'index'])->name('admin.vehicletype.index');
         Route::post('/store', [VehicleTypeController::class, 'store'])->name('admin.vehicletype.store');
         Route::put('/update/{id}', [VehicleTypeController::class, 'update'])->name('admin.vehicletype.update');
@@ -128,28 +155,28 @@ Route::prefix('admin')->group(function () {
 
     // SettingsController
 
-    Route::prefix('settings')->middleware('auth.admin')->group(function () {
+    Route::prefix('settings')->middleware('admin.token.session','auth.admin')->group(function () {
         Route::get('/', [SettingsController::class, 'index'])->name('admin.settings.index');
         Route::post('/store', [SettingsController::class, 'store'])->name('admin.settings.store');
 
     });
 
     // Warehouse Management
-    Route::prefix('warehouse')->middleware('auth.admin')->group(function () {
+    Route::prefix('warehouse')->middleware('admin.token.session','auth.admin')->group(function () {
         Route::get('/', [WarehouseController::class, 'index'])->name('admin.warehouse.index');
         Route::post('/store', [WarehouseController::class, 'store'])->name('admin.warehouse.store');
         Route::put('/update/{id}', [WarehouseController::class, 'update'])->name('admin.warehouse.update');
-        Route::delete('/delete/{id}', [WarehouseController::class, 'destroy'])->name('admin.warehouse.delete');
+        Route::get('/delete/{id}', [WarehouseController::class, 'destroy'])->name('admin.warehouse.delete');
     });
         //maintenanceController
-    Route::prefix('maintenance')->middleware('auth.admin')->group(function () {
+    Route::prefix('maintenance')->middleware('admin.token.session','auth.admin')->group(function () {
         Route::get('/', [MaintenanceController::class, 'index'])->name('admin.maintenance.index');
         Route::post('/store', [MaintenanceController::class, 'store'])->name('admin.maintenance.store');
         Route::put('/update/{id}', [MaintenanceController::class, 'update'])->name('admin.maintenance.update');
         Route::get('/delete/{id}', [MaintenanceController::class, 'destroy'])->name('admin.maintenance.delete');
     });
 
-    Route::prefix('employees')->middleware('auth.admin')->group(function () {
+    Route::prefix('employees')->middleware('admin.token.session','auth.admin')->group(function () {
         Route::get('/', [EmployeeController::class, 'index'])->name('admin.employees.index');
         Route::get('/create', [EmployeeController::class, 'create'])->name('admin.employees.create');
         Route::post('/store', [EmployeeController::class, 'store'])->name('admin.employees.store');
@@ -160,7 +187,7 @@ Route::prefix('admin')->group(function () {
         Route::get('/delete/{id}', [EmployeeController::class, 'destroy'])->name('admin.employees.delete');
     });
     
-    Route::prefix('drivers')->middleware('auth.admin')->group( function(){
+    Route::prefix('drivers')->middleware('admin.token.session','auth.admin')->group( function(){
         Route::get('', [DriverController::class, 'index'])->name('admin.drivers.index');
         Route::get('/create', action: [DriverController::class, 'create'])->name('admin.drivers.create');
         Route::post('/store', [DriverController::class, 'store'])->name('admin.drivers.store');
@@ -171,17 +198,17 @@ Route::prefix('admin')->group(function () {
     });
 
    // attendance
-    Route::prefix('attendance')->middleware('auth.admin')->group( function(){
+    Route::prefix('attendance')->middleware('admin.token.session','auth.admin')->group( function(){
         Route::get('/', [AttendanceController::class, 'index'])->name('admin.attendance.index');
         Route::post('/update', [AttendanceController::class, 'update'])->name('admin.attendance.update');
    });
 
-   Route::prefix('payroll')->middleware('auth.admin')->group( function(){
+   Route::prefix('payroll')->middleware('admin.token.session','auth.admin')->group( function(){
         Route::get('/', [PayrollController::class, 'index'])->name('admin.payroll.index');
         Route::get('/show/{id}', [PayrollController::class, 'show'])->name('admin.payroll.show');
    });
 
-     Route::prefix('task-managment')->middleware('auth.admin')->group(function(){
+     Route::prefix('task-managment')->middleware('admin.token.session','auth.admin')->group(function(){
         Route::get('/', [TaskManagmentController::class, 'index'])->name('admin.task_management.index');
         Route::post('/store', [TaskManagmentController::class, 'store'])->name('admin.task_management.store');
         Route::put('/update/{id}', [TaskManagmentController::class, 'update'])->name('admin.task_management.update');
@@ -190,8 +217,11 @@ Route::prefix('admin')->group(function () {
         Route::get('/close-task/{id}', [TaskManagmentController::class, 'closeTask'])->name('admin.task_management.task_status');
     });
       
- 
-    Route::prefix('orders')->middleware('auth.admin')->group(function () {
+//   Route::prefix('admin/orders')->middleware(['admin.token.session', 'auth.admin'])->group(function () {
+//     Route::get('/', [OrderController::class, 'index'])->name('admin.orders.index');
+   
+// });
+    Route::prefix('orders')->middleware('admin.token.session','auth.admin')->group(function () {
         Route::get('/', [OrderController::class, 'index'])->name('admin.orders.index');        
         Route::get('/create', [OrderController::class, 'create'])->name('admin.orders.create');
         Route::post('/store', [OrderController::class, 'store'])->name('admin.orders.store');
@@ -199,70 +229,80 @@ Route::prefix('admin')->group(function () {
         Route::get('/view/{order_id}', [OrderController::class, 'show'])->name('admin.orders.view');
         Route::get('/documents/{order_id}', [OrderController::class, 'docView'])->name('admin.orders.documents');
         Route::post('/update/{order_id}', [OrderController::class, 'update'])->name('admin.orders.update');
-        Route::delete('/delete/{order_id}', [OrderController::class, 'destroy'])->name('admin.orders.delete');
+        Route::get('/delete/{order_id}', [OrderController::class, 'destroy'])->name('admin.orders.delete');
         Route::post('/update-status/{order_id}', [OrderController::class, 'updateStatus'])->name('admin.orders.updateStatus');
+         Route::get('/delete/{order_id}/{lr_number}', [OrderController::class, 'destroyLR'])->name('admin.orders.deleteLR');
     });
    
     
     
     
     // Consignment Management
-    Route::prefix('consignments')->middleware('auth.admin')->group(function () {
+    Route::prefix('consignments')->middleware('admin.token.session','auth.admin')->group(function () {
         Route::get('/', [ConsignmentNoteController::class, 'index'])->name('admin.consignments.index');
         Route::get('/create', [ConsignmentNoteController::class, 'create'])->name('admin.consignments.create');
         Route::post('/store', [ConsignmentNoteController::class, 'store'])->name('admin.consignments.store');
-        Route::get('/edit/{order_id}', [ConsignmentNoteController::class, 'edit'])->name('admin.consignments.edit');
+        Route::get('edit/{order_id}/{lr_number}', [ConsignmentNoteController::class, 'edit'])->name('admin.consignments.edit');
         Route::get('/view/{id}', [ConsignmentNoteController::class, 'show'])->name('admin.consignments.view');
         Route::get('/documents/{id}', [ConsignmentNoteController::class, 'docView'])->name('admin.consignments.documents');
-        Route::post('/update/{order_id}', [ConsignmentNoteController::class, 'update'])->name('admin.consignments.update');
-        Route::get('/delete/{order_id}', [ConsignmentNoteController::class, 'destroy'])->name('admin.consignments.delete');
+        Route::post('/update/{order_id}/{lr_number}', [ConsignmentNoteController::class, 'update'])->name('admin.consignments.update');
+        Route::get('/delete/{order_id}/{lr_number}', [ConsignmentNoteController::class, 'destroy'])->name('admin.consignments.delete');
         Route::post('/upload-pod', [ConsignmentNoteController::class, 'uploadPod'])->name('admin.consignments.uploadPod');
         Route::get('/multiple-pod', [ConsignmentNoteController::class, 'multiplePodForm'])->name('admin.consignments.multiplePodForm');
         Route::post('/multiple-pod-upload', [ConsignmentNoteController::class, 'uploadMultiplePod'])->name('admin.consignments.uploadMultiplePod');
-        
+        Route::get('/assign/{lr_number}', [ConsignmentNoteController::class, 'assign'])->name('admin.consignments.assign');
+        Route::post('/assign/{lr_number}/save', [ConsignmentNoteController::class, 'assignSave'])->name('admin.consignments.assign.save');
+        Route::get('/vehicle_eway_bill', [ConsignmentNoteController::class, 'fillFromEwayBill'])->name('admin.consignments.vehicle_eway_bill'); 
+
     });
+    
 
     // Freight Bill Management
-    Route::prefix('freight-bill')->middleware('auth.admin')->group(function () {
+    Route::prefix('freight-bill')->middleware('admin.token.session','auth.admin')->group(function () {
         Route::get('/', [FreightBillController::class, 'index'])->name('admin.freight-bill.index');
         Route::get('/create', [FreightBillController::class, 'create'])->name('admin.freight-bill.create');
         Route::post('/store', [FreightBillController::class, 'store'])->name('admin.freight-bill.store');
         Route::get('/view/{id}', [FreightBillController::class, 'show'])->name('admin.freight-bill.view');
-        Route::get('/edit-by-number/{freight_bill_number}', [FreightBillController::class, 'editByNumber'])->name('admin.freight-bill.edit');
-        Route::put('/update/{freight_bill_number}', [FreightBillController::class, 'update'])->name('admin.freight-bill.update');
-        Route::delete('/delete/{id}', [FreightBillController::class, 'destroy'])->name('admin.freight-bill.delete');
+        Route::get('/edit/{id}', [FreightBillController::class, 'edit'])->name('admin.freight-bill.edit');
+        Route::post('/update/{id}', [FreightBillController::class, 'updateTotals'])->name('admin.freight-bill.update');
+        Route::post('/update-entry/{id}', [FreightBillController::class, 'updateEntry'])->name('admin.freight-bill.update-entry');
+        Route::get('/delete/{id}', [FreightBillController::class, 'destroy'])->name('admin.freight-bill.delete');
+        Route::get('/invoice', [FreightBillController::class, 'Invoice'])->name('admin.freight-bill.invoice');
+        Route::get('invoice-view/{id}', [FreightBillController::class, 'InvoiceView'])->name('admin.freight-bill.invoice-view');
+        Route::get('/generate-invoice/{id}', [FreightBillController::class, 'generateInvoice'])->name('admin.freight-bill.generate-invoice');
+
     });
-    
-    
+
    
-  
-Route::prefix('role')->middleware('auth.admin')->group(function () {
-    Route::get('/', [RoleController::class, 'index'])->name('admin.role.index');
-    Route::get('/create', [RoleController::class, 'create'])->name('admin.role.create');
-    Route::post('/store', [RoleController::class, 'store'])->name('admin.role.store');
-    Route::get('/delete/{id}', [RoleController::class, 'destroy'])->name('admin.role.delete');
-    Route::get('/edit/{id}', [RoleController::class, 'edit'])->name('admin.role.edit');
-    Route::post('/update/{id}', [RoleController::class, 'update'])->name('admin.role.update');
-}); 
-Route::prefix('permissions')->middleware('auth.admin')->group(function () {
-    Route::get('/', [PermissionController::class, 'index'])->name('admin.permission.index');
-    Route::get('/create', [PermissionController::class, 'create'])->name('admin.permission.create');
-    Route::post('/store', [PermissionController::class, 'store'])->name('admin.permission.store');
-    Route::get('/edit/{id}', [PermissionController::class, 'edit'])->name('admin.permission.edit');
-    Route::post('/update/{id}', [PermissionController::class, 'update'])->name('admin.permission.update');
-    Route::get('/delete/{id}', [PermissionController::class, 'destroy'])->name('admin.permission.delete');
-}); 
+    
+    Route::prefix('role')->middleware('admin.token.session','auth.admin')->group(function () {
+        Route::get('/', [RoleController::class, 'index'])->name('admin.role.index');
+        Route::get('/create', [RoleController::class, 'create'])->name('admin.role.create');
+        Route::post('/store', [RoleController::class, 'store'])->name('admin.role.store');
+        Route::get('/delete/{id}', [RoleController::class, 'destroy'])->name('admin.role.delete');
+        Route::get('/edit/{id}', [RoleController::class, 'edit'])->name('admin.role.edit');
+        Route::post('/update/{id}', [RoleController::class, 'update'])->name('admin.role.update');
+    }); 
+    
+    Route::prefix('permissions')->middleware('admin.token.session','auth.admin')->group(function () {
+        Route::get('/', [PermissionController::class, 'index'])->name('admin.permission.index');
+        Route::get('/create', [PermissionController::class, 'create'])->name('admin.permission.create');
+        Route::post('/store', [PermissionController::class, 'store'])->name('admin.permission.store');
+        Route::get('/edit/{id}', [PermissionController::class, 'edit'])->name('admin.permission.edit');
+        Route::post('/update/{id}', [PermissionController::class, 'update'])->name('admin.permission.update');
+        Route::get('/delete/{id}', [PermissionController::class, 'destroy'])->name('admin.permission.delete');
+    }); 
 
-Route::prefix('user')->middleware('auth.admin')->group(function () {
-    Route::get('/', [TestController::class, 'index'])->name('admin.user.index');
-    Route::get('/create', [TestController::class, 'create'])->name('admin.user.create');
-    Route::post('/stote', [TestController::class, 'store'])->name('admin.user.store'); 
-    Route::get('/edit/{id}', [TestController::class, 'edit'])->name('admin.user.edit');
-    Route::post('/update/{id}', [TestController::class, 'update'])->name('admin.user.update');
-    Route::get('/delete/{id}', [TestController::class, 'destroy'])->name('admin.user.delete');
+    Route::prefix('user')->middleware('admin.token.session','auth.admin')->group(function () {
+        Route::get('/', [TestController::class, 'index'])->name('admin.user.index');
+        Route::get('/create', [TestController::class, 'create'])->name('admin.user.create');
+        Route::post('/stote', [TestController::class, 'store'])->name('admin.user.store'); 
+        Route::get('/edit/{id}', [TestController::class, 'edit'])->name('admin.user.edit');
+        Route::post('/update/{id}', [TestController::class, 'update'])->name('admin.user.update');
+        Route::get('/delete/{id}', [TestController::class, 'destroy'])->name('admin.user.delete');
 
-});
- Route::get('/stock-transfer/index', [StockTransferController::class, 'index'])->name('admin.stock.index');
+    });
+    // Route::get('/stock-transfer/index', [StockTransferController::class, 'index'])->name('admin.stock.index');
         
     // voucher
     Route::prefix('voucher')->group(function () {
@@ -303,24 +343,34 @@ Route::prefix('user')->middleware('auth.admin')->group(function () {
     Route::prefix('ledger')->group(function () {
         Route::get('/', [ledgerController::class, 'index'])->name('admin.ledger.index');
         Route::get('/create', [ledgerController::class, 'create'])->name('admin.ledger.create');
+        Route::get('/view/{id}', [ledgerController::class, 'show'])->name('admin.ledger.view');
     });
 
     // accounts-receivable
     Route::prefix('accounts_receivable')->group(function () {
         Route::get('/', [AccountsReceivableController::class, 'index'])->name('admin.accounts_receivable.index');
-        Route::get('/create', [AccountsReceivableController::class, 'create'])->name('admin.accounts_receivable.create');
+        Route::get('/view', [AccountsReceivableController::class, 'show'])->name('admin.accounts_receivable.view');
+        
     });
 
     // accounts-payable
     Route::prefix('accounts_payable')->group(function () {
         Route::get('/', [AccountsPayableController::class, 'index'])->name('admin.accounts_payable.index');
-        Route::get('/create', [AccountsPayableController::class, 'create'])->name('admin.accounts_payable.create');
+        
+        Route::get('/view', [AccountsPayableController::class, 'show'])->name('admin.accounts_payable.view');
     });
+
     
     // profit-loss
     Route::prefix('profit_loss')->group(function () {
         Route::get('/', [ProfitLossController::class, 'index'])->name('admin.profit_loss.index');
         Route::get('/create', [ProfitLossController::class, 'create'])->name('admin.profit_loss.create');
+    });
+
+    // profit-loss
+    Route::prefix('gst')->group(function () {
+        Route::get('/', [GstController::class, 'index'])->name('admin.gst.index');
+        
     });
     
     // balance-sheet

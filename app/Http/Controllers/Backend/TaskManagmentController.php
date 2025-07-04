@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Models\Employee;
+use App\Models\Admin;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
 
@@ -24,10 +25,12 @@ class TaskManagmentController extends Controller implements HasMiddleware
         ];
     }
     public function index(){
-        $employees = Employee::where('status', 'active')->get();
+        // $employees = Employee::where('status', 'active')->get();
+        
+        $employees = Admin::where('status', 'active')->get();
 
         $today_tasks = TaskManagement::whereDate('date', Carbon::today())->get();
-        $other_days_tasks = TaskManagement::whereDate('date', '!=', Carbon::today())->get();
+        $other_days_tasks = TaskManagement::all();
 
         return view('admin.task_management.index',compact('today_tasks','other_days_tasks','employees'));
     }

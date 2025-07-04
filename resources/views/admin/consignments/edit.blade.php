@@ -30,47 +30,105 @@
 <div class="row add-form">
 <div class="col-12">
 <div class="card">
-  
-   <form method="POST" action="{{ route('admin.consignments.update', $order->order_id) }}" enctype="multipart/form-data">
+   @php
+    $lrNumber = $lrData['lr_number'] ?? null;
+@endphp
+
+  @if ($lrNumber)
+   <form method="POST" action="{{ route('admin.consignments.update', [$order->order_id, $lrData['lr_number']]) }}" enctype="multipart/form-data">
       @csrf
       <div class="card-body">
-         @php
-         $lrList = is_array($order->lr) ? $order->lr : json_decode($order->lr, true);
-         $lrData = $lrList[0] ?? []; 
-         
-         @endphp
-         
          <div class="row">
+            <div class="col-md-3">
+               <div class="mb-3">
+                  <label class="form-label">👤 Freight A/c</label>
+                 
+                 <select name="customer_id" id="customer_id" class="form-select my-select" onchange="setCustomerDetails()" required>
+                  <option value="">Select Consignor Name</option>
+                  @foreach($users as $user)
+                     @php
+                           $addresses = $user->address;
+                           if (is_string($addresses)) {
+                              $addresses = json_decode($addresses, true);
+                           }
+                     @endphp
+                     @if(!empty($addresses) && is_array($addresses))
+                           @foreach($addresses as $address)
+                              @php
+                                 $formattedAddress = trim(
+                                       ($address['billing_address'] ?? '') . ', ' .
+                                       ($address['city'] ?? '') . ', ' .
+                                       ($address['consignment_address'] ?? '')
+                                 );
+                              @endphp
+                              <option
+                                 value="{{ $user->id }}"
+                                 
+                                 data-gst="{{ $address['gstin'] ?? '' }}"
+                                 data-address="{{ $formattedAddress }}"
+                                 @if(old('customer_id', $lrData['customer_id'] ?? '') == $user->id) selected @endif
+                              >
+                                 {{ $user->name }} - {{ $address['city'] ?? '' }}
+                              </option>
+                           @endforeach
+                     @endif
+                  @endforeach
+               </select>
+
+               </div>
+            </div>
+            <div class="col-md-3">
+               <div class="mb-3">
+                  <label class="form-label">🧾 GST NUMBER</label>
+                  <input type="text" name="gst_number" id="gst_number" class="form-control"
+                     value="{{ old('gst_number', $lrData['gst_number'] ?? '') }}"
+                     placeholder="Enter GST numbers" readonly >
+                  </div>
+            </div>
+            <div class="col-md-3">
+               <div class="mb-3">
+                  <label class="form-label">📍 CUSTOMER ADDRESS</label>
+                  <textarea name="customer_address" id="customer_address" class="form-control" rows="2"
+                     placeholder="Enter all addresses" >{{ old('customer_address', $lrData['customer_address'] ?? '') }}</textarea>
+                  
+               </div>
+            </div>
             <!-- Consignor Details -->
+
+
             <div class="col-md-6">
                <h5>📦 Consignor (Sender)</h5>
                <select name="consignor_id" id="consignor_id" class="form-select my-select" onchange="setConsignorDetails()" required>
                   <option value="">Select Consignor Name</option>
                   @foreach($users as $user)
-                  @php
-                  $addresses = json_decode($user->address, true);
-                  @endphp
-                  @if(!empty($addresses) && is_array($addresses))
-                  @foreach($addresses as $address)
-                  @php
-                  $formattedAddress = trim(
-                  ($address['billing_address'] ?? '') . ', ' .
-                  ($address['city'] ?? '') . ', ' .
-                  ($address['consignment_address'] ?? '')
-                  );
-                  @endphp
-                  <option
-                  value="{{ $user->id }}"
-                  data-gst-consignor="{{ $address['gstin'] ?? '' }}"
-                  data-address-consignor="{{ $formattedAddress }}"
-                  @if(old('consignor_id', $lrData['consignor_id'] ?? '') == $user->id) selected @endif
-                  >
-                  {{ $user->name }} - {{ $address['city'] ?? '' }}
-                  </option>
-                  @endforeach
-                  @endif
+                     @php
+                           $addresses = $user->address;
+                           if (is_string($addresses)) {
+                              $addresses = json_decode($addresses, true);
+                           }
+                     @endphp
+                     @if(!empty($addresses) && is_array($addresses))
+                           @foreach($addresses as $address)
+                              @php
+                                 $formattedAddress = trim(
+                                       ($address['billing_address'] ?? '') . ', ' .
+                                       ($address['city'] ?? '') . ', ' .
+                                       ($address['consignment_address'] ?? '')
+                                 );
+                              @endphp
+                              <option
+                                 value="{{ $user->id }}"
+                                 data-gst-consignor="{{ $address['gstin'] ?? '' }}"
+                                 data-address-consignor="{{ $formattedAddress }}"
+                                 @if(old('consignor_id', $lrData['consignor_id'] ?? '') == $user->id) selected @endif
+                              >
+                                 {{ $user->name }} - {{ $address['city'] ?? '' }}
+                              </option>
+                           @endforeach
+                     @endif
                   @endforeach
                </select>
+
                <!-- Loading Address -->
                <div class="mb-3">
                   <label class="form-label">Consignor Loading Address</label>
@@ -99,32 +157,33 @@
                </div>
                <div class="mb-3">
                   <select name="consignee_id" id="consignee_id" class="form-select my-select" onchange="setConsigneeDetails()" required>
-                     <option value="">Select Consignee Name</option>
-                     @foreach($users as $user)
-                     @php
-                     $addresses = json_decode($user->address, true);
-                     @endphp
-                     @if(!empty($addresses) && is_array($addresses))
-                     @foreach($addresses as $address)
-                     @php
-                     $formattedAddress = trim(
-                     ($address['billing_address'] ?? '') . ', ' .
-                     ($address['city'] ?? '') . ', ' .
-                     ($address['consignment_address'] ?? '')
-                     );
-                     @endphp
-                     <option 
-                     value="{{ $user->id }}"
-                     data-gst-consignee="{{ $address['gstin'] ?? '' }}"
-                     data-address-consignee="{{ $formattedAddress }}"
-                     @if(old('consignee_id', $lrData['consignee_id'] ?? '') == $user->id) selected @endif
-                     >
-                     {{ $user->name }} - {{ $address['city'] ?? '' }}
-                     </option>
-                     @endforeach
-                     @endif
-                     @endforeach
-                  </select>
+    <option value="">Select Consignee Name</option>
+    @foreach($users as $user)
+        @php
+            $addresses = is_string($user->address) ? json_decode($user->address, true) : $user->address;
+        @endphp
+        @if(!empty($addresses) && is_array($addresses))
+            @foreach($addresses as $address)
+                @php
+                    $formattedAddress = trim(
+                        ($address['billing_address'] ?? '') . ', ' .
+                        ($address['city'] ?? '') . ', ' .
+                        ($address['consignment_address'] ?? '')
+                    );
+                @endphp
+                <option 
+                    value="{{ $user->id }}"
+                    data-gst-consignee="{{ $address['gstin'] ?? '' }}"
+                    data-address-consignee="{{ $formattedAddress }}"
+                    @if(old('consignee_id', $lrData['consignee_id'] ?? '') == $user->id) selected @endif
+                >
+                    {{ $user->name }} - {{ $address['city'] ?? '' }}
+                </option>
+            @endforeach
+        @endif
+    @endforeach
+</select>
+
                   <!-- Unloading Address -->
                   <div class="mb-3">
                      <label class="form-label">Consignee Unloading Address</label>
@@ -274,7 +333,7 @@
                                  <th>Document Name</th>
                                  <th>Document Date</th>
                                  <th>Document Upload</th>
-                                 <th>Eway Bill</th>
+                                 <!-- <th>Eway Bill</th> -->
                                  <th>Valid Upto</th>
                                  <th>Declared value</th>
                                  <th>Action</th>
@@ -282,7 +341,7 @@
                            </thead>
                            <tbody id="cargoTableBody">
                               @php 
-                              $cargoData = old('cargo', isset($lrData['cargo']) ? $lrData['cargo'] : [['packages_no' => '', 'package_type' => '', 'package_description' => '', 'weight' => '', 'actual_weight' => '', 'charged_weight' => '', 'document_no' => '', 'document_name' => '', 'document_date' => '', 'eway_bill' => '', 'valid_upto' => '']]); 
+                              $cargoData = old('cargo', isset($lrData['cargo']) ? $lrData['cargo'] : [['packages_no' => '', 'package_type' => '', 'package_description' => '', 'weight' => '', 'actual_weight' => '', 'charged_weight' => '', 'document_no' => '', 'document_name' => '', 'document_date' => '','valid_upto' => '']]); 
                               @endphp
                               
 
@@ -320,7 +379,7 @@
                                     <input type="hidden" name="cargo[{{ $index }}][old_document_file]" class="form-control" value="{{ $cargo['document_file'] ?? '' }}" >
                                  </td>
 
-                                 <td><input type="text" name="cargo[{{ $index }}][eway_bill]" class="form-control" value="{{ $cargo['eway_bill'] }}" required></td>
+                                 
                                  <td><input type="date" name="cargo[{{ $index }}][valid_upto]" class="form-control" value="{{ $cargo['valid_upto'] }}" required></td>
                                  <td><input name="cargo[{{ $index }}][declared_value]" type="number" value="{{ $cargo['declared_value'] ?? '' }}" min="0"  class="form-control" placeholder="0" required></td>
                                  <td>
@@ -505,6 +564,9 @@
                </div>
             </div>
    </form>
+   @else
+    <div class="alert alert-danger">LR Number missing! Cannot update consignment.</div>
+   @endif
    </div>
    </div>
 </div>
@@ -621,7 +683,7 @@
            <td><input type="text" name="cargo[${cargoIndex}][document_name]" class="form-control"></td>
            <td><input type="date" name="cargo[${cargoIndex}][document_date]" class="form-control"></td>
            <td><input type="file" name="cargo[${cargoIndex}][document_file]" class="form-control"></td>
-           <td><input type="text" name="cargo[${cargoIndex}][eway_bill]" class="form-control"></td>
+           
            <td><input type="date" name="cargo[${cargoIndex}][valid_upto]" class="form-control"></td>
            <td><input type="number" name="cargo[${cargoIndex}][declared_value]" class="form-control declared-value" oninput="calculateTotalDeclaredValue()" required></td>
            <td><button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">🗑</button></td>
@@ -645,7 +707,7 @@
 
 function addvehicleRow() {
     const tbody = document.getElementById('vehicleTableBody');
-     let rowCount = document.querySelectorAll('#vehicleTableBody tr').length;
+    const rowCount = document.querySelectorAll('#vehicleTableBody tr').length;
     const row = document.createElement('tr');
 
     let vehicleOptions = `<option value="">Select Vehicle No.</option>`;
@@ -656,7 +718,7 @@ function addvehicleRow() {
     row.innerHTML = `
          <td>
             <div class="form-check">
-                <input type="checkbox" name="vehicle[${vehicleIndex}][is_selected]" value="1" class="form-check-input" checked>
+                <input type="radio" name="selected_vehicle" value="${vehicleIndex}" class="form-check-input">
             </div>
         </td>
         <td>
@@ -675,6 +737,7 @@ function addvehicleRow() {
     tbody.appendChild(row);
     vehicleIndex++;
 }
+
 
 
 function removevehicleRow(button) {
@@ -697,6 +760,24 @@ function removevehicleRow(button) {
    document.getElementById('createInsuranceYes').addEventListener('click', function () {
        let myModal = new bootstrap.Modal(document.getElementById('insuranceModal'));
        myModal.show();
+   });
+</script>
+<script>
+   function setCustomerDetails() {
+       const selected = document.getElementById('customer_id');
+       const selectedOption = selected.options[selected.selectedIndex];
+       const gst = selectedOption.getAttribute('data-gst') || '';
+       const address = selectedOption.getAttribute('data-address') || '';
+   
+       document.getElementById('gst_number').value = gst;
+       document.getElementById('customer_address').value = address;
+   }
+   
+   document.addEventListener('DOMContentLoaded', function () {
+       const select = document.getElementById('customer_id');
+       if (select && select.value !== '') {
+           setCustomerDetails();
+       }
    });
 </script>
 <script>

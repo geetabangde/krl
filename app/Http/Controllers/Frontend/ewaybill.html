@@ -1,0 +1,198 @@
+<?php
+
+namespace App\Http\Controllers\Frontend;
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
+use App\Http\Controllers\Controller;
+
+class EwayBillController extends Controller
+{
+    protected $subscriptionKey = 'AL5e2V9g1I2p9h4U3e';
+    protected $username = 'AL001';
+    protected $plainPassword = 'Alankit@123';
+
+    
+public function generateEwayBill(Request $request)
+{
+    // 1.  Hardcoded for example – You should store/fetch these securely
+    $authToken = '1eoBwxSBBaTlz90RObXkPsj9U'; // Replace with actual token
+    $encryptedSek = 'vc/ve09LYSkXcRgFqFuJ1CCArR1blvpviAt0ec0QBcJGgCjhGmGONERdukDluIoA';
+    $appKey = 'RZbiPYuN3VTF2hMhQcMMBo0MfH4UVNZaSrIeTrpKopE='; // Replace with actual base64-encoded app key
+
+
+     // 2. Decrypt SEK using app key
+    $ciphering = 'AES-256-ECB';
+    $options = 0;
+    $decryptionKey = base64_decode($appKey);
+    $decryption_iv = '';
+
+
+    if ($decryptionKey === false) {
+        echo "Invalid base64 in appKey!";
+        die;
+    }
+
+    
+    $decryptedSek = openssl_decrypt($encryptedSek, $ciphering, $decryptionKey, $options, $decryption_iv);
+
+
+    if ($decryptedSek === false) {
+    echo "Decryption failed!";
+    die;
+     }
+    // print_r($decryptedSek);die;
+      $base64encodeddecryptedsek = base64_encode($decryptedSek);
+//   die;
+    // print_r($base64encodeddecryptedsek);die;
+
+    // if (!$decryptedSek) {
+    //     return response()->json(['error' => 'SEK decryption failed'], 500);
+    // }
+    // die();
+
+  // 3. Prepare payload
+$RequestPayload = [
+    "supplyType" => "O",
+    "subSupplyType" => "1",
+    "subSupplyDesc" => "",
+    "docType" => "INV",
+    "docNo" => "Test".rand(100,1000),
+    "docDate" => "13/06/2025",
+    "fromGstin" => "07AGAPA5363L002",
+    "fromTrdName" => "welton",
+    "fromAddr1" => "2ND CROSS NO 59  19  A",
+    "fromAddr2" => "GROUND FLOOR OSBORNE ROAD",
+    "fromPlace" => "FRAZER TOWN",
+    "fromPincode" => 110055,
+    "actFromStateCode" => 07,
+    "fromStateCode" => 07,
+    "toGstin" => "29AAJFH7376P1ZS", // 👈 CHANGED
+    "toTrdName" => "Sthuthya",
+    "toAddr1" => "Shree Nilaya",
+    "toAddr2" => "Dasarahosahalli",
+    "toPlace" => "Beml Nagar",
+    "toPincode" => 560090,
+    "actToStateCode" => 29,
+    "toStateCode" => 27, // 👈 CHANGED
+    "transactionType" => 4,
+    "otherValue" => -100, // 👈 CHANGED
+    "totalValue" => 56099,
+    "cgstValue" => 0,
+    "sgstValue" => 0,
+    "igstValue" => 300.67,
+    "cessValue" => 400.56,
+    "cessNonAdvolValue" => 400,
+    "totInvValue" => 57200.23, // 👈 CHANGED
+    "transporterId" => "",
+    "transporterName" => "",
+    "transDocNo" => "",
+    "transMode" => "1",
+    "transDistance" => "2145",
+    "transDocDate" => "",
+    "vehicleNo" => "PVC1234",
+    "vehicleType" => "R",
+    "itemList" => [
+        [
+            "productName" => "Wheat",
+            "productDesc" => "Wheat",
+            "hsnCode" => 1001,
+            "quantity" => 4,
+            "qtyUnit" => "BOX",
+            "cgstRate" => 0,
+            "sgstRate" => 0,
+            "igstRate" => 3,
+            "cessRate" => 3,
+            "cessNonadvol" => 0,
+            "taxableAmount" => 5609889 // 👈 CHANGED
+        ]
+    ]
+];
+
+// Convert to pretty JSON
+// $json = json_encode($RequestPayload, JSON_PRETTY_PRINT);
+
+// Output
+// echo $json;die;
+// Convert to JSON with indentation (pretty print)
+// $RequestPayloadjs = json_encode($RequestPayload, JSON_PRETTY_PRINT);
+
+// Output the JSON
+// echo $Base64RequestPayload; die;
+
+
+// echo"<pre>";
+
+    // $Base64RequestPayload = base64_encode($RequestPayload);
+    // print_r($Base64RequestPayload);die;
+
+$Base64RequestPayload = base64_encode(json_encode($RequestPayload));
+// //    echo "<pre>";
+    // return(json_encode($RequestPayload));die;
+
+// $Base64RequestPayload = 'ewogICJzdXBwbHlUeXBlIjogIk8iLAogICJzdWJTdXBwbHlUeXBlIjogIjEiLAogICJzdWJTdXBwbHlEZXNjIjogIiIsCiAgImRvY1R5cGUiOiAiSU5WIiwKICAiZG9jTm8iOiAiVGVzdDEyMDYyMDI1IiwKICAiZG9jRGF0ZSI6ICIxMi8wNi8yMDI1IiwKICAiZnJvbUdzdGluIjogIjA3QUdBUEE1MzYzTDAwMiIsCiAgImZyb21UcmROYW1lIjogIndlbHRvbiIsCiAgImZyb21BZGRyMSI6ICIyTkQgQ1JPU1MgTk8gNTkgMTkgQSIsCiAgImZyb21BZGRyMiI6ICJHUk9VTkQgRkxPT1IgT1NCT1JORSBST0FEIiwKICAiZnJvbVBsYWNlIjogIkZSQVpFUiBUT1dOIiwKICAiZnJvbVBpbmNvZGUiOiAxMTAwNTUsCiAgImFjdEZyb21TdGF0ZUNvZGUiOiA3LAogICJmcm9tU3RhdGVDb2RlIjogNywKICAidG9Hc3RpbiI6ICIwMkFBSkZINzM3NlAxWlMiLAogICJ0b1RyZE5hbWUiOiAic3RodXRoeWEiLAogICJ0b0FkZHIxIjogIlNocmVlIE5pbGF5YSIsCiAgInRvQWRkcjIiOiAiRGFzYXJhaG9zYWhhbGxpIiwKICAidG9QbGFjZSI6ICJCZW1sIE5hZ2FyIiwKICAidG9QaW5jb2RlIjogNTYwMDkwLAogICJhY3RUb1N0YXRlQ29kZSI6IDI5LAogICJ0b1N0YXRlQ29kZSI6IDI3LAogICJ0cmFuc2FjdGlvblR5cGUiOiA0LAogICJvdGhlclZhbHVlIjogLTEwMCwKICAidG90YWxWYWx1ZSI6IDU2MDk5LAogICJjZ3N0VmFsdWUiOiAwLAogICJzZ3N0VmFsdWUiOiAwLAogICJpZ3N0VmFsdWUiOiAzMDAuNjcsCiAgImNlc3NWYWx1ZSI6IDQwMC41NiwKICAiY2Vzc05vbkFkdm9sVmFsdWUiOiA0MDAsCiAgInRvdEludlZhbHVlIjogNjgzNTgsCiAgInRyYW5zcG9ydGVySWQiOiAiIiwKICAidHJhbnNwb3J0ZXJOYW1lIjogIiIsCiAgInRyYW5zRG9jTm8iOiAiIiwKICAidHJhbnNNb2RlIjogIjEiLAogICJ0cmFuc0Rpc3RhbmNlIjogIjIxNDUiLAogICJ0cmFuc0RvY0RhdGUiOiAiIiwKICAidmVoaWNsZU5vIjogIlBWQzEyMzQiLAogICJ2ZWhpY2xlVHlwZSI6ICJSIiwKICAiaXRlbUxpc3QiOiBbCiAgICB7CiAgICAgICJwcm9kdWN0TmFtZSI6ICJXaGVhdCIsCiAgICAgICJwcm9kdWN0RGVzYyI6ICJXaGVhdCIsCiAgICAgICJoc25Db2RlIjogMTAwMSwKICAgICAgInF1YW50aXR5IjogNCwKICAgICAgInF0eVVuaXQiOiAiQk9YIiwKICAgICAgImNnc3RSYXRlIjogMCwKICAgICAgInNnc3RSYXRlIjogMCwKICAgICAgImlnc3RSYXRlIjogMywKICAgICAgImNlc3NSYXRlIjogMywKICAgICAgImNlc3NOb25hZHZvbCI6IDAsCiAgICAgICJ0YXhhYmxlQW1vdW50IjogNTYwOTg4OQogICAgfQogIF0KfQ==';
+
+// $decryptedSek = 'nawvjuGLBy8eVHC0wQM9Lt3ZW+SKl2SbceTo0nLFCI4=';
+function encryptBySymmetricKey($dataB64, $sekB64){
+		
+    $data = base64_decode($dataB64);                                                // the data to encrypt
+    $sek = base64_decode($sekB64);                                                  // the SEK
+    $encDataB64 = openssl_encrypt($data, "aes-256-ecb", $sek, 0);                   // the Base64 encoded ciphertext
+    return $encDataB64;
+}
+
+$reqpayload = encryptBySymmetricKey($Base64RequestPayload, $base64encodeddecryptedsek);
+
+// print_r($reqpayload);die;
+    // 
+    // 4. Encrypt payload using decrypted SEK
+    // $jsonPayload = json_encode($ewayPayload);
+    // $encryptedPayload = openssl_encrypt($jsonPayload, $ciphering, $decryptedSek, $options);
+    // $base64EncryptedPayload = base64_encode($encryptedPayload);
+
+       $payload = [
+        "action"=>"GENEWAYBILL",
+        'data' => $reqpayload
+    ];
+
+
+    // print_r($payload); die; 
+    // 5. Send encrypted request to E-way Bill API
+    $apiUrl = 'https://developers.eraahi.com/api/ewaybillapi/v1.03/ewayapi';
+
+    
+    // // 5. Send encrypted data to generate eway bill
+    $response = Http::withHeaders([
+        'Content-Type' => 'application/json',
+        'gstin' => '07AGAPA5363L002',
+        'Ocp-Apim-Subscription-Key' => 'AL5e2V9g1I2p9h4U3e',
+        'authtoken' => $authToken,
+    ])->withBody(json_encode($payload), 'application/json')->post($apiUrl);
+
+    $responseJson = $response->json();
+
+     print_r($responseJson);die;
+    // 6. Decrypt API Response
+    $encryption = 'vWLlfTXLSGpEyuQgmTY5BOKGxhlQO+0TKOrv5nnEuVHvRGUJ3du13r499FCEj3punn+pr0IGCk2Jj2BvBWPr9/NvjyVKM9kDPJN5ciWwy9Zbt3QELuL4xc5JqrE10ByCfS/p1DMrUu58hyrFJuoXa3jWj3lAIfVwdbLfT+hMGWVcP0hOXQ8/qZv1wXV+7Hx/jJNLHVY+FjI0UOlB6LH6rfFvbNOk3d0ul2MUJLUjDkAVU0I7/QqVwlZTisU082kp6ACmtUJ7NeRmSca5Emo3zQ==';
+    // print_r($response['data']);die;
+    if (isset($encryption)) {
+        // $decodedData = base64_decode($response['data']);
+
+        $decryptedResponse = openssl_decrypt($decodedData,$ciphering,$base64encodeddecryptedsek,$options,$decryption_iv);
+
+        // print_r($decryptedResponse);die;
+        return response()->json([
+            'success' => true,
+            'eway_bill_data' => json_decode($decryptedResponse, true)
+        ]);
+    } else {
+        return response()->json([
+            'success' => false,
+            'error' => 'No Data found in API response',
+            'raw_response' => $responseJson
+        ], 400);
+    }
+}
+
+
+}

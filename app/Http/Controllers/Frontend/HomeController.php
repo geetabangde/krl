@@ -45,7 +45,7 @@ class HomeController extends Controller
         $generatedOrderId = 'ORD-' . str_pad($lastId, 6, '0', STR_PAD_LEFT);
 
         Order::create([
-            'user_id' => $user->id,
+            'customer_id' => $user->id,
             'order_id' => $generatedOrderId,
             'description' => $request->description,
             'from_destination_id' => $request->from_destination_id,
@@ -57,11 +57,26 @@ class HomeController extends Controller
         return back()->with('success', 'Order created successfully!');
    }
 
+   public function requestStatus(Request $request)
+{
+   
+     $order_id= $request->order_id;
     
+   
+    $order = Order::where('order_id', $order_id)->first();
 
+    if (!$order) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Order not found.'
+        ], 404);
+    }
 
+   
+    $order->status = $request->status;
+    $order->save();
 
-
-
-
+     return back()->with('success', 'Rl request create successfully!');
+   
 }
+    }

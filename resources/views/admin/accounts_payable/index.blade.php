@@ -32,7 +32,7 @@
                                     </div>
                                 </div>
                                 <div class="card-body">
-                                    <table id="ex" class="table table-bordered dt-responsive nowrap w-100">
+                                    <table class="table table-bordered dt-responsive nowrap w-100">
                                         <thead>
                                             <tr>
                                                 <th>#</th>
@@ -40,26 +40,30 @@
                                                 <th>Bill Date</th>
                                                 <th>Bill Amount</th>
                                                 <th>Amount Paid</th>
+                                                <th>Pending</th>
+                                                <th>Action</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <tr>
-                                                <td>1</td>
-                                                <td>ABC Supplies</td>
-                                                <td>10/12/2025</td>
-                                                <td>₹15,000</td>
-                                                <td>₹10,000</td>
-                                            </tr>
-                                            <tr>
-                                                <td>2</td>
-                                                <td>XYZ Enterprises</td>
-                                                <td>11/12/2025</td>
-                                                <td>₹20,000</td>
-                                                <td>₹20,000</td>
-                                            </tr>
-                                            <!-- Add more rows as needed -->
+                                            @foreach ($report as $index => $row)
+                                                <tr>
+                                                    <td>{{ $index + 1 }}</td>
+                                                    <td>{{ $row['supplier_name'] }}</td>
+                                                    <td>{{ $row['bill_date'] }}</td>
+                                                    <td>₹{{ number_format($row['amount'], 2) }}</td>
+                                                    <td>₹{{ number_format($row['paid'], 2) }}</td>
+                                                    <td>₹{{ number_format($row['pending'], 2) }}</td>
+                                                    <td><a href="{{ route('admin.accounts_payable.view', ['label' => urlencode($row['label'])]) }}"
+                                                            class="btn btn-sm btn-light view-btn"
+                                                            title="View Detail">
+                                                            <i class="fas fa-eye text-primary"></i>
+                                                            </a>
+                                                    </td>
+                                                </tr>
+                                            @endforeach
                                         </tbody>
                                     </table>
+
                                 </div>
                             </div>
                         </div>

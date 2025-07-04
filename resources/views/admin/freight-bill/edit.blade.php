@@ -45,7 +45,7 @@
     }
 
     .container {
-      max-width: 1000px;
+      max-width: 1100px;
       margin: auto;
       background: #fff;
       padding: 20px 25px;
@@ -177,7 +177,29 @@
     th {
       background-color: #fff;
     }
+    tfoot td {
+    font-weight: bold;
+    padding: 6px 8px;
+    border:none !important;
+}
+tfoot td.text-end {
+    text-align: right;
+}
+.editable-amount[contenteditable="true"],
+.editable-freight[contenteditable="true"] {
+    background-color: #fff7e6;
+    border: 1px dashed #ff9900;
+    cursor: text;
+}
+.editable-amount:focus,
+.editable-freight:focus {
+    outline: 2px solid #ff9900;
+}
+
+
+
   </style>
+
 </head>
 
 <body>
@@ -191,34 +213,52 @@
       <div class="box left-box">
         <strong>BILL TO / CONSIGNMENT SENT TO:</strong><br>
         [Party Name & Address Here]<br>
-        <strong>Freight Type:</strong> {{ $order->order_method }}
+        <strong>Freight Type:</strong> {{ $order->order_method ?? '' }}
       </div>
       <div class="box right-box">
         <strong>Bill No.:</strong>{{ $freightBill->freight_bill_number ?? '-' }}<br>
-        <strong>Date:</strong>{{ \Carbon\Carbon::parse($order->order_date)->format('d-m-Y') }}
-      </div>
+        @if($order && $order->order_date)
+            <strong>Date:</strong> {{ \Carbon\Carbon::parse($order->order_date)->format('d-m-Y') }}
+        @else
+            <strong>Date:</strong> N/A
+        @endif
+       </div>
     </div>
 
+    <!-- @foreach ($matchedEntries as $index => $entry)
+        <div class="section">
+        <div class="box half-box">
+            <strong>From:</strong><br>
+            {{ $entry['from_destination'] ?? '-' }}
 
-    @foreach ($matchedEntries as $entry)
-    <div class="section">
+        </div>
+
+        <div class="box half-box">
+            <strong>To:</strong><br>
+        {{ $entry['to_destination'] ?? '-' }}
+        </div>
+        </div>
+    @endforeach -->
+
+  @php
+  $allFroms = collect($matchedEntries)->pluck('from_destination')->filter()->toArray();
+  $allTos = collect($matchedEntries)->pluck('to_destination')->filter()->toArray();
+  @endphp
+
+  <div class="section">
       <div class="box half-box">
-        <strong>From:</strong><br>
-        {{ $entry['destination'] }}
+          <strong>From:</strong><br>
+          {{ implode(', ', $allFroms) }}
       </div>
-
       <div class="box half-box">
-        <strong>To:</strong><br>
-        {{ $entry['destination'] }}
+          <strong>To:</strong><br>
+          {{ implode(', ', $allTos) }}
       </div>
-    </div>
-  @endforeach
+  </div>
 
-
-    
 
 <table id="freightTable" class="table table-bordered">
-  <thead>
+    <thead>
       <tr>
           <th>S. No.</th>
           <th>LR No.</th>
@@ -232,28 +272,89 @@
   </thead>
   <tbody>
   @foreach($matchedEntries as $index => $entry)
+ 
+ 
       <tr>
-        <td>{{ $index + 1 }}</td>
-        <td>{{ $entry['lr_number'] }}</td>
-        <td>{{ \Carbon\Carbon::parse($entry['lr_date'])->format('Y-m-d') }}</td>
-        <td>{{ $entry['cargo'][0]['package_description'] ?? '-' }}</td>
-        <td>{{ $entry['freight_type'] ?? '-' }}</td>
-        <td>{{ $entry['cargo'][0]['weight'] ?? '-' }}</td>
-        <td>{{ $entry['rate'] ?? '-' }}</td>
-        <td>{{ $entry['amount'] ?? '-' }}</td>
+          <td>{{ $index + 1 }}</td>
+          <td>{{ $entry['lr_number'] }}</td>
+          <td>{{ \Carbon\Carbon::parse($entry['lr_date'])->format('Y-m-d') }}</td>
+          <td>{{ $entry['cargo'][0]['package_description'] ?? '-' }}</td>
+          <td>{{ $entry['freight_type'] }}</td>
+
+          {{-- Weight / Quantity --}}
+          <td>
+              @if($entry['freight_type'] == 'contract')
+                  -
+              @else
+                  {{ $entry['cargo'][0]['charged_weight'] ?? '-' }}
+                  {{ $entry['cargo'][0]['unit'] ?? '-' }}
+
+              @endif
+          </td>
+
+          {{-- Rate --}}
+          <td>
+              @if($entry['freight_type'] == 'contract')
+                  {{ $entry['vehicletype'] ?? '-' }}   (Vehicle Type)
+              @else
+                  {{ number_format($entry['order_rate'] ?? 0, 2) }}
+              @endif
+          </td>
+
+          {{-- Amount --}}
+          <td contenteditable="true"
+              class="editable-freight"
+              data-entry-id="{{ $entry['lr_number'] ?? $loop->index }}"
+              data-field="freight_amount">
+              {{ number_format($entry['freight_amount'] ?? 0, 2) }}
+          </td>
+
       </tr>
-    @endforeach
+  @endforeach
   </tbody>
-</table>
+
+    <tfoot>
+        <tr>
+            <td colspan="6"></td>
+            <td class="text-end"><strong>Freight Subtotal</strong></td>
+            <td id="freight-subtotal">₹ {{ number_format($totals['freight_amount'], 2) }}</td>
+        </tr>
+        @foreach (['lr_charges', 'hamali', 'other_charges', 'less_advance', 'balance_freight'] as $field)
+            @if ($totals[$field] != 0)
+            <tr class="editable-row" data-field="{{ $field }}">
+                <td colspan="6"></td>
+                <td class="text-end"><strong>{{ ucwords(str_replace('_', ' ', $field)) }}</strong></td>
+                <td class="editable-amount" contenteditable="true"
+                    data-field="{{ $field }}"
+                    data-entry-id="{{ $freightBill->id }}">
+                    ₹ {{ number_format($totals[$field], 2) }}
+                </td>
+            </tr>
+            @endif
+        @endforeach
+        <tr>
+            <td colspan="6"></td>
+            <td class="text-end"><strong>Taxable Amount</strong></td>
+            <td id="taxable-amount">₹ {{ number_format($totals['taxable_amount'], 2) }}</td>
+        </tr>
+        <tr>
+            <td colspan="6"></td>
+            <td class="text-end"><strong>GST (12%)</strong></td>
+            <td id="gst-amount">₹ {{ number_format($totals['gst_amount'], 2) }}</td>
+        </tr>
+        <tr>
+            <td colspan="6"></td>
+            <td class="text-end"><strong>Total</strong></td>
+            <td id="total-amount">₹ {{ number_format($totals['total_amount'], 2) }}</td>
+        </tr>
+    </tfoot>
+  </table>
 
 
     <div class="total-in-words">
       Total in Words: ____________________________________________
     </div>
-    <form action="" method="POST">
-      
-    @csrf
-    @method('PUT')
+
     <div class="footer-section">
       <div class="terms">
         <strong>Terms & Conditions:</strong><br>
@@ -261,12 +362,6 @@
         2. Goods transported at owner's risk.<br>
         3. Subject to jurisdiction of Indore court.<br>
         4. No liability for delays due to unforeseen events.
-        5. <textarea
-              name="notes"
-              class="form-control"
-              rows="3"
-              placeholder="Enter your custom note here…"
-          >{{ old('notes', $firstBill->notes) }}</textarea>
       </div>
 
       <div class="gst-box">
@@ -280,10 +375,106 @@
         </div>
       </div>
     </div>
-
   </div>
-  <button class="print-btn">Update Freight Bill</button>
-</form>
+ 
+@php
+    $id = request()->segment(4); 
+@endphp
+<div class="col-12" style="padding-bottom:20px; text-align: right;">
+  <button type="submit" style="background-color:rgb(131, 29, 29); color: #fff; border: none; padding: 10px 20px; border-radius: 5px;"><a  style="text-decoration: none; color: white;"href="{{ route('admin.freight-bill.edit',['id' => $id]) }}">
+    <i class="fas fa-save"></i>Save</a>
+  </button>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<!-- Add this at bottom of your Blade file -->
+@push('scripts')
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    function formatCurrency(amount) {
+        const num = parseFloat(amount);
+        if (isNaN(num)) return "₹ 0.00";
+        return "₹ " + num.toFixed(2);
+    }
+
+    function updateEntry(id, entryId, field, value, cell) {
+        const numValue = parseFloat(value);
+        if (!isNaN(numValue)) {
+            cell.innerText = formatCurrency(numValue); // ✅ Immediately show formatted value
+        }
+
+        fetch("/admin/freight-bill/update-entry/" + id, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": "{{ csrf_token() }}"
+            },
+            body: JSON.stringify({ entry_id: entryId, field, value })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success && data.updated_totals) {
+                document.getElementById("freight-subtotal").innerText = formatCurrency(data.updated_totals.freight_amount);
+                document.getElementById("taxable-amount").innerText = formatCurrency(data.updated_totals.taxable_amount);
+                document.getElementById("gst-amount").innerText = formatCurrency(data.updated_totals.gst_amount);
+                document.getElementById("total-amount").innerText = formatCurrency(data.updated_totals.total_amount);
+            }
+        });
+    }
+
+    function updateTotals(id, field, value, cell) {
+        const numValue = parseFloat(value);
+        if (!isNaN(numValue)) {
+            cell.innerText = formatCurrency(numValue); // ✅ Immediately show formatted value
+        }
+
+        fetch("/admin/freight-bill/update/" + id, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": "{{ csrf_token() }}"
+            },
+            body: JSON.stringify({ field, value })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success && data.updated_totals) {
+                document.getElementById("freight-subtotal").innerText = formatCurrency(data.updated_totals.freight_amount);
+                document.getElementById("taxable-amount").innerText = formatCurrency(data.updated_totals.taxable_amount);
+                document.getElementById("gst-amount").innerText = formatCurrency(data.updated_totals.gst_amount);
+                document.getElementById("total-amount").innerText = formatCurrency(data.updated_totals.total_amount);
+            }
+        });
+    }
+
+    document.querySelectorAll('.editable-freight').forEach(cell => {
+        cell.addEventListener('blur', function () {
+            const id = "{{ $freightBill->id }}";
+            const entryId = this.dataset.entryId;
+            const field = this.dataset.field;
+            const value = this.innerText.replace(/[^0-9.]/g, '');
+
+            updateEntry(id, entryId, field, value, this); // Pass `this` as `cell`
+        });
+    });
+
+    document.querySelectorAll('.editable-amount').forEach(cell => {
+        cell.addEventListener('blur', function () {
+            const id = "{{ $freightBill->id }}";
+            const field = this.dataset.field;
+            const value = this.innerText.replace(/[^0-9.]/g, '');
+
+            updateTotals(id, field, value, this); // Pass `this` as `cell`
+        });
+    });
+});
+</script>
+
+
+
+
+
+
 </body>
 
 </html>

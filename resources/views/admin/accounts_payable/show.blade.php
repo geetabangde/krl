@@ -10,50 +10,68 @@
                         <h4>🚗 Vehicle Details View</h4>
                         <p class="mb-0">View details for the vehicle.</p>
                     </div>
-                    <a href="{{ route('admin.vehicles.index') }}" class="btn" id="backToListBtn"
+                    <a href="{{ route('admin.accounts_payable.index') }}" class="btn" id="backToListBtn"
                         style="background-color: #ca2639; color: white; border: none;">
                         ⬅ Back to Listing
                     </a>
                 </div>
-                <div class="card-body">
-    <h4>Vehicle Details</h4>
-    <p><strong>🚗 Vehicle Type:</strong> {{ $vehicle->vehicle_type }}</p>
-    <p><strong>🔢 Vehicle Number:</strong> {{ $vehicle->vehicle_no }}</p>
-    <p><strong>📞 Registered Mobile Number:</strong> {{ $vehicle->registered_mobile_number }}</p>
-    <p><strong>⚖️ Gross Vehicle Weight (GVW):</strong> {{ $vehicle->gvw ?? 'N/A' }}</p>
-    <p><strong>📦 Payload:</strong> {{ $vehicle->payload ?? 'N/A' }}</p>
-    <p><strong>🔧 Chassis Number:</strong> {{ $vehicle->chassis_number ?? 'N/A' }}</p>
-    <p><strong>🛠️ Engine Number:</strong> {{ $vehicle->engine_number ?? 'N/A' }}</p>
-    <p><strong>🚪 Number of Tyres:</strong> {{ $vehicle->number_of_tyres ?? 'N/A' }}</p>
-
-    <hr>
-
-    <h4>Vehicle Documents</h4>
-
-    @php
-        $documents = [
-            'rc_document_file' => ['label' => '📄 Registration Certificate (RC)', 'valid_from' => $vehicle->rc_valid_from, 'valid_till' => $vehicle->rc_valid_till],
-            'fitness_certificate' => ['label' => '🏋️ Fitness Certificate', 'valid_from' => null, 'valid_till' => $vehicle->fitness_valid_till],
-            'insurance_document' => ['label' => '🛡️ Insurance Document', 'valid_from' => $vehicle->insurance_valid_from, 'valid_till' => $vehicle->insurance_valid_till],
-            'authorization_permit' => ['label' => '📝 Authorization Permit', 'valid_from' => $vehicle->auth_permit_valid_from, 'valid_till' => $vehicle->auth_permit_valid_till],
-            'national_permit' => ['label' => '🌐 National Permit', 'valid_from' => $vehicle->national_permit_valid_from, 'valid_till' => $vehicle->national_permit_valid_till],
-            'tax_document' => ['label' => '💰 Tax Document', 'valid_from' => $vehicle->tax_valid_from, 'valid_till' => $vehicle->tax_valid_till],
-        ];
-    @endphp
-
-    @foreach($documents as $field => $doc)
-        @if(!empty($vehicle->$field))
-            <div class="document-section">
-                <p><strong>{{ $doc['label'] }}:</strong></p>
-                <!-- <img src="{{ asset('storage/' . $vehicle->$field) }}" alt="{{ $doc['label'] }}" style="max-width: 100%; height: auto; margin-bottom: 10px;"> -->
-                <p><strong>Valid From:</strong> {{ $doc['valid_from'] ? \Carbon\Carbon::parse($doc['valid_from'])->format('d-m-Y') : 'N/A' }}</p>
-                <p><strong>Valid Till:</strong> {{ $doc['valid_till'] ? \Carbon\Carbon::parse($doc['valid_till'])->format('d-m-Y') : 'N/A' }}</p>
-            </div>
-            <hr>
-        @endif
-    @endforeach
-</div>
-
+                <div class="row listing-form">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>Account Payable Details for: <strong>{{ $label }}</strong></h5>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-bordered w-100">
+                                        <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Type</th>
+                                                <th>vendor Name</th>
+                                                <th>Date</th>
+                                                <th>Bill Amount</th>
+                                                <th>Amount Paid</th>
+                                               
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @forelse($entries as $index => $entry)
+                                            <tr>
+                                                <td>{{ $index + 1 }}</td>
+                                                <td>{{ $entry['type'] }}</td>
+                                                <td>{{ $entry['supplier_name'] }}</td>
+                                                <td>{{ \Carbon\Carbon::parse($entry['date'])->format('d/m/Y') }}</td>
+                                                <td>₹{{ number_format($entry['amount'], 2) }}</td>
+                                                <td>₹{{ number_format($entry['paid'], 2) }}</td>
+                                                <!-- <td>₹{{ number_format($entry['amount'] - $entry['paid'], 2) }}</td> -->
+                                            </tr>
+                                            @empty
+                                            <tr><td colspan="7">No records found.</td></tr>
+                                            @endforelse
+                                        </tbody>
+                                        {{-- ✅ Totals Footer --}}
+                                            <tfoot>
+                                                @php
+                                                    $totalBill = collect($entries)->sum('amount');
+                                                    $totalPaid = collect($entries)->sum('paid');
+                                                    $totalPending = $totalBill - $totalPaid;
+                                                @endphp
+                                                <tr>
+                                                    <th colspan="3" class="text-end">Total</th>
+                                                    <th></th>
+                                                    <th>₹{{ number_format($totalBill, 2) }}</th>
+                                                    <th>₹{{ number_format($totalPaid, 2) }}</th>
+                                                </tr>
+                                                <tr>
+                                                    <th colspan="5" class="text-end">Pending Amount</th>
+                                                    <th>₹{{ number_format($totalPending, 2) }}</th>
+                                                </tr>
+                                            </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 
             </div>
         </div>

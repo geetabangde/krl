@@ -9,8 +9,14 @@ class TaskManagement extends Model
     protected $table = 'task_managements';
     protected $primaryKey = 'id';
     protected $guarded = [];
+    
+    // public function assignedEmployee()
+    // {
+    //     return $this->belongsTo(Employee::class, 'assigned_to');
+    // }
+    
     public function assignedEmployee()
     {
-        return $this->belongsTo(Employee::class, 'assigned_to');
+        return $this->belongsTo(Admin::class, 'assigned_to');
     }
 }

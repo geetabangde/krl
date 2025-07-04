@@ -1,6 +1,7 @@
 @extends('admin.layouts.app')
 @section('title', 'Order | KRL')
 @section('content')
+
 <div class="page-content">
    <div class="container-fluid">
       <!-- start page title -->
@@ -17,6 +18,7 @@
             </div>
          </div>
       </div>
+   
       <!-- end page title -->
       <!-- Order Booking listing Page -->
       <div class="row listing-form">
@@ -42,6 +44,7 @@
                            <th>S.No</th>
                            <th>Order ID</th>
                            <th>Lr Number</th>
+                           <th>Customer Name</th>
                            <th>Consignment Details</th>
                            <th>Consignment Pickup Date</th>
                            <th>Status   </th>
@@ -74,32 +77,21 @@
                                     -
                                  @endif
                            </td>
+                           <td>{{ $order->customer->name ?? '-' }}</td>
+
 
                             <td>{{ $order->description }}</td>
                             <td>{{ $order->order_date }}</td>
 
-                           <td id="status-{{ $order->order_id }}">
-                              @php
-                                 $currentStatus = '-';
-                                 $decodedStatus = is_array($order->status) ? $order->status : json_decode($order->status, true);
-                                 if (is_array($decodedStatus)) {
-                                    foreach ($decodedStatus as $stat) {
-                                    if (!empty($stat['timestamp'])) {
-                                       $currentStatus = $stat['status'];
-                                    }
-                                    }
-                                 }
-                              @endphp
-
-                              <span class="badge bg-primary status-cell" style="cursor:pointer;"
-                                    data-order_id="{{ $order->order_id }}"
-                                    data-status="{{ $currentStatus }}">
-                                 {{ $currentStatus }}
-                              </span>
-                              </td>
-
-
-
+                           <td 
+                           id="status-{{ $order->order_id }}" 
+                           class="status-cell text-center px-2 py-1 text-white fw-bold" 
+                           data-order_id="{{ $order->order_id }}" 
+                           data-status="{{ $order->status }}" 
+                           style="cursor: pointer; "
+                           >
+                           <sapan style="background-color:Blue;">{{ str_replace('-', ' ', $order->status) }}</sapan>
+                           </td>
 
 
                         @if (hasAdminPermission('edit order_booking') || hasAdminPermission('delete order_booking')|| hasAdminPermission('view order_booking'))
@@ -112,13 +104,43 @@
                             <a href="{{ route('admin.orders.view', $order->order_id) }}" class="btn btn-sm btn-light view-btn" data-bs-toggle="tooltip" title="View Order"><i class="fas fa-eye text-primary"></i>
                             </a>
                             @endif
-                            @if (hasAdminPermission('edit order_booking'))
-                            <a href="{{ route('admin.orders.edit', $order->order_id) }}" class="btn btn-sm btn-light edit-btn" data-bs-toggle="tooltip" title="Edit Order">
-                                 <i class="fas fa-pen text-warning"></i>
-                              </a>
+                           @if (hasAdminPermission('edit order_booking'))
+                                 @php
+                                    $lrs = $order['lr'] ?? [];
+                                    $allPodUploaded = false;
+
+                                    if (is_array($lrs) && count($lrs) > 0) {
+                                       $allPodUploaded = true;
+
+                                       foreach ($lrs as $lr) {
+                                          if (empty($lr['pod_uploaded']) || $lr['pod_uploaded'] == false || $lr['pod_uploaded'] == 0) {
+                                             $allPodUploaded = false;
+                                             break;
+                                          }
+                                       }
+                                    }
+                                 @endphp
+
+                                 @if ($allPodUploaded)
+                                    <button class="btn btn-sm btn-secondary" disabled>
+                                       <i class="fas fa-pen text-warning"></i>
+                                    </button>
+                                 @else
+                                    <a href="{{ route('admin.orders.edit', $order->order_id) }}"
+                                       class="btn btn-sm btn-light edit-btn" data-bs-toggle="tooltip" title="Edit Order">
+                                       <i class="fas fa-pen text-warning"></i>
+                                    </a>
+                                 @endif
                               @endif
                               @if (hasAdminPermission('delete order_booking'))
-                              <a href="{{ route('admin.orders.delete', $order->order_id) }}" class="btn btn-sm btn-light delete-btn" data-bs-toggle="tooltip" title="Delete Order"><i class="fas fa-trash text-danger"></i></a>
+                              <a href="{{ route('admin.orders.delete', $order->order_id) }}"
+                                    class="btn btn-sm btn-light delete-btn"
+                                    data-bs-toggle="tooltip"
+                                    title="Delete Order"
+                                    onclick="return confirm('Are you sure you want to delete this order?');">
+                                    <i class="fas fa-trash text-danger"></i>
+                                 </a>
+                            
                               @endif
                             </td>
                             @endif
@@ -131,71 +153,47 @@
             </div>
          </div>
       </div>
-      
-     
-
    </div>
    <!-- End Page-content -->
 </div>
 <!-- end main content-->
 
 
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        document.querySelectorAll('.delete-btn').forEach(button => {
-            button.addEventListener('click', function (e) {
-                e.preventDefault();
 
-                if (!confirm('Are you sure you want to delete all LR entries under this order ID?')) return;
-
-                const url = this.getAttribute('href');
-
-                fetch(url, {
-                    method: 'DELETE',
-                    headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'Accept': 'application/json'
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    alert(data.message);
-                    if (data.status === 'success') {
-                        location.reload(); // or redirect
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Something went wrong.');
-                });
-            });
-        });
-    });
-</script>
 <!-- Status Update Modal -->
-<!-- Status Update Modal -->
-<div class="modal fade" id="statusModal" tabindex="-1" aria-labelledby="statusModalLabel" aria-hidden="true">
+<div class="modal fade" id="statusModal" tabindex="-1" aria-labelledby="statusModalLabel" aria-hidden="true" >
   <div class="modal-dialog">
-    <form id="statusUpdateForm">
+    <form id="statusUpdateForm" method="post">
+       @method('POST')
       @csrf
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="statusModalLabel">Update Order Status</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
+        
         <div class="modal-body">
-          <input type="hidden" id="orderIdInput" name="order_id" value="">
+          <!-- Hidden order ID -->
+          <input type="hidden" id="orderIdInput" name="order_id">
 
+          <!-- Status Dropdown -->
           <div class="mb-3">
             <label for="statusSelect" class="form-label">Select Status</label>
             <select class="form-select" id="statusSelect" name="status" required>
-              <option value="Material Collected">Material Collected</option>
-              <option value="In Transit">In Transit</option>
+              {{-- <option value="Material-Collected">Material Collected</option>
+              <option value="In-Transit">In Transit</option> --}}
               <option value="Delivered">Delivered</option>
-              <!-- आप जितने status चाहते हैं यहाँ डाल सकते हैं -->
+              <option value="Completed">Completed</option>
+              <option value="Processing">Processing</option>
+              <option value="Delivered">Delivered</option>
+              <option value="Request-lr">LR Request</option>
+              <option value="Request-freeghtBill">Freight-Bill Request</option>
+              <option value="Request-invioce">Invoice Request</option>
+              <!-- Add more status options as needed -->
             </select>
           </div>
         </div>
+
         <div class="modal-footer">
           <button type="submit" class="btn btn-primary">Update Status</button>
         </div>
@@ -204,53 +202,81 @@
   </div>
 </div>
 
+
 <!-- jQuery -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+{{-- 
+<script>
+  $(document).ready(function() {
+    // Open modal on status cell click
+    $('.status-cell').click(function() {
+      var orderId = $(this).data('order_id');
+      var currentStatus = $(this).data('status');
+
+      $('#orderIdInput').val(orderId);
+      $('#statusSelect').val(currentStatus);
+      $('#statusModal').modal('show');
+    });
+
+    // AJAX form submit
+    $('#statusUpdateForm').submit(function(e) {
+      e.preventDefault();
+
+      var orderId = $('#orderIdInput').val();
+      var newStatus = $('#statusSelect').val();
+
+      // $.ajax({
+      //   url: '/admin/orders/update-status/' + orderId,
+      //   method: 'POST',
+      //   data: {
+      //     _token: '{{ csrf_token() }}',
+      //     status: newStatus
+      //   },
+      //   success: function(response) {
+      //     if (response.success) {
+      //       $('#statusModal').modal('hide');
+
+      //       // Update status text and data-status attribute
+      //       $('#status-' + orderId).text(newStatus);
+      //       $('#status-' + orderId).data('status', newStatus);
+      //     } else {
+      //       alert('Status update failed!');
+      //     }
+      //   },
+      //   error: function() {
+      //     alert('Error occurred while updating status.');
+      //   }
+      // });
+    });
+  });
+</script> --}}
+
 
 <script>
   $(document).ready(function() {
-  // Status badge पर क्लिक पर modal खोलना
-  $('.status-cell').click(function() {
-    var orderId = $(this).data('order_id'); // order_id लें
-    var currentStatus = $(this).data('status');
+    // Open modal on status cell click
+    $('.status-cell').click(function() {
+      var orderId = $(this).data('order_id');
+      var currentStatus = $(this).data('status');
 
-    $('#orderIdInput').val(orderId);
-    $('#statusSelect').val(currentStatus);
-    $('#statusModal').modal('show');
-  });
+      $('#orderIdInput').val(orderId);
+      $('#statusSelect').val(currentStatus);
 
-  // Modal form submit AJAX से
-  $('#statusUpdateForm').submit(function(e) {
-    e.preventDefault();
+      // Set form action dynamically
+      let form = document.getElementById('statusUpdateForm');
+      form.action = `/admin/orders/update-status/${orderId}`;
 
-    var orderId = $('#orderIdInput').val();
-    var newStatus = $('#statusSelect').val();
+      $('#statusModal').modal('show');
+    });
 
-    $.ajax({
-      url: '/admin/orders/update-status/' + orderId,  // order_id के साथ कॉल
-      method: 'POST',
-      data: {
-        _token: '{{ csrf_token() }}',
-        status: newStatus
-      },
-      success: function(response) {
-        if(response.success) {
-          $('#statusModal').modal('hide');
-
-          // टेबल में नया status दिखाएं और data-status अपडेट करें
-          $('#status-' + orderId + ' .status-cell').text(newStatus);
-          $('#status-' + orderId + ' .status-cell').data('status', newStatus);
-        } else {
-          alert('Status update failed!');
-        }
-      },
-      error: function() {
-        alert('Error occurred while updating status.');
-      }
+    // Regular form submission, no AJAX
+    $('#statusUpdateForm').submit(function() {
+      // Allow default submission to backend route
+      return true; // Optional — form submits by default
     });
   });
-});
-
 </script>
+
+
 
 @endsection

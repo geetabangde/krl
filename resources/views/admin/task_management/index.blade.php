@@ -29,6 +29,88 @@
     }
 
 
+<style>
+    /* Custom Styling to Match Original Design */
+    .custom-modal-width {
+        max-width: 400px;
+    }
+
+    .calendar-icon-input {
+        position: relative;
+    }
+
+    .calendar-icon-input input[type="date"] {
+        padding-left: 2.5rem;
+        border-radius: 0.25rem;
+        border: 1px solid #ced4da;
+    }
+
+    .calendar-icon-input::before {
+        content: "📅";
+        position: absolute;
+        left: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        pointer-events: none;
+        font-size: 1.2rem;
+        color: #555;
+    }
+
+    #filterTasks {
+        font-size: 1.2rem;
+        padding: 0.4rem 1rem;
+        background-color: #ca2639;
+        color: white;
+        border: none;
+        border-radius: 0.25rem;
+        transition: background-color 0.3s;
+    }
+
+    #filterTasks:hover {
+        background-color: #a62030;
+    }
+
+    .btn-add-task {
+        background-color: #ca2639;
+        color: white;
+        border: none;
+        border-radius: 0.25rem;
+        transition: background-color 0.3s;
+    }
+
+    .btn-add-task:hover {
+        background-color: #a62030;
+    }
+
+    .btn-action {
+        border-radius: 0.25rem;
+        padding: 0.25rem 0.5rem;
+        margin: 0 2px;
+    }
+
+    .badge-high-priority {
+        background-color: #dc3545;
+    }
+
+    .badge-normal-priority {
+        background-color: #6c757d;
+    }
+
+    .modal-header {
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .table thead th {
+        background-color: #f8f9fa;
+        color: #333;
+        border-bottom: 2px solid #dee2e6;
+    }
+
+    .table tbody tr:hover {
+        background-color: #f1f3f5;
+    }
+</style>
 
 </style>
 @section('content')
@@ -63,14 +145,15 @@
                 </div>
             </div>
             @if (hasAdminPermission('create task_managment'))
-           
-            <button class="btn ms-3" id="addTaskBtn"
-                style="background-color: #ca2639; color: white; border: none;"
-                data-bs-toggle="modal" data-bs-target="#addTaskModal">
-                <i class="fas fa-plus"></i> Add Task
-            </button>
-     
-        @endif
+    <div class="d-flex justify-content-end mb-3">
+        <button class="btn" id="addTaskBtn"
+            style="background-color: #ca2639; color: white; border: none;"
+            data-bs-toggle="modal" data-bs-target="#addTaskModal">
+            <i class="fas fa-plus"></i> Add Task
+        </button>
+    </div>
+@endif
+      
             <!-- end page title -->
            <!-- Tabs for Table Selection -->
 <ul class="nav nav-tabs mb-3" id="taskTabs" role="tablist">
@@ -78,7 +161,7 @@
         <button class="nav-link active" id="table1-tab" data-bs-toggle="tab" data-bs-target="#table1" type="button" role="tab">Today Tasks</button>
     </li>
     <li class="nav-item" role="presentation">
-        <button class="nav-link" id="table2-tab" data-bs-toggle="tab" data-bs-target="#table2" type="button" role="tab">Other Days Tasks</button>
+        <button class="nav-link" id="table2-tab" data-bs-toggle="tab" data-bs-target="#table2" type="button" role="tab">All Tasks</button>
     </li>
 </ul>
 
@@ -92,28 +175,34 @@
             <div class="card-body">
                 <table id="datatable1" class="table table-bordered dt-responsive nowrap w-100">
                     <thead>
-                        <tr>
-                            <th>S.No</th>
-                            <th>Task ID</th>
-                            <th>Assign Task</th>
-                            <th>Description</th>
-                            <th>Priority</th>
-                            <th>Status</th>
-                            <th>Task Date</th>
-                                @if (hasAdminPermission('edit task_managment') || hasAdminPermission('delete task_managment')|| hasAdminPermission('view task_managment'))
-                                <th>Action</th>@endif
-                        </tr>
+                    <tr>
+                        <th>S.No</th>
+                        <th>Task ID</th>
+                        <th>Assign Task</th>
+                        <th>Description</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                        <th>Task Date</th>
+                        @if (hasAdminPermission('edit task_managment') || hasAdminPermission('delete task_managment') || hasAdminPermission('view task_managment'))
+                        <th>Action</th>
+                        @endif
+                    </tr>
                     </thead>
-                    <tbody>
+                   <tbody>
                         @forelse ($today_tasks as $index => $task)
                             <tr>
                                 <td>{{ $loop->iteration }}</td>
                                 <td>Tsk##{{ $task->id }}</td>
                                 @php
-                            $employee = App\Models\Employee::find($task->assigned_to);
+                                    $employee = App\Models\Admin::find($task->assigned_to);
                                 @endphp
-                                <td>{{$employee->first_name . ' ' . $employee->last_name }}</td>
-
+                                <td>
+                                    @if($employee)
+                                        {{ $employee->name . ' ' . $employee->last_name }}
+                                    @else
+                                        <span class="text-danger">N/A</span>
+                                    @endif
+                                </td>
                                 <td>{{ $task->description }}</td>
                                 <td>
                                     @if($task->high_priority)
@@ -122,39 +211,65 @@
                                         <span class="badge bg-secondary">Normal</span>
                                     @endif
                                 </td>
-                                <td> <a href="{{ route('admin.task_management.task_status', $task->id) }}">
-                                    <button class="btn btn-sm {{ $task->status === 'close' ? 'btn-danger' : 'btn-secondary' }}">
-                                        {{ $task->status === 'close' ? 'Open' : 'Close' }}
-                                    </button>
-                                </a></td>
-                                <td>{{ \Carbon\Carbon::parse($task->date)->format('Y-m-d') }}</td>
-                                @if (hasAdminPermission('edit task_managment') || hasAdminPermission('delete task_managment')|| hasAdminPermission('view task_managment'))
                                 <td>
-                                 @if (hasAdminPermission('view task_managment'))
-                                 <button class="btn btn-sm btn-light view-btn" data-bs-toggle="tooltip" title="View Task"><i class="fas fa-eye text-primary"></i></button>
-                                 @endif
-                                @if (hasAdminPermission('edit task_managment'))
-                                <button class="btn btn-light  edit-btn" data-bs-toggle="modal" data-bs-target="#editTaskModal"
-                                data-id="{{ $task->id }}"
-                                data-assigned_to="{{ $task->assigned_to }}"
-                                data-description="{{ $task->description }}"
-                                data-high_priority="{{ $task->high_priority }}"
-                                data-date="{{ $task->date }}"
-                                data-bs-toggle="tooltip" 
-                                title="Edit Task">
-                                
-                                <i class="fas fa-pen text-warning"></i>
-                                </button>
-                                @endif
-                                @if (hasAdminPermission('delete task_managment'))
-                                <a href="{{ route('admin.task_management.delete',$task->id) }}"  >  <button class="btn btn-sm btn-light delete-btn" data-bs-toggle="tooltip" title="Delete Task"><i class="fas fa-trash text-danger"></i></button></a>
-                                @endif
+                                    <a href="{{ route('admin.task_management.task_status', $task->id) }}">
+                                        <button class="btn btn-sm {{ $task->status === 'close' ? 'btn-danger' : 'btn-secondary' }}">
+                                            {{ $task->status === 'close' ? 'Open' : 'Close' }}
+                                        </button>
+                                    </a>
                                 </td>
+                                <td>{{ \Carbon\Carbon::parse($task->date)->format('Y-m-d') }}</td>
+                                @if (hasAdminPermission('edit task_managment') || hasAdminPermission('delete task_managment') || hasAdminPermission('view task_managment'))
+                                    <td>
+                                        @if (hasAdminPermission('view task_managment'))
+                                            <button class="btn btn-sm btn-light view-btn"
+                                                title="View Task"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#viewTaskModal"
+                                                data-id="{{ $task->id }}"
+                                                data-employee="{{ $employee ? $employee->name . ' ' . $employee->last_name : 'N/A' }}"
+                                                data-description="{{ $task->description }}"
+                                                data-priority="{{ $task->high_priority ? 'High' : 'Normal' }}"
+                                                data-status="{{ ucfirst($task->status) }}"
+                                                data-date="{{ \Carbon\Carbon::parse($task->date)->format('Y-m-d') }}"
+                                                onclick="viewTaskData(this)">
+                                                <i class="fas fa-eye text-primary"></i>
+                                            </button>
+                                        @endif
+                                        @if (hasAdminPermission('edit task_managment'))
+                                            <button class="btn btn-light edit-btn"
+                                                data-bs-toggle="modal" data-bs-target="#editTaskModal"
+                                                data-id="{{ $task->id }}"
+                                                data-assigned_to="{{ $task->assigned_to }}"
+                                                data-description="{{ $task->description }}"
+                                                data-high_priority="{{ $task->high_priority }}"
+                                                data-date="{{ $task->date }}"
+                                                title="Edit Task">
+                                                <i class="fas fa-pen text-warning"></i>
+                                            </button>
+                                        @endif
+                                        @if (hasAdminPermission('delete task_managment'))
+                                            <a href="{{ route('admin.task_management.delete', $task->id) }}"  onclick="return confirm('Are you sure you want to delete this task?')" >
+                                                <button class="btn btn-sm btn-light delete-btn" title="Delete Task">
+                                                    <i class="fas fa-trash text-danger"></i>
+                                                </button>
+                                            </a>
+                                        @endif
+                                    </td>
                                 @endif
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8" class="text-center">No task found for today.</td>
+                                <td class="text-center">No task found for today.</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                @if (hasAdminPermission('edit task_managment') || hasAdminPermission('delete task_managment') || hasAdminPermission('view task_managment'))
+                                    <td></td>
+                                @endif
                             </tr>
                         @endforelse
                     </tbody>
@@ -167,24 +282,30 @@
     <!-- Table 2 -->
     <div class="tab-pane fade" id="table2" role="tabpanel">
         <div class="card">
-            <div class="card-header">
-                <h4 class="card-title">🛞 Others days  Tasks</h4>
-                
-                <div class="row mb-3">
-                    <div class="col calendar-icon-input ">
-                        <input type="date" id="selected_date" class="form-control" name="date" >
-                    </div>
-                    <div class="col-auto d-flex align-items-center">
-                        <button type="button" name="submit" class="btn btn-primary" id="filterTasks" title="Search">
-                            🔍
-                        </button>
-                    </div>
-                </div>
-
-<!-- Task Results -->
-
-            </div>
+         
             <div class="card-body">
+            {{-- <div class="card-header">
+                <h4 class="card-title">🛞 All Tasks</h4>
+                
+               <div class="row mb-3 mt-3 justify-content-end">
+                <div class="col-md-4 d-flex justify-content-end calendar-icon-input">
+                    <input type="date" id="selected_date" class="form-control me-2" name="date" style="max-width: 60%;">
+                    <button type="button" class="btn add-button" id="filterTasks" title="Search">
+                        🔍 Search
+                    </button>
+                </div>
+                </div>
+            </div> --}}
+                <div class="row mb-3 justify-content-end">
+                            <div class="col-md-4 d-flex align-items-center">
+                                <div class="calendar-icon-input flex-grow-1 me-2">
+                                    <input type="date" id="selected_date" class="form-control" name="date">
+                                </div>
+                                <button type="button" class="btn" id="filterTasks" title="Search">
+                                    <i class="fas fa-search me-2"></i> Search
+                                </button>
+                            </div>
+                        </div>
                 <table id="datatable2" class="table table-bordered dt-responsive nowrap w-100">
                     <thead>
                         <tr>
@@ -204,9 +325,16 @@
                             <td>{{ $loop->iteration }}</td>
                             <td>Tsk##{{ $task->id }}</td>
                             @php
-                            $employee = App\Models\Employee::find($task->assigned_to);
+                            $employee = App\Models\Admin::find($task->assigned_to);
                                 @endphp
-                                <td>{{$employee->first_name . ' ' . $employee->last_name }}</td>
+                                <td>
+                                    @if($employee)
+                                        {{ $employee->name . ' ' . $employee->last_name }}
+                                    @else
+                                        <span class="text-muted">Unknown</span>
+                                    @endif
+                                </td>
+
                             <td>{{ $task->description }}</td>
                             <td>
                                 @if($task->high_priority)
@@ -224,7 +352,20 @@
                             <td>{{ \Carbon\Carbon::parse($task->date)->format('Y-m-d') }}</td>
                             <td>
                                 @if (hasAdminPermission('view task_managment'))
-                                <button class="btn  btn-light view-btn" data-bs-toggle="tooltip" title="View Task"><i class="fas fa-eye text-primary"></i></button>
+                                 <button class="btn btn-sm btn-light view-btn"
+                                title="View Task"
+                                data-bs-toggle="modal"
+                                data-bs-target="#viewTaskModal"
+                                data-id="{{ $task->id }}"
+                                data-employee="{{ $employee ? $employee->name . ' ' . $employee->last_name : 'N/A' }}"
+                                data-description="{{ $task->description }}"
+                                data-priority="{{ $task->high_priority ? 'High' : 'Normal' }}"
+                                data-status="{{ ucfirst($task->status) }}"
+                                data-date="{{ \Carbon\Carbon::parse($task->date)->format('Y-m-d') }}"
+                                onclick="viewTaskData(this)">
+                                <i class="fas fa-eye text-primary"></i>
+                            </button>
+                              
                                 @endif
                                 @if (hasAdminPermission('edit task_managment'))
                                 <button class="btn btn-light edit-btn" data-bs-toggle="modal" data-bs-target="#editTaskModal"
@@ -239,7 +380,7 @@
                                 </button>
                                 @endif
                                 @if (hasAdminPermission('delete task_managment'))
-                                <a href="{{ route('admin.task_management.delete', $task->id) }}" data-bs-toggle="tooltip" title="Delete Task">
+                                <a href="{{ route('admin.task_management.delete', $task->id) }}" data-bs-toggle="tooltip" title="Delete Task"  onclick="return confirm('Are you sure you want to delete this task?')">
                                     <button class="btn btn-sm btn-light delete-btn"><i class="fas fa-trash text-danger"></i></button>
                                 </a>
                                 @endif
@@ -278,7 +419,7 @@
                                
                                 @foreach($employees as $employee)
                                     <option value="{{ $employee->id }}" {{ old('assigned_to') == $employee->id ? 'selected' : '' }}>
-                                        {{ $employee->first_name }} {{ $employee->last_name }}
+                                        {{ $employee->name }} {{ $employee->last_name }}
                                     </option>
                                 @endforeach
                             </select>
@@ -351,7 +492,7 @@
                         <select class="form-control" name="assigned_to" id="edit_assigned_to" required>
                             <option value="">Select Employee</option>
                             @foreach($employees as $employee)
-                                <option value="{{ $employee->id }}">  {{ $employee->first_name }} {{ $employee->last_name }}</option>
+                                <option value="{{ $employee->id }}">  {{ $employee->name }} {{ $employee->last_name }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -393,10 +534,49 @@
 </div>
 
     </div>
-    
+    {{-- view model --}}
+    <div class="modal fade" id="viewTaskModal" tabindex="-1" aria-labelledby="viewTaskModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewTaskModalLabel">Task Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>🆔 Task ID:</strong> <span id="taskId"></span></p>
+                <p><strong>👤 Assigned To:</strong> <span id="taskEmployee"></span></p>
+                <p><strong>📝 Description:</strong> <span id="taskDescription"></span></p>
+                <p><strong>🎯 Priority:</strong> <span id="taskPriority"></span></p>
+                <p><strong>📅 Date:</strong> <span id="taskDate"></span></p>
+                <p><strong>🚦 Status:</strong> <span id="taskStatus"></span></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    {{-- view model --}}
     </div>
     </div> <!-- end slimscroll-menu-->
     </div>
+    <script>
+    function viewTaskData(button) {
+        document.getElementById("taskId").textContent = button.dataset.id || 'N/A';
+        document.getElementById("taskEmployee").textContent = button.dataset.employee || 'N/A';
+        document.getElementById("taskDescription").textContent = button.dataset.description || 'N/A';
+        document.getElementById("taskPriority").textContent = button.dataset.priority || 'N/A';
+        document.getElementById("taskDate").textContent = button.dataset.date || 'N/A';
+        document.getElementById("taskStatus").textContent = button.dataset.status || 'N/A';
+    }
+
+    // Optional: Tooltip Initialization
+    document.addEventListener('DOMContentLoaded', function () {
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        });
+    });
+</script>
+
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         $(document).ready(function () {
@@ -419,7 +599,7 @@
                             $.each(response.tasks, function (index, task) {
                                 const employee = task.assigned_employee;
                                 const employeeName = employee 
-                                    ? `${employee.first_name ?? 'N/A'} ${employee.last_name ?? ''}` 
+                                    ? `${employee.name ?? 'N/A'} ${employee.last_name ?? ''}` 
                                     : 'N/A';
     
                                 const priorityBadge = task.high_priority 
@@ -529,3 +709,4 @@
 
     </script>
 @endsection
+

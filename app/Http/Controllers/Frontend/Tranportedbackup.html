@@ -1,0 +1,101 @@
+<?php
+
+namespace App\Http\Controllers\Frontend;
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
+use App\Http\Controllers\Controller;
+
+class TransporterBillController extends Controller
+{
+    protected $subscriptionKey = 'AL5e2V9g1I2p9h4U3e';
+    protected $username = 'AL001';
+    protected $plainPassword = 'Alankit@123';
+
+    
+
+
+public function getEwayBillsForTransporter()
+{
+    
+    $authToken = '1OB26KAHNRijUsVWinROaVRHE'; 
+    $encryptedSek = '6YZKbCL8KMTI77TfUJT1qa3OIuyy5tL30IsnPtrvE/hGgCjhGmGONERdukDluIoA'; 
+    $appKey = 'RZbiPYuN3VTF2hMhQcMMBo0MfH4UVNZaSrIeTrpKopE='; 
+    $gstin = '07AGAPA5363L002'; 
+
+    // Step 2: Decrypt SEK using appKey
+    $ciphering = 'AES-256-ECB';
+    $options = OPENSSL_RAW_DATA;
+    $decryption_iv = '';
+    $decryptionKey = base64_decode($appKey);
+    $decryptedSek = openssl_decrypt(base64_decode($encryptedSek), $ciphering, $decryptionKey, $options, $decryption_iv);
+    
+
+    if (!$decryptedSek) {
+        return response()->json([
+            'success' => false,
+            'error' => 'Failed to decrypt SEK. Check appKey or encryptedSek.'
+        ], 500);
+    }
+    
+    $ewayBillDate = '20/05/2024'; 
+    $url = "https://developers.eraahi.com/api/ewaybillapi/v1.03/ewayapi/GetEwayBillsForTransporter?date={$ewayBillDate}";
+
+   
+    $headers = [
+        'Content-Type' => 'application/json',
+        'gstin' => $gstin,
+        'Ocp-Apim-Subscription-Key' => 'AL5e2V9g1I2p9h4U3e',
+        'authtoken' => $authToken,
+    ];
+    
+    $response = Http::withHeaders($headers)->get($url);
+    
+    $jsonResponse = $response->json();
+
+     
+  
+    if ($response->successful() && isset($jsonResponse['data']) && isset($jsonResponse['rek'])) {
+        $rekEncrypted = $jsonResponse['rek'];
+        $dataEncrypted = $jsonResponse['data'];
+        // dd($rekEncrypted,$dataEncrypted);
+
+         // Base64 decode rek
+        $rekDecoded = base64_decode($rekEncrypted, true);
+        if (!$rekDecoded) {
+            return response()->json(['error' => 'Invalid base64 in rek'], 500);
+        }
+
+        
+        $rek = openssl_decrypt($rekDecoded, $ciphering, $decryptedSek, $options, $decryption_iv);
+        if (!$rek) {
+            return response()->json(['error' => 'Failed to decrypt rek'], 500);
+        }
+
+        
+        $dataDecoded = base64_decode($dataEncrypted, true);
+        if (!$dataDecoded) {
+            return response()->json(['error' => 'Invalid base64 in data'], 500);
+        }
+
+        $decryptedData = openssl_decrypt($dataDecoded, $ciphering, $rek, $options, $decryption_iv);
+        if (!$decryptedData) {
+            return response()->json(['error' => 'Failed to decrypt eway bill data'], 500);
+        }
+
+        return response()->json([
+            'success' => true,
+            'eway_bills' => json_decode($decryptedData, true)
+        ]);
+    }
+
+    return response()->json([
+        'success' => false,
+        'error' => 'Invalid response from API',
+        'raw_response' => $jsonResponse
+    ], $response->status());
+}
+
+
+
+}

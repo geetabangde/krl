@@ -45,7 +45,7 @@
     }
 
     .container {
-      max-width: 1000px;
+      max-width: 1100px;
       margin: auto;
       background: #fff;
       padding: 20px 25px;
@@ -177,6 +177,15 @@
     th {
       background-color: #fff;
     }
+    tfoot td {
+    font-weight: bold;
+    padding: 6px 8px;
+    border:none !important;
+}
+tfoot td.text-end {
+    text-align: right;
+}
+
   </style>
 </head>
 
@@ -190,8 +199,8 @@
     <div class="section">
       <div class="box left-box">
         <strong>BILL TO / CONSIGNMENT SENT TO:</strong><br>
-        [Party Name & Address Here]<br>
-        <strong>Freight Type:</strong> {{ $order->order_method ?? '' }}
+        {{ $order->customer->name ?? '-' }}<br>
+        <!-- <strong>Freight Type:</strong> {{ $order->order_method ?? '' }} -->
       </div>
       <div class="box right-box">
         <strong>Bill No.:</strong>{{ $freightBill->freight_bill_number ?? '-' }}<br>
@@ -203,7 +212,7 @@
        </div>
     </div>
 
-    @foreach ($matchedEntries as $index => $entry)
+    <!-- @foreach ($matchedEntries as $index => $entry)
         <div class="section">
         <div class="box half-box">
             <strong>From:</strong><br>
@@ -216,14 +225,33 @@
         {{ $entry['to_destination'] ?? '-' }}
         </div>
         </div>
-    @endforeach
+    @endforeach -->
 
-    <table id="freightTable" class="table table-bordered">
+  @php
+  $allFroms = collect($matchedEntries)->pluck('from_destination')->filter()->toArray();
+  $allTos = collect($matchedEntries)->pluck('to_destination')->filter()->toArray();
+  @endphp
+
+  <div class="section">
+      <div class="box half-box">
+          <strong>From:</strong><br>
+          {{ implode(', ', $allFroms) }}
+      </div>
+      <div class="box half-box">
+          <strong>To:</strong><br>
+          {{ implode(', ', $allTos) }}
+      </div>
+  </div>
+
+
+<table id="freightTable" class="table table-bordered">
     <thead>
       <tr>
           <th>S. No.</th>
           <th>LR No.</th>
           <th>LR Date</th>
+          <th>LR Charges</th>
+          <th>Hamali</th>
           <th>Particulars</th>
           <th>Freight Type</th>
           <th>Weight / Quantity</th>
@@ -232,19 +260,113 @@
       </tr>
   </thead>
   <tbody>
-   @foreach($matchedEntries as $index => $entry)
+  @foreach($matchedEntries as $index => $entry)
       <tr>
-        <td>{{ $index + 1 }}</td>
-        <td>{{ $entry['lr_number'] }}</td>
-        <td>{{ \Carbon\Carbon::parse($entry['lr_date'])->format('Y-m-d') }}</td>
-        <td>{{ $entry['cargo'][0]['package_description'] ?? '-' }}</td>
-        <td>{{ $order->order_method ?? '' }}</td>
-        <td>{{ $entry['cargo'][0]['weight'] ?? '-' }}</td>
-        <td></td>
-        <td></td>
+          <td>{{ $index + 1 }}</td>
+          <td>{{ $entry['lr_number'] }}</td>
+          <td>{{ \Carbon\Carbon::parse($entry['lr_date'])->format('Y-m-d') }}</td>
+         
+        
+        <td>₹ {{ number_format($entry['lr_charges'], 2) }}</td>
+        <td>₹ {{ number_format($entry['hamali'], 2) }}</td>
+   
+          <td>{{ $entry['cargo'][0]['package_description'] ?? '-' }}</td>
+          <td>{{ $entry['freight_type'] }}</td>
+
+          {{-- Weight / Quantity --}}
+          <td>
+              @if($entry['freight_type'] == 'contract')
+                  -
+              @else
+                  {{ $entry['cargo'][0]['charged_weight'] ?? '-' }}
+                  {{ $entry['cargo'][0]['unit'] ?? '-' }}
+
+              @endif
+          </td>
+
+          {{-- Rate --}}
+          <td>
+              @if($entry['freight_type'] == 'contract')
+                  {{ $entry['vehicletype'] ?? '-' }}   (Vehicle Type)
+              @else
+                  {{ number_format($entry['order_rate'] ?? 0, 2) }}
+              @endif
+          </td>
+
+          {{-- Amount --}}
+          <td>
+              {{ number_format($entry['freight_amount'] ?? 0, 2) }}
+          </td>
       </tr>
   @endforeach
   </tbody>
+
+   <tfoot>
+    @if($totals['lr_charges'] != 0)
+    <!-- <tr>
+        <td colspan="6"></td>
+        <td class="text-end"><strong>LR Charges</strong></td>
+        <td>₹ {{ number_format($totals['lr_charges'], 2) }}</td>
+    </tr> -->
+    @endif
+
+    @if($totals['hamali'] != 0)
+    <!-- <tr>
+        <td colspan="6"></td>
+        <td class="text-end"><strong>Hamali</strong></td>
+        <td>₹ {{ number_format($totals['hamali'], 2) }}</td>
+    </tr> -->
+    @endif
+
+    @if($totals['other_charges'] != 0)
+    <tr>
+        <td colspan="8"></td>
+        <td class="text-end"><strong>Other Charges</strong></td>
+        <td>₹ {{ number_format($totals['other_charges'], 2) }}</td>
+    </tr>
+    @endif
+
+    @if($totals['taxable_amount'] != 0)
+    <tr>
+        <td colspan="8"></td>
+        <td class="text-end"><strong>Taxable Amount</strong></td>
+        <td>₹ {{ number_format($totals['taxable_amount'], 2) }}</td>
+    </tr>
+    @endif
+
+    @if($totals['gst_amount'] != 0)
+    <!-- <tr>
+        <td colspan="6"></td>
+        <td class="text-end"><strong>GST (12%)</strong></td>
+        <td>₹ {{ number_format($totals['gst_amount'], 2) }}</td>
+    </tr> -->
+    @endif
+
+    @if($totals['total_amount'] != 0)
+    <tr>
+        <td colspan="8"></td>
+        <td class="text-end"><strong>Total</strong></td>
+        <td>₹ {{ number_format($totals['total_amount'], 2) }}</td>
+    </tr>
+    @endif
+
+    @if($totals['less_advance'] != 0)
+    <tr>
+        <td colspan="8"></td>
+        <td class="text-end"><strong>Less Advance</strong></td>
+        <td>₹ {{ number_format($totals['less_advance'], 2) }}</td>
+    </tr>
+    @endif
+
+    @if($totals['balance_freight'] != 0)
+    <tr>
+        <td colspan="8"></td>
+        <td class="text-end"><strong>Balance</strong></td>
+        <td>₹ {{ number_format($totals['balance_freight'], 2) }}</td>
+    </tr>
+    @endif
+</tfoot>
+
 </table>
 
 

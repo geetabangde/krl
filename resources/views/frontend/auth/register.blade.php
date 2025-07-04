@@ -21,6 +21,12 @@
                             </div>
                             <div class="form-group">
                                 <div class="form-icon">
+                                   <i class="far fa-envelope"></i>
+                                    <input type="email" class="form-control" name="email" placeholder="Your Email" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="form-icon">
                                     <i class="far fa-phone"></i>
                                     <input type="number" class="form-control" name="mobile_number" placeholder="Your Number" required>
                                 </div>

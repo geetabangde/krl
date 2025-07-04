@@ -46,7 +46,7 @@
                                     sorting, and pagination via DataTables.
                                 </p>
                             </div>
-                            @if (hasAdminPermission('create  drivers'))
+                            @if (hasAdminPermission('create drivers'))
                                 <a class="btn" href="{{ route('admin.drivers.create') }}" id="addVehicleBtn"
                                     style="background-color: #ca2639; color: white; border: none;">
                                     <i class="fas fa-plus"></i> Add Driver

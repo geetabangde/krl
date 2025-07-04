@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers\Backend;
 use App\Http\Controllers\Controller;
-
+use Illuminate\Support\Facades\Hash;
 use App\Models\User;
+use App\Models\Group;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
@@ -24,26 +25,60 @@ class UserController extends Controller implements HasMiddleware
     public function index()
     {   
       $users = User::all();
-      return view('admin.users.index', compact('users')); // ✅ View me bhejein
+      $groups = Group::with('parent')->get();
+      
+      return view('admin.users.index', compact('users','groups')); 
     }
+
+    public function edit($id)
+   {
+    $user = User::findOrFail($id);
+    
+    $groups = Group::all();
+   // Decode the address JSON string to array
+    $addresses = json_decode($user->address, true);
+
+    return view('admin.users.edit', compact('user', 'groups', 'addresses'));
+  }
+
 
     // Store category data
     public function store(Request $request)
    {
-    
-    // dd($request->all());
-
-    // Directly create new user
-    User::create([
-        'name' => $request->name,
-        'pan_number' => $request->pan_number,
-        'tan_number' => $request->tan_number,
-        'address' => json_encode($request->address), 
-        // 'gst_number' => json_encode($request->gst_numbers),
+    $validated = $request->validate([
+        'name' => 'required|string',
+        'email' => 'required', 
+        'password' => 'required', 
+        'pan_number' => 'nullable|string',
+        'tan_number' => 'nullable|string',
+        'deductor' => 'nullable|string',
+        'group_id' => 'required|integer|exists:groups,id',
+        'address' => 'nullable|array',
+        'address.*.city' => 'nullable|string',
+        'address.*.gstin' => 'nullable|string',
+        'address.*.billing_address' => 'nullable|string',
+        'address.*.consignment_address' => 'nullable|string',
+        'address.*.mobile_number' => 'nullable|string',
+        'address.*.poc' => 'nullable|string',
+        'address.*.email' => 'nullable|string|email',
     ]);
 
-    return redirect()->route('admin.users.index')->with('success', 'User added successfully without validation.');
-   }
+    $user = new User();
+
+    $user->name = $validated['name'];
+    $user->email = $validated['email']; 
+    $user->password = Hash::make($validated['password']); 
+    $user->pan_number = $validated['pan_number'] ?? null;
+    $user->tan_number = $validated['tan_number'] ?? null;
+    $user->deductor = $validated['deductor'] ?? null;
+    $user->group_id = $validated['group_id'];
+    $user->address = $validated['address'] ?? [];
+
+    $user->save();
+
+    return redirect()->route('admin.users.index')->with('success', 'User added successfully!');
+}
+
 
 
    
@@ -53,59 +88,48 @@ class UserController extends Controller implements HasMiddleware
     return view('admin.users.view', compact('user'));
   }
 
-  public function update(Request $request, $id)
-  {
-      $user = User::findOrFail($id);
-  
-      // Update user base fields
-      $user->name = $request->name;
-      $user->pan_number = $request->pan_number;
-      $user->tan_number = $request->tan_number;
-  
-      // Process address input
-      if ($request->filled('address')) {
-          $addressString = $request->address;
-  
-          // Break lines & clean empty ones
-          $addressArray = array_filter(array_map('trim', preg_split("/\r\n|\n|\r/", $addressString)));
-  
-          $addresses = [];
-  
-          foreach ($addressArray as $addressLine) {
-              $addressParts = array_map('trim', explode(',', $addressLine));
-  
-              if (count($addressParts) >= 6) {
-                  $addresses[] = [
-                      'address_id' => 'address_' . Str::random(10), // Generate unique ID
-                      'city' => $addressParts[0],
-                      'gstin' => $addressParts[1],
-                      'billing_address' => $addressParts[2],
-                      'consignment_address' => $addressParts[3],
-                      'mobile_number' => $addressParts[4],
-                      'email' => $addressParts[5],
-                      'poc' => $addressParts[6] ?? '',
-                  ];
-              }
-          }
-  
-          // Merge with old address data if any
-          $existingAddresses = json_decode($user->address, true) ?? [];
-          $mergedAddresses = array_merge($existingAddresses, $addresses);
-  
-          $user->address = json_encode($mergedAddresses, JSON_UNESCAPED_UNICODE);
-      }
-  
-      $user->save();
-  
-      return redirect()->route('admin.users.index')->with('success', 'User updated successfully.');
-  }
+ 
+
+public function update(Request $request, $id)
+{
+    $validated = $request->validate([
+        'name' => 'required|string',
+        'email' => 'required',
+        'pan_number' => 'nullable|string',
+        'tan_number' => 'nullable|string',
+        'deductor' => 'nullable|string',
+        'group_id' => 'required|integer|exists:groups,id',
+        'address' => 'nullable|array',
+        'address.*.city' => 'nullable|string',
+        'address.*.gstin' => 'nullable|string',
+        'address.*.billing_address' => 'nullable|string',
+        'address.*.consignment_address' => 'nullable|string',
+        'address.*.mobile_number' => 'nullable|string',
+        'address.*.poc' => 'nullable|string',
+        'address.*.email' => 'nullable|string|email',
+    ]);
+
+    $user = User::findOrFail($id);
+
+    $user->name = $request->name;
+    $user->email = $request->email; 
+    $user->pan_number = $request->pan_number;
+    $user->tan_number = $request->tan_number;
+    $user->deductor = $request->deductor;
+    $user->group_id = $request->group_id;
+
+    if ($request->has('address')) {
+        $user->address = $request->address; // Assuming 'address' is casted as array/json in User model
+    }
+    // dd($user);
+
+    $user->save();
+
+    return redirect()->route('admin.users.index')->with('success', 'User updated successfully!');
+}
 
 
-  
 
-
-  
-  
 
 
 public function destroy($id)

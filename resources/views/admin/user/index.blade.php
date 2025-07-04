@@ -8,7 +8,7 @@
             <div class="row">
                 <div class="col-12">
                     <div class="page-title-box d-sm-flex align-items-center justify-content-between">
-                        <h4 class="mb-sm-0 font-size-18">Users</h4>
+                        <h4 class="mb-sm-0 font-size-18">Employees</h4>
                         @if(session('success'))
                             <div class="alert alert-success alert-dismissible fade show auto-dismiss" role="alert">
                                 {{ session('success') }}
@@ -25,7 +25,7 @@
                         <div class="page-title-right">
                             <ol class="breadcrumb m-0">
                                 <li class="breadcrumb-item"><a href="javascript: void(0);">Dashboard</a></li>
-                                <li class="breadcrumb-item active">Users</li>
+                                <li class="breadcrumb-item active">Employees</li>
                             </ol>
                         </div>
                     </div>
@@ -38,7 +38,7 @@
                     <div class="card">
                         <div class="card-header d-flex justify-content-between align-items-center">
                             <div>
-                                <h4 class="card-title">🛞 Users Listing</h4>
+                                <h4 class="card-title">🛞 Employees Listing</h4>
                                 <p class="card-title-desc">
                                     View, edit, or delete permissions details below. This table supports search,
                                     sorting, and pagination via DataTables.
@@ -47,7 +47,7 @@
                             @if (hasAdminPermission('create users'))
                                 <a class="btn" href="{{ route('admin.user.create') }}"
                                     style="background-color: #ca2639; color: white; border: none;">
-                                    <i class="fas fa-plus"></i> Add User
+                                    <i class="fas fa-plus"></i> Add Employee
                                 </a>
                             @endif
                         </div>
@@ -59,9 +59,11 @@
                                         <th>ID</th>
                                         <th>Name</th>
                                         <th>Email</th>
+                                        <th>Contact Number</th>
                                         <th>Role</th>
                                         <th>
-                                            @if (hasAdminPermission('edit users') || hasAdminPermission('delete users'))
+                                    @if (hasAdminPermission('edit employees') || hasAdminPermission('delete employees') || hasAdminPermission('view employees'))
+                                            {{-- @if (hasAdminPermission('edit users') || hasAdminPermission('delete users')) --}}
                                                 Action
                                             @endif
                                         </th>
@@ -77,18 +79,35 @@
                                             <td>##{{ $user->id }}</td>
                                             <td>{{ $user->name }}</td>
                                             <td>{{ $user->email }}</td>
+                                            <td>{{ $user->phone_number }}</td>
                                             <td>{{ \App\Models\Role::find($user->role)->name ?? 'N/A' }}</td>
-                                            @if (hasAdminPermission('edit users') || hasAdminPermission('delete users'))
+                                            {{-- @if (hasAdminPermission('edit users') || hasAdminPermission('delete users')) --}}
+                                           @if (hasAdminPermission('edit employees') || hasAdminPermission('delete employees') || hasAdminPermission('view employees'))
 
                                                 <td>
-                                                    @if (hasAdminPermission('edit users'))
+                                                      @if (hasAdminPermission('view employees'))
+                                                <a href="{{ route('admin.employees.task', $user->id) }}">
+                                                    <button class="btn btn-light btn-sm edit-btn" data-bs-toggle="tooltip" title="View Tasks">
+                                                        <i class="fas fa-question-circle text-primary"></i>
+                                                    </button>
+                                                </a>
+                                                @endif
+
+                                                @if (hasAdminPermission('view employees'))
+                                                <a href="{{ route('admin.employees.show', $user->id) }}">
+                                                    <button class="btn btn-light btn-sm edit-btn" data-bs-toggle="tooltip" title="View Profile">
+                                                        <i class="fas fa-eye text-primary"></i>
+                                                    </button>
+                                                </a>
+                                                @endif
+                                                    @if (hasAdminPermission('edit employees'))
 
                                                         <a href="{{ route('admin.user.edit', $user->id) }}"
                                                             class="btn btn-sm btn-light">
                                                             <i class="fas fa-pen text-warning"></i>
                                                         </a>
                                                     @endif
-                                                    @if (hasAdminPermission('delete users'))
+                                                    @if (hasAdminPermission('delete employees'))
                                                         <a href="{{ route('admin.user.delete', $user->id) }}"
                                                             class="btn btn-sm btn-light"
                                                             onclick="return confirm('Are you sure you want to delete this user?')">

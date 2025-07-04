@@ -58,9 +58,10 @@
                                 <thead>
                                     <tr >
                                         <th>S.No</th>
+                                         <th>Tyre Number</th>
                                         <th>Company</th>
                                         <th>Make & Model</th>
-                                        <th>Tyre Number</th>
+                                       
                                         <th>Description</th>
                                         <th>Format</th>
                                         <th>Health Status</th>
@@ -73,9 +74,10 @@
                                     @foreach($tyres as $tyre)
                                         <tr>
                                             <td>{{ $loop->iteration  }}</td>
+                                             <td>{{ $tyre->tyre_number }}</td>
                                             <td>{{ $tyre->company }}</td>
                                             <td>{{ $tyre->make_model }}</td>
-                                            <td>{{ $tyre->tyre_number }}</td>
+                                           
                                             <td>{{ $tyre->description }}</td>
                                             <td>{{ $tyre->format }}</td>
 
@@ -83,9 +85,8 @@
                                 @if (hasAdminPermission('edit tyres') || hasAdminPermission('delete tyres')|| hasAdminPermission('view tyres'))
                                             <td>
                                                 @if (hasAdminPermission('view tyres'))
-                                                <button class="btn btn-sm btn-light view-btn"
-                                                   data-bs-toggle="tooltip" 
-                                                    title="view tyres"
+                                              <button class="btn btn-sm btn-light view-btn"
+                                                    title="View Tyres"
                                                     data-bs-toggle="modal"
                                                     data-bs-target="#viewTyreModal"
                                                     data-company="{{ $tyre->company }}"
@@ -95,8 +96,8 @@
                                                     data-tyre_number="{{ $tyre->tyre_number }}"
                                                     data-health="{{ $tyre->tyre_health }}"
                                                     onclick="viewTyreData(this)">
-                                                    <i class="fas fa-eye text-primary"></i>
-                                                </button>
+                                                <i class="fas fa-eye text-primary"></i>
+                                            </button>
                                                 @endif
                                                 @if (hasAdminPermission('edit tyres'))
                                                 <button class="btn btn-sm btn-light edit-btn"
@@ -135,25 +136,24 @@
                 </div>
             </div>
             {{-- view model --}}
-            <div class="modal fade" id="viewTyreModal" tabindex="-1" aria-labelledby="viewTyreModalLabel"
-                aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="viewTyreModalLabel">Tyre Details</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <p><strong>🏢 Company:</strong> <span id="viewCompany"></span></p>
-                            <p><strong>🔩 Make & Model:</strong> <span id="viewModel"></span></p>
-                            <p><strong>📄 Description:</strong> <span id="viewDescription"></span></p>
-                            <p><strong>📏 Format:</strong> <span id="viewFormat"></span></p>
-                            <p><strong>🆔 Tyre Number:</strong> <span id="viewTyreNumber"></span></p>
-                            <p><strong>📊 Health Status:</strong> <span id="viewHealth"></span></p>
-                        </div>
-                    </div>
-                </div>
+          <div class="modal fade" id="viewTyreModal" tabindex="-1" aria-labelledby="viewTyreModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewTyreModalLabel">Tyre Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
+            <div class="modal-body">
+                <p><strong>🏢 Company:</strong> <span id="viewCompany"></span></p>
+                <p><strong>🔩 Make & Model:</strong> <span id="viewModel"></span></p>
+                <p><strong>📄 Description:</strong> <span id="viewDescription"></span></p>
+                <p><strong>📏 Format:</strong> <span id="viewFormat"></span></p>
+                <p><strong>🆔 Tyre Number:</strong> <span id="viewTyreNumber"></span></p>
+                <p><strong>📊 Health Status:</strong> <span id="viewHealth"></span></p>
+            </div>
+        </div>
+    </div>
+</div>
             <!-- Add Tyre Modal -->
             <div class="modal fade" id="addTyreModal" tabindex="-1" aria-labelledby="addTyreModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-lg">
@@ -311,27 +311,7 @@
                 </div>
             </div>
             <!-- Modal -->
-            <div class="modal fade" id="updateTyreModal" tabindex="-1" aria-labelledby="updateTyreModalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-lg">
-                  <div class="modal-content">
-              
-                    <div class="modal-header">
-                      <h5 class="modal-title">🛞 Update Tyre</h5>
-                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-              
-                    <div class="modal-body">
-                        <p><strong>🏢 Company:</strong> <span id="viewCompany"></span></p>
-                        <p><strong>🔩 Make & Model:</strong> <span id="viewModel"></span></p>
-                        <p><strong>📄 Description:</strong> <span id="viewDescription"></span></p>
-                        <p><strong>📏 Format:</strong> <span id="viewFormat"></span></p>
-                        <p><strong>🆔 Tyre Number:</strong> <span id="viewTyreNumber"></span></p>
-                        <p><strong>📊 Health Status:</strong> <span id="viewHealth"></span></p>
-                    </div>
-              
-                  </div>
-                </div>
-              </div>
+            
         </div>
     </div>
     <!-- end main content-->
@@ -381,14 +361,22 @@
 <!-- Apna custom jQuery script -->
 <script>
     function viewTyreData(button) {
-      document.getElementById("viewCompany").textContent = button.dataset.company;
-      document.getElementById("viewModel").textContent = button.dataset.model;
-      document.getElementById("viewDescription").textContent = button.dataset.description;
-      document.getElementById("viewFormat").textContent = button.dataset.format;
-      document.getElementById("viewTyreNumber").textContent = button.dataset.tyre_number;
-      document.getElementById("viewHealth").textContent = button.dataset.health;
+        document.getElementById("viewCompany").textContent = button.dataset.company || 'N/A';
+        document.getElementById("viewModel").textContent = button.dataset.model || 'N/A';
+        document.getElementById("viewDescription").textContent = button.dataset.description || 'N/A';
+        document.getElementById("viewFormat").textContent = button.dataset.format || 'N/A';
+        document.getElementById("viewTyreNumber").textContent = button.dataset.tyre_number || 'N/A';
+        document.getElementById("viewHealth").textContent = button.dataset.health || 'N/A';
     }
-  </script>
+
+    // Optional: Tooltip Initialization if needed
+    document.addEventListener('DOMContentLoaded', function () {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+    });
+</script>
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             function getHealthBadgeClass(health) {

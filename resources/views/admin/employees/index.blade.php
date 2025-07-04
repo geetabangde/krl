@@ -59,6 +59,7 @@
                                 <thead>
                                     <tr>
                                         <th>S.No</th>
+                                        <th>Role</th>
                                         <th>Full Name</th>
                                         <th>Phone Number</th>
                                         <th>Designation</th>
@@ -76,6 +77,7 @@
 
                                         <tr>
                                             <td>{{ $loop->iteration  }}</td>
+                                            <td>{{ \App\Models\Role::find($employee->role)->name ?? 'N/A' }}</td>
                                             <td>{{ $employee->first_name}} {{ $employee->last_name}}</td>
                                             <td>{{ $employee->phone_number}}</td>
                                             <td>{{ $employee->designation}}</td>

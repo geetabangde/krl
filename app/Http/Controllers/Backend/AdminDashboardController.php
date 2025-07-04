@@ -19,16 +19,15 @@ class AdminDashboardController extends Controller implements HasMiddleware
         ];
     }
 
-            public function index()
-        {   
-            
-            if (!auth()->guard('admin')->check()) {
-                return redirect()->route('admin.login');
-            }
-            else{
-                return view('admin.dashboard');
+          public function index()
+     {
+        if (!auth()->guard('admin')->check() && !auth()->guard('employee')->check()) {
+            return redirect()->route('admin.login');
+        }
 
-            }
+        return view('admin.dashboard');
     }
 
-}
+    }
+
+

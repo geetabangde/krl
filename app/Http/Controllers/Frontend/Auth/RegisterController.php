@@ -19,11 +19,13 @@ class RegisterController extends Controller
         $request->validate([
             'name' => 'required',
             'mobile_number' => 'required',
+            'email' => 'required|email|unique:users,email',
             'password' => 'required',
         ]);
 
         $user = User::create([
             'name' => $request->name,
+            'email' => $request->email,
             'mobile_number' => $request->mobile_number,
             'password' => Hash::make($request->password),
         ]);
@@ -31,7 +33,7 @@ class RegisterController extends Controller
 
         Auth::login($user);
         // dd($user);
-        return redirect()->route('front.index')->with('success', 'User successfully!');
+        return redirect()->route('user.dashboard')->with('success', 'User successfully!');
          
     }
 }

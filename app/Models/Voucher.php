@@ -11,8 +11,9 @@ class Voucher extends Model
 
     protected $fillable = [
         'voucher_type',
+        'voucher_no',
         'voucher_date',
-         'from_ledger_id',
+        'from_ledger_id',
         'to_ledger_id',
         'amount',
         'description',
@@ -20,13 +21,20 @@ class Voucher extends Model
         'narration',
         'assigned_to',
         'vouchers',
+        'against_voucher',
+        'transaction_id',
+        'credit_day',
+        'cash_credit',
+        'tds_payable',
         
     ];
 
     
     protected $casts = [
-        'vouchers' => 'array', // Laravel will decode it automatically
+        'vouchers' => 'array',
+        
     ];
+
     
 
     // Fetch 'from' and 'to' ledgers based on group ID

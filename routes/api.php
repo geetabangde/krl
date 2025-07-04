@@ -6,6 +6,8 @@ use App\Http\Controllers\Backend\Auth\LoginController;
 use App\Http\Controllers\Backend\Api\TaskmanagementController;
 use App\Http\Controllers\Backend\Api\PermissionController;
 use App\Http\Controllers\Backend\Api\ApiController;
+use App\Http\Controllers\Frontend\Api\AuthController;
+use App\Http\Controllers\Frontend\Api\OrdersDetailController;
 
 // Public route for mobile login
 Route::post('/admin/api-login', [LoginController::class, 'apiLogin']);
@@ -28,5 +30,29 @@ Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
 
 });
 
+Route::prefix('user')->group(function () {
+        Route::post('/register', [AuthController::class, 'register']);
+        Route::post('/login', [AuthController::class, 'login']);
+        Route::middleware('auth:sanctum')->group(function () {
+        Route::post('/logout', [AuthController::class, 'logout']);
+        Route::get('/profile', [AuthController::class, 'profile']);
+        Route::post('/update-profile', [AuthController::class, 'updateProfile']);
+        Route::get('/orders', [OrdersDetailController::class, 'order']);
+        Route::get('/order-detail/{order_id}', action: [OrdersDetailController::class, 'orderDetail']);
+        Route::get('/lr-details/{lr_number}', [OrdersDetailController::class, 'getLrDetails']);
+        Route::get('/fb-details/{order_id}/{id}', [OrdersDetailController::class, 'getfbDetails']);
+        Route::get('/invoice-details/{id}', [OrdersDetailController::class, 'getInvDetails']);
+        // Route::post('/request', [OrdersDetailController::class, 'getrequestStatus']);
+        Route::post('/create-order', [OrdersDetailController::class, 'createOrder']);
+        Route::post('/request-lr', [OrdersDetailController::class, 'getrequestLR']);
+        Route::post('/request-fb', [OrdersDetailController::class, 'getrequestFB']); 
+        Route::post('/request-inv', [OrdersDetailController::class, 'getrequestINV']); 
+        Route::get('/dashboard-orders', [OrdersDetailController::class, 'ordersDashboard']); 
+        Route::get('/destination', [OrdersDetailController::class, 'destination']); 
+        Route::get('/status-list', [OrdersDetailController::class, 'getStatusList']);
+    });
+     
+
+});
 
 

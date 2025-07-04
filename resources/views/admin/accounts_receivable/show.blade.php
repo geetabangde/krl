@@ -10,50 +10,74 @@
                         <h4>🚗 Vehicle Details View</h4>
                         <p class="mb-0">View details for the vehicle.</p>
                     </div>
-                    <a href="{{ route('admin.vehicles.index') }}" class="btn" id="backToListBtn"
+                    <a href="{{ route('admin.accounts_receivable.index') }}" class="btn" id="backToListBtn"
                         style="background-color: #ca2639; color: white; border: none;">
                         ⬅ Back to Listing
                     </a>
                 </div>
-                <div class="card-body">
-    <h4>Vehicle Details</h4>
-    <p><strong>🚗 Vehicle Type:</strong> {{ $vehicle->vehicle_type }}</p>
-    <p><strong>🔢 Vehicle Number:</strong> {{ $vehicle->vehicle_no }}</p>
-    <p><strong>📞 Registered Mobile Number:</strong> {{ $vehicle->registered_mobile_number }}</p>
-    <p><strong>⚖️ Gross Vehicle Weight (GVW):</strong> {{ $vehicle->gvw ?? 'N/A' }}</p>
-    <p><strong>📦 Payload:</strong> {{ $vehicle->payload ?? 'N/A' }}</p>
-    <p><strong>🔧 Chassis Number:</strong> {{ $vehicle->chassis_number ?? 'N/A' }}</p>
-    <p><strong>🛠️ Engine Number:</strong> {{ $vehicle->engine_number ?? 'N/A' }}</p>
-    <p><strong>🚪 Number of Tyres:</strong> {{ $vehicle->number_of_tyres ?? 'N/A' }}</p>
+                <div class="row listing-form">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    
+                                </div>
+                               <div class="card-body">
+                                    <h5>Account Details for: <strong>{{ $label }}</strong></h5>
+                                    <table class="table table-bordered w-100">
+                                        <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Type</th>
+                                                <th>Customer Name</th>
+                                                <th>Date</th>
+                                                <th>Bill Amount</th>
+                                                <th>Amount Received</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @php
+                                                $totalSales = 0;
+                                                $totalReceived = 0;
+                                            @endphp
 
-    <hr>
+                                            @foreach ($entries as $index => $entry)
+                                                @php
+                                                    $isSale = $entry['type'] === 'Sales';
+                                                    $totalSales += $isSale ? $entry['amount'] : 0;
+                                                    $totalReceived += !$isSale ? $entry['received'] : 0;
+                                                @endphp
+                                                <tr>
+                                                    <td>{{ $index + 1 }}</td>
+                                                    <td>{{ $entry['type'] }}</td>
+                                                    <td>{{ $entry['customer_name'] }}</td>
+                                                    <td>{{ \Carbon\Carbon::parse($entry['date'])->format('d/m/Y') }}</td>
+                                                    <td>
+                                                        ₹{{ number_format($isSale ? $entry['amount'] : 0, 2) }}
+                                                    </td>
+                                                    <td>
+                                                        ₹{{ number_format(!$isSale ? $entry['received'] : 0, 2) }}
+                                                    </td>
+                                                </tr>
+                                            @endforeach
 
-    <h4>Vehicle Documents</h4>
+                                            {{-- Totals --}}
+                                            <tr class="fw-bold bg-light">
+                                                <td colspan="4">Total</td>
+                                                <td>₹{{ number_format($totalSales, 2) }}</td>
+                                                <td>₹{{ number_format($totalReceived, 2) }}</td>
+                                            </tr>
+                                            <tr class="fw-bold bg-secondary text-white">
+                                                <td colspan="5" class="text-end">Pending Amount</td>
+                                                <td>₹{{ number_format($totalSales - $totalReceived, 2) }}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
 
-    @php
-        $documents = [
-            'rc_document_file' => ['label' => '📄 Registration Certificate (RC)', 'valid_from' => $vehicle->rc_valid_from, 'valid_till' => $vehicle->rc_valid_till],
-            'fitness_certificate' => ['label' => '🏋️ Fitness Certificate', 'valid_from' => null, 'valid_till' => $vehicle->fitness_valid_till],
-            'insurance_document' => ['label' => '🛡️ Insurance Document', 'valid_from' => $vehicle->insurance_valid_from, 'valid_till' => $vehicle->insurance_valid_till],
-            'authorization_permit' => ['label' => '📝 Authorization Permit', 'valid_from' => $vehicle->auth_permit_valid_from, 'valid_till' => $vehicle->auth_permit_valid_till],
-            'national_permit' => ['label' => '🌐 National Permit', 'valid_from' => $vehicle->national_permit_valid_from, 'valid_till' => $vehicle->national_permit_valid_till],
-            'tax_document' => ['label' => '💰 Tax Document', 'valid_from' => $vehicle->tax_valid_from, 'valid_till' => $vehicle->tax_valid_till],
-        ];
-    @endphp
 
-    @foreach($documents as $field => $doc)
-        @if(!empty($vehicle->$field))
-            <div class="document-section">
-                <p><strong>{{ $doc['label'] }}:</strong></p>
-                <!-- <img src="{{ asset('storage/' . $vehicle->$field) }}" alt="{{ $doc['label'] }}" style="max-width: 100%; height: auto; margin-bottom: 10px;"> -->
-                <p><strong>Valid From:</strong> {{ $doc['valid_from'] ? \Carbon\Carbon::parse($doc['valid_from'])->format('d-m-Y') : 'N/A' }}</p>
-                <p><strong>Valid Till:</strong> {{ $doc['valid_till'] ? \Carbon\Carbon::parse($doc['valid_till'])->format('d-m-Y') : 'N/A' }}</p>
-            </div>
-            <hr>
-        @endif
-    @endforeach
-</div>
-
+                            </div>
+                        </div>
+                    </div>
                 
             </div>
         </div>

@@ -276,7 +276,7 @@
             <h5 class="mb-3">🏠 Address Details</h5>
             <div id="address-blocks">
                @php
-               $addresses = json_decode(auth()->user()->address ?? '[]', true);
+               $addresses = auth()->user()->address ?? [];
                @endphp
                @foreach ($addresses as $index => $addr)
                <!-- Address Block -->

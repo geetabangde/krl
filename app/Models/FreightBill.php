@@ -22,13 +22,18 @@ class FreightBill extends Model
     ];
 
 
-    // हर FreightBill entry का Order relation
+    
     public function order()
     {
-        // order_id फील्ड में Order::order_id से लिंक
+        
         return $this->belongsTo(Order::class, 'order_id', 'order_id');
     }
-    
+    // In FreightBill.php
+    public function invoice()
+   {
+    return $this->hasOne(Invoice::class, 'freight_bill_id');
+   }
+
 }
 
 

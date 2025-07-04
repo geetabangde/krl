@@ -13,8 +13,14 @@ class Attendance extends Model
     protected $table = 'attendances';
     protected $primaryKey = 'id';
     protected $guarded = [];
-    public function employee()
+//     public function employee()
+// {
+//     return $this->belongsTo(Employee::class);
+// }
+
+
+public function admin()
 {
-    return $this->belongsTo(Employee::class);
+    return $this->belongsTo(Admin::class, 'admin_id');
 }
 }

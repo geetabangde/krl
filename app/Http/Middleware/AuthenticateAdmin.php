@@ -12,9 +12,11 @@ class AuthenticateAdmin
 {
     public function handle(Request $request, Closure $next)
     {
-        if (!Auth::guard('admin')->check()) {
+         // Check if either admin OR employee guard is logged in
+        if (!Auth::guard('admin')->check() && !Auth::guard('employee')->check()) {
             return redirect()->route('admin.login');
         }
+
 
         return $next($request);
     }

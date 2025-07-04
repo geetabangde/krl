@@ -10,28 +10,26 @@ class AdminHasPermission
 {
     public function handle(Request $request, Closure $next, string $permission): Response
     {
-        
-        $admin = auth()->guard('admin')->user();
+        // Check admin or employee guard
+        $user = auth()->guard('admin')->user() ?? auth()->guard('employee')->user();
 
-       
-        if (!$admin) {
-            abort(403, 'Unauthorized'); // Admin not authenticated
+        if (!$user) {
+            abort(403, 'Unauthorized'); // Neither admin nor employee authenticated
         }
 
-      
-        $roleId = $admin->role;
+        // Assuming $user->role contains role id or relationship
+        $roleId = $user->role;
 
-      
+        // Find role
         $role = Role::find($roleId);
 
-      
         if (!$role || !method_exists($role, 'permission')) {
             abort(403, 'Role or permissions not configured');
         }
 
-       
+        // Check if role has the required permission
         if (!$role->permission->pluck('name')->contains($permission)) {
-            abort(404, 'Permission not found');
+            abort(403, 'Permission denied');  
         }
 
         return $next($request);

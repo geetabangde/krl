@@ -52,6 +52,11 @@ return [
         'driver' => 'session',
         'provider' => 'admins',
         ],
+       
+        'employee' => [
+            'driver' => 'session',
+            'provider' => 'employees',
+        ],
         
         'admin-api' => [  // ✅ ADD THIS for Sanctum token guard
         'driver' => 'sanctum',
@@ -88,6 +93,10 @@ return [
             'driver' => 'eloquent',
             'model' => App\Models\Admin::class,
         ],
+        'employees' => [   
+        'driver' => 'eloquent',
+        'model' => App\Models\Employee::class,
+    ],
 
         // 'users' => [
         //     'driver' => 'database',
