@@ -158,13 +158,15 @@ class EwayBillGeberateController extends Controller
 
 // }
 
+
+
 public function generateEwayBill(Request $request)
 {
     // 🔐 Step 1: Credentials and config
-    $authToken = '1kvg6aeYu1G2ZGnaNFQbzfTKE'; // 🔁 Replace with dynamic token
-    $encryptedSek = 'gRk5LWrUQe7okNMXdZS3+vgxQwguU2tDQU76ZCr1IMFGgCjhGmGONERdukDluIoA'; // From auth response
+    $authToken = '1kvg6aeYu1G2ZGnaNFQbzfTKE'; 
+    $encryptedSek = 'gRk5LWrUQe7okNMXdZS3+vgxQwguU2tDQU76ZCr1IMFGgCjhGmGONERdukDluIoA'; 
     $appKey = 'RZbiPYuN3VTF2hMhQcMMBo0MfH4UVNZaSrIeTrpKopE=';
-    $gstin = '23AABFM6400F1ZX'; // Your GSTIN
+    $gstin = '23AABFM6400F1ZX'; 
 
     // 💡 Decrypt SEK
     $decryptionKey = base64_decode($appKey);
