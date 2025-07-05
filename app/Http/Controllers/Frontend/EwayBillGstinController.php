@@ -96,4 +96,6 @@ public function getEwayGstin(Request $request)
         'raw_response' => $jsonResponse
     ], $response->status());
 }
+
+
 }

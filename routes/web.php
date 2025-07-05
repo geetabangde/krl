@@ -254,7 +254,8 @@ Route::prefix('admin')->group(function () {
         Route::get('/assign/{lr_number}', [ConsignmentNoteController::class, 'assign'])->name('admin.consignments.assign');
         Route::post('/assign/{lr_number}/save', [ConsignmentNoteController::class, 'assignSave'])->name('admin.consignments.assign.save');
         Route::get('/vehicle_eway_bill', [ConsignmentNoteController::class, 'fillFromEwayBill'])->name('admin.consignments.vehicle_eway_bill'); 
-
+        Route::post('/vehicle_eway_bill/update', [ConsignmentNoteController::class, 'updatePartB'])->name('admin.consignments.vehicle_eway_bill.update');
+      
     });
     
 

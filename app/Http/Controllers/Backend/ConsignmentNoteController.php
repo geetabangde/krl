@@ -620,7 +620,7 @@ public function uploadMultiplePod(Request $request)
 
 
 
-    public function assign($lr_number, Request $request)
+    public function assign_old($lr_number, Request $request)
    {
     $inputDate = $request->input('date');
 
@@ -673,11 +673,70 @@ public function uploadMultiplePod(Request $request)
     return view('admin.consignments.assign-ewaybill', compact('lr_number', 'ewayBills', 'ewayBillDate'));
 }
 
+public function assign($lr_number, Request $request)
+{
+    $inputDate = $request->input('date');
+
+    try {
+        $ewayBillDate = Carbon::parse($inputDate)->format('d/m/Y');
+    } catch (\Exception $e) {
+        $ewayBillDate = now()->format('d/m/Y');
+    }
+
+    // ✅ Fetch credentials from .env
+    $authToken    = env('EWB_AUTH_TOKEN_TRANSPORTER');
+    $encryptedSek = env('EWB_ENCRYPTED_SEK_TRANSPORTER');
+    $appKey       = env('EWB_APP_KEY');
+    $genGstin     = env('EWB_GENERATOR_GSTIN');  // e.g. 23AABFM6400F1ZX
+    $gstin        = env('EWB_GSTIN');            // e.g. 07AGAPA5363L002
+
+    // 🔐 Decrypt SEK
+    $decryptionKey = base64_decode($appKey);
+    $ciphering = 'AES-256-ECB';
+    $options = OPENSSL_RAW_DATA;
+    $decryptedSek = openssl_decrypt(base64_decode($encryptedSek), $ciphering, $decryptionKey, $options);
+
+    $ewayBills = [];
+
+    if ($decryptedSek) {
+        // 🚀 Call API: GetEwayBillsForTransporterByGstin
+        $url = "https://developers.eraahi.com/api/ewaybillapi/v1.03/ewayapi/GetEwayBillsForTransporterByGstin?Gen_gstin={$genGstin}&date={$ewayBillDate}";
+
+        $headers = [
+            'Content-Type' => 'application/json',
+            'gstin' => $gstin,
+            'Ocp-Apim-Subscription-Key' => env('EWB_API_SUBSCRIPTION_KEY', 'AL5e2V9g1I2p9h4U3e'),
+            'authtoken' => $authToken,
+        ];
+
+        $response = Http::withHeaders($headers)->get($url);
+        $jsonResponse = $response->json();
+
+        if ($response->successful() && isset($jsonResponse['data']) && isset($jsonResponse['rek'])) {
+            // 🔓 Decrypt REK
+            $rek = openssl_decrypt(base64_decode($jsonResponse['rek']), $ciphering, $decryptedSek, $options);
+
+            if ($rek) {
+                $decryptedData = openssl_decrypt(base64_decode($jsonResponse['data']), $ciphering, $rek, $options);
+
+                if ($decryptedData) {
+                    $ewayBills = json_decode($decryptedData, true);
+                }
+            }
+        }
+    }
+
+    return view('admin.consignments.assign-ewaybill', compact('lr_number', 'ewayBills', 'ewayBillDate'));
+}
+
+
 
 public function assignSave(Request $request, $lr_number)
-{
-    $selectedEwbNos = $request->input('selected_ewb', []);
+{ 
+    // dd($request->all());
 
+    $selectedEwbNos = $request->input('selected_ewb', []);
+    
     if (empty($selectedEwbNos)) {
         return back()->with('error', 'Please select at least one eWay Bill.');
     }
@@ -737,7 +796,8 @@ public function assignSave(Request $request, $lr_number)
 
     // Step 6: Save updated data to DB
     $matchedOrder->lr = json_encode($lrEntries);
-    // dd($matchedOrder->lr);
+    // return($matchedOrder->lr);
+
     $matchedOrder->save();
     // dd($matchedOrder);
 
@@ -748,7 +808,7 @@ public function assignSave(Request $request, $lr_number)
 }
 
 
-public function fillFromEwayBill(Request $request)
+public function fillFromEwayBill_old(Request $request)
 {
     $ewbNos = explode(',', $request->query('ewbs'));
 
@@ -787,6 +847,7 @@ public function fillFromEwayBill(Request $request)
             $ewayBillDetails[] = json_decode($decryptedData, true);
         }
     }
+    // dd($ewayBillDetails); 
 
     // ✅ Return JSON for AJAX
     if ($request->ajax()) {
@@ -795,7 +856,7 @@ public function fillFromEwayBill(Request $request)
             'ewaybill_data' => $ewayBillDetails[0] ?? null
         ]);
     }
-
+ 
 
     return view('admin.consignments.vehicle_eway_bill', [
         'ewaybills' => $ewayBillDetails
@@ -803,6 +864,140 @@ public function fillFromEwayBill(Request $request)
 }
 
 
+public function fillFromEwayBill(Request $request)
+{
+    
 
+    $ewbNos = explode(',', $request->query('ewbs'));
+
+    $ewayBillDetails = [];
+
+    $authToken     = env('EWB_AUTH_TOKEN');
+    $encryptedSek  = env('EWB_ENCRYPTED_SEK');
+    $appKey        = env('EWB_APP_KEY');
+    $gstin         = env('EWB_GENERATOR_GSTIN');
+    $subscriptionKey = env('EWB_API_SUBSCRIPTION_KEY', 'AL5e2V9g1I2p9h4U3e');
+
+    $ciphering = 'AES-256-ECB';
+    $options = OPENSSL_RAW_DATA;
+    $decryption_iv = '';
+    $decryptionKey = base64_decode($appKey);
+    $decryptedSek = openssl_decrypt(base64_decode($encryptedSek), $ciphering, $decryptionKey, $options, $decryption_iv);
+
+    foreach ($ewbNos as $ewbNo) {
+        $url = "https://developers.eraahi.com/api/ewaybillapi/v1.03/ewayapi/GetEwayBill?ewbNo={$ewbNo}";
+
+        $headers = [
+            'Content-Type' => 'application/json',
+            'gstin' => $gstin,
+            'Ocp-Apim-Subscription-Key' => $subscriptionKey,
+            'authtoken' => $authToken,
+        ];
+
+        $response = \Http::withHeaders($headers)->get($url);
+        $jsonResponse = $response->json();
+
+        if ($response->successful() && isset($jsonResponse['data']) && isset($jsonResponse['rek'])) {
+            $rek = openssl_decrypt(base64_decode($jsonResponse['rek']), $ciphering, $decryptedSek, $options, $decryption_iv);
+            $decryptedData = openssl_decrypt(base64_decode($jsonResponse['data']), $ciphering, $rek, $options, $decryption_iv);
+            $ewayBillDetails[] = json_decode($decryptedData, true);
+        }
+    }
+    //  dd($ewayBillDetails);
+
+    if ($request->ajax()) {
+        return response()->json([
+            'success' => true,
+            'ewaybill_data' => $ewayBillDetails[0] ?? null
+        ]);
+    }
+
+    return view('admin.consignments.vehicle_eway_bill', [
+        'ewaybills' => $ewayBillDetails
+    ]);
+}
+
+
+public function updatePartB(Request $request)
+{
+    $ewaybills = $request->input('ewaybills', []);
+
+    $authToken     = env('EWB_AUTH_TOKEN');
+    $encryptedSek  = env('EWB_ENCRYPTED_SEK');
+    $appKey        = env('EWB_APP_KEY');
+    $gstin         = env('EWB_GENERATOR_GSTIN');
+    $subscriptionKey = env('EWB_API_SUBSCRIPTION_KEY', 'AL5e2V9g1I2p9h4U3e');
+
+    $ciphering = 'AES-256-ECB';
+    $options = OPENSSL_RAW_DATA;
+    $decryptionKey = base64_decode($appKey);
+    $sek = openssl_decrypt(base64_decode($encryptedSek), $ciphering, $decryptionKey, $options);
+
+    if (!$sek) {
+        return back()->with('error', 'SEK decryption failed.');
+    }
+
+    $results = [];
+
+    foreach ($ewaybills as $bill) {
+        $vehicleData = [
+            "ewbNo" => (int) $bill['ewb_no'],
+            "vehicleNo" => $bill['vehicle_no'],
+            "fromPlace" => $bill['from_place'],
+            "fromState" => (int) $bill['from_state_code'] ?? 0,
+            "transMode" => $bill['transMode'],
+            "transDocNo" => $bill['transDocNo'],
+            "transDocDate" => $bill['transDocDate'],
+            "vehicleType" => $bill['vehicleType'],
+            "reasonCode" => $bill['reasoncode'],
+            "reasonRem" => $bill['reasonremarks'],
+        ];
+
+        $jsonPayload = json_encode($vehicleData, JSON_UNESCAPED_SLASHES);
+        $base64Payload = base64_encode($jsonPayload);
+
+        // Encrypt payload with SEK
+        $encryptedRequest = openssl_encrypt(base64_decode($base64Payload), "aes-256-ecb", $sek, OPENSSL_RAW_DATA);
+        $requestPayload = base64_encode($encryptedRequest);
+
+        $apiPayload = [
+            "action" => "VEHEWB",
+            "data" => $requestPayload
+        ];
+
+        $headers = [
+            'Content-Type' => 'application/json',
+            'gstin' => $gstin,
+            'Ocp-Apim-Subscription-Key' => $subscriptionKey,
+            'authtoken' => $authToken
+        ];
+
+        $url = "https://developers.eraahi.com/api/ewaybillapi/v1.03/ewayapi";
+
+        $response = Http::withHeaders($headers)->post($url, $apiPayload);
+        $jsonResponse = $response->json();
+
+        if (isset($jsonResponse['data'])) {
+            $decrypted = openssl_decrypt(base64_decode($jsonResponse['data']), $ciphering, $sek, $options);
+            $responseData = json_decode($decrypted, true);
+
+            $results[] = [
+                'ewbNo' => $bill['ewb_no'],
+                'success' => true,
+                'message' => $responseData['message'] ?? 'Part B updated successfully'
+            ];
+        } else {
+            $results[] = [
+                'ewbNo' => $bill['ewb_no'],
+                'error' => 'Failed to update'
+            ];
+        }
+
+    // dd($results);
+
+    return back()->with('success', 'Part B updated for selected eWay Bills.')->with('results', $results);
+}
+
+}
 }
 
