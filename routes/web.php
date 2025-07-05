@@ -8,6 +8,7 @@ use App\Http\Controllers\Frontend\EwayBillGeberateController;
 use App\Http\Controllers\Frontend\EwayBillDetailController;
 use App\Http\Controllers\Frontend\EwayConsolidatedController;
 use App\Http\Controllers\Frontend\TransporterBillController;
+use App\Http\Controllers\Frontend\EwayBillGstinController;
 use App\Http\Controllers\Frontend\EwayVehicleDetailController;
 use App\Http\Controllers\Frontend\DashboardController;
 use App\Http\Controllers\Frontend\Auth\RegisterController as FrontendRegisterController;
@@ -31,7 +32,7 @@ Route::get('/ewaybill/transporter/list', [TransporterBillController::class, 'get
 Route::get('/ewaybill/{ewbNo}', [EwayBillDetailController::class, 'getEwayBillDetail']);
 Route::get('/ewaybill/update/vehicle/number', [EwayVehicleDetailController::class, 'getVehicleNumber']);
 Route::get('/ewaybill/consolidated/generate', [EwayConsolidatedController::class, 'generateConsolidatedEwaybill']);
-
+Route::get('/ewaybill/transporter/gstin', [EwayBillGstinController::class, 'getEwayGstin']);
 
 
 // 🌐 Frontend Routes Group (user side)

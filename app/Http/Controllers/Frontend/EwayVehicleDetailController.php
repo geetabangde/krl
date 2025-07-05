@@ -15,10 +15,10 @@ class EwayVehicleDetailController extends Controller
 
 public function getVehicleNumber(Request $request)
 {
-    $authToken = '1SSwxjZaE672DRyly4Mz7kT6V'; 
-    $encryptedSek = 'LaIjT9S5A+kl1az+I5QEErQN7ZnhoXeUgLeJRafMH85GgCjhGmGONERdukDluIoA'; 
+    $authToken = '1b40BN7koFkNHDIDV5JZzy5ai'; 
+    $encryptedSek = 'ciyTsR8bypLHeJ98V2Km0wBQh0eWwFLBXp3yNc/VT8ZGgCjhGmGONERdukDluIoA'; 
     $appKey = 'RZbiPYuN3VTF2hMhQcMMBo0MfH4UVNZaSrIeTrpKopE='; 
-    $gstin = '07AGAPA5363L002'; 
+    $gstin = '23AABFM6400F1ZX'; 
 
     $ciphering = 'AES-256-ECB';
     $options = OPENSSL_RAW_DATA; // ✅ Use RAW_DATA for correct binary output
@@ -38,13 +38,13 @@ public function getVehicleNumber(Request $request)
 
     // ✅ Step 2: Vehicle Update Payload
     $vehicleData = [
-    "ewbNo" => 681011955815,
+    "ewbNo" => 621011959442,
     "vehicleNo" => "KA01AB1234",
     "fromPlace" => "GANDHI NAGAR",
     "fromState" => 7,
     "transMode" => "1",
     "transDocNo" => "LR123456",
-    "transDocDate" => "04/07/2025",
+    "transDocDate" => "05/07/2025",
     "vehicleType" => "R",
     "reasonCode" => "1",
     "reasonRem" => "Initial dispatch"
