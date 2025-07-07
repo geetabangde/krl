@@ -66,7 +66,7 @@ public function addMultiVehicle(Request $request)
         return openssl_encrypt($data, "aes-256-ecb", $sekRaw, OPENSSL_RAW_DATA);
     }
     
-    
+
     // Step 3: Encrypt using SEK
     $encryptedPayload = openssl_encrypt(base64_decode($base64Payload), "AES-256-ECB", $sekBinary, OPENSSL_RAW_DATA);
     $finalEncryptedPayload = base64_encode($encryptedPayload);
