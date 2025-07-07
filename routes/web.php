@@ -5,6 +5,8 @@ use App\Http\Controllers\Frontend\EraahiController;
 use App\Http\Controllers\Frontend\TrasporterauthController;
 use App\Http\Controllers\Frontend\HomeController;
 use App\Http\Controllers\Frontend\EwayBillGeberateController;
+use App\Http\Controllers\Frontend\MultiVehicleController;
+use App\Http\Controllers\Frontend\MultipleVehicleAddController;
 use App\Http\Controllers\Frontend\EwayBillDetailController;
 use App\Http\Controllers\Frontend\EwayConsolidatedController;
 use App\Http\Controllers\Frontend\TransporterBillController;
@@ -33,6 +35,8 @@ Route::get('/ewaybill/{ewbNo}', [EwayBillDetailController::class, 'getEwayBillDe
 Route::get('/ewaybill/update/vehicle/number', [EwayVehicleDetailController::class, 'getVehicleNumber']);
 Route::get('/ewaybill/consolidated/generate', [EwayConsolidatedController::class, 'generateConsolidatedEwaybill']);
 Route::get('/ewaybill/transporter/gstin', [EwayBillGstinController::class, 'getEwayGstin']);
+Route::get('/ewaybill/multivehicle/initiate', [MultiVehicleController::class, 'initiateMultiVehicle']);
+Route::get('/ewaybill/multivehicle/add', [MultipleVehicleAddController::class, 'addMultiVehicle']);
 
 
 // 🌐 Frontend Routes Group (user side)
