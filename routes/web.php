@@ -25,70 +25,62 @@ use App\Http\Controllers\Backend\{
     ProfitLossController,BalanceSheetController,CashFlowController,VoucherController,GstController
 };
 
-// Eway-Bill api
+    // Eway-Bill api
+    Route::get('/ewaybill/auth', [EraahiController::class, 'getAccessToken']);
+    Route::get('/ewaybill/Trasporter/auth', [TrasporterauthController::class, 'getTrasporterAuth']);
+    Route::get('/ewaybill/generate', [EwayBillGeberateController::class, 'generateEwayBill']);
+    Route::get('/ewaybill/transporter/list', [TransporterBillController::class, 'getEwayBillsForTransporter']);
+    Route::get('/ewaybill/{ewbNo}', [EwayBillDetailController::class, 'getEwayBillDetail']);
+    Route::get('/ewaybill/update/vehicle/number', [EwayVehicleDetailController::class, 'getVehicleNumber']);
+    Route::get('/ewaybill/consolidated/generate', [EwayConsolidatedController::class, 'generateConsolidatedEwaybill']);
+    Route::get('/ewaybill/transporter/gstin', [EwayBillGstinController::class, 'getEwayGstin']);
+    Route::get('/ewaybill/multivehicle/initiate', [MultiVehicleController::class, 'initiateMultiVehicle']);
+    Route::get('/ewaybill/multivehicle/add', [MultipleVehicleAddController::class, 'addMultiVehicle']);
 
-Route::get('/ewaybill/auth', [EraahiController::class, 'getAccessToken']);
-Route::get('/ewaybill/Trasporter/auth', [TrasporterauthController::class, 'getTrasporterAuth']);
-Route::get('/ewaybill/generate', [EwayBillGeberateController::class, 'generateEwayBill']);
-Route::get('/ewaybill/transporter/list', [TransporterBillController::class, 'getEwayBillsForTransporter']);
-Route::get('/ewaybill/{ewbNo}', [EwayBillDetailController::class, 'getEwayBillDetail']);
-Route::get('/ewaybill/update/vehicle/number', [EwayVehicleDetailController::class, 'getVehicleNumber']);
-Route::get('/ewaybill/consolidated/generate', [EwayConsolidatedController::class, 'generateConsolidatedEwaybill']);
-Route::get('/ewaybill/transporter/gstin', [EwayBillGstinController::class, 'getEwayGstin']);
-Route::get('/ewaybill/multivehicle/initiate', [MultiVehicleController::class, 'initiateMultiVehicle']);
-Route::get('/ewaybill/multivehicle/add', [MultipleVehicleAddController::class, 'addMultiVehicle']);
+    // 🌐 Frontend Routes Group (user side)
+    Route::prefix('user')->name('user.')->group(function () {
+    // 👤 Register
+        Route::get('/register', [FrontendRegisterController::class, 'showRegisterForm'])->middleware('guest.user')->name('register');
+        Route::post('/register', [FrontendRegisterController::class, 'register']);
 
+        // 🔐 Login
+        Route::get('/login', [FrontendLoginController::class, 'showLoginForm'])->middleware('guest.user')->name('login');
+        Route::post('/login', [FrontendLoginController::class, 'login']);
 
-// 🌐 Frontend Routes Group (user side)
-Route::prefix('user')->name('user.')->group(function () {
-   // 👤 Register
-    Route::get('/register', [FrontendRegisterController::class, 'showRegisterForm'])->middleware('guest.user')->name('register');
-    Route::post('/register', [FrontendRegisterController::class, 'register']);
+        // 🚪 Logout
+        Route::post('/logout', [FrontendLoginController::class, 'logout'])->name('logout');
 
-    // 🔐 Login
-    Route::get('/login', [FrontendLoginController::class, 'showLoginForm'])->middleware('guest.user')->name('login');
-    Route::post('/login', [FrontendLoginController::class, 'login']);
-
-    // 🚪 Logout
-    Route::post('/logout', [FrontendLoginController::class, 'logout'])->name('logout');
-
-    // 📊 Protected Routes (Login Required)
-    Route::middleware(['auth'])->group(function () {
-        Route::get('/dashboard', [DashboardController::class, 'dashboard'])->name('dashboard');
-        Route::get('/profile', [DashboardController::class, 'profile'])->name('profile');
-        Route::post('/update', [DashboardController::class, 'updateProfile'])->name('update');
-        Route::get('/order-details/{order_id}', [DashboardController::class, 'OrderDetails'])->name('order-details');
+        // 📊 Protected Routes (Login Required)
+        Route::middleware(['auth'])->group(function () {
+            Route::get('/dashboard', [DashboardController::class, 'dashboard'])->name('dashboard');
+            Route::get('/profile', [DashboardController::class, 'profile'])->name('profile');
+            Route::post('/update', [DashboardController::class, 'updateProfile'])->name('update');
+            Route::get('/order-details/{order_id}', [DashboardController::class, 'OrderDetails'])->name('order-details');
         
-        
-        
-
+        });
+            Route::get('/lr-details/{lr_number}', [DashboardController::class, 'lrDetails'])->name('lr_details');
+            Route::get('/fb-details/{order_id}/{id}', [DashboardController::class, 'fbDetails'])->name('fb_details');
+            Route::get('/invoice-details/{id}', [DashboardController::class, 'invDetails'])->name('inv_details');
     });
-        Route::get('/lr-details/{lr_number}', [DashboardController::class, 'lrDetails'])->name('lr_details');
-        Route::get('/fb-details/{order_id}/{id}', [DashboardController::class, 'fbDetails'])->name('fb_details');
-        Route::get('/invoice-details/{id}', [DashboardController::class, 'invDetails'])->name('inv_details');
-});
 
 
-Route::get('/', [HomeController::class, 'index'])->middleware('guest.user')->name('front.index');
-Route::get('/about', [HomeController::class, 'about'])->name('front.about');
-Route::get('/contact', [HomeController::class, 'contact'])->name('front.contact');
-Route::get('/terms', [HomeController::class, 'terms'])->name('front.terms');
-Route::get('/privacy', [HomeController::class, 'privacy'])->name('front.privacy');
-Route::post('/save-order', [HomeController::class, 'saveOrder'])->name('order.save');
-Route::post('/request', [HomeController::class, 'requestStatus'])->name('order.requests');
-// 📄 User Profile
-// Authentication Routes
-Route::prefix('admin')->group(function () {
+    Route::get('/', [HomeController::class, 'index'])->middleware('guest.user')->name('front.index');
+    Route::get('/about', [HomeController::class, 'about'])->name('front.about');
+    Route::get('/contact', [HomeController::class, 'contact'])->name('front.contact');
+    Route::get('/terms', [HomeController::class, 'terms'])->name('front.terms');
+    Route::get('/privacy', [HomeController::class, 'privacy'])->name('front.privacy');
+    Route::post('/save-order', [HomeController::class, 'saveOrder'])->name('order.save');
+    Route::post('/request', [HomeController::class, 'requestStatus'])->name('order.requests');
+    // 📄 User Profile
+    // Authentication Routes
+    Route::prefix('admin')->group(function () {
 
     // Login & Logout Routes
     Route::get('/login', [BackendLoginController::class, 'showLoginForm'])->middleware('admin.guest')->name('admin.login');
     Route::post('/login', [BackendLoginController::class, 'login'])->name('admin.login.submit');
     Route::get('/logout', [BackendLoginController::class, 'logout'])->name('admin.logout');
-
-    // Dashboard Route
+   // Dashboard Route
     Route::get('/dashboard', [AdminDashboardController::class, 'index']) ->middleware('auth.admin')->name('admin.dashboard');
-  
-
     // User Management
     Route::prefix('users')->middleware('admin.token.session','auth.admin')->group(function () {
         Route::get('/', [UserController::class, 'index'])->name('admin.users.index');
@@ -138,7 +130,6 @@ Route::prefix('admin')->group(function () {
        
     });
 
-
     // ContractController
     Route::prefix('contract')->middleware('admin.token.session','auth.admin')->group(function () {
         Route::get('/', [ContractController::class, 'index'])->name('admin.contract.index');
@@ -147,8 +138,7 @@ Route::prefix('admin')->group(function () {
         Route::put('/update/{id}', [ContractController::class, 'update'])->name('admin.contract.update');
         Route::get('/delete/{id}', [ContractController::class, 'destroy'])->name('admin.contract.delete');
     });
-        Route::post('/get-rate', [ContractController::class, 'getRate']);
-
+    Route::post('/get-rate', [ContractController::class, 'getRate']);
 
     // VehicleTypeController
     Route::prefix('vehicletype')->middleware('admin.token.session','auth.admin')->group(function () {
@@ -221,11 +211,7 @@ Route::prefix('admin')->group(function () {
         Route::get('/search-by-date', [TaskManagmentController::class, 'searchByDate'])->name('admin.task_management.searchByDate');
         Route::get('/close-task/{id}', [TaskManagmentController::class, 'closeTask'])->name('admin.task_management.task_status');
     });
-      
-//   Route::prefix('admin/orders')->middleware(['admin.token.session', 'auth.admin'])->group(function () {
-//     Route::get('/', [OrderController::class, 'index'])->name('admin.orders.index');
-   
-// });
+
     Route::prefix('orders')->middleware('admin.token.session','auth.admin')->group(function () {
         Route::get('/', [OrderController::class, 'index'])->name('admin.orders.index');        
         Route::get('/create', [OrderController::class, 'create'])->name('admin.orders.create');
@@ -238,10 +224,7 @@ Route::prefix('admin')->group(function () {
         Route::post('/update-status/{order_id}', [OrderController::class, 'updateStatus'])->name('admin.orders.updateStatus');
          Route::get('/delete/{order_id}/{lr_number}', [OrderController::class, 'destroyLR'])->name('admin.orders.deleteLR');
     });
-   
-    
-    
-    
+
     // Consignment Management
     Route::prefix('consignments')->middleware('admin.token.session','auth.admin')->group(function () {
         Route::get('/', [ConsignmentNoteController::class, 'index'])->name('admin.consignments.index');
@@ -259,10 +242,8 @@ Route::prefix('admin')->group(function () {
         Route::post('/assign/{lr_number}/save', [ConsignmentNoteController::class, 'assignSave'])->name('admin.consignments.assign.save');
         Route::get('/vehicle_eway_bill', [ConsignmentNoteController::class, 'fillFromEwayBill'])->name('admin.consignments.vehicle_eway_bill'); 
         Route::post('/vehicle_eway_bill/update', [ConsignmentNoteController::class, 'updatePartB'])->name('admin.consignments.vehicle_eway_bill.update');
-      
     });
     
-
     // Freight Bill Management
     Route::prefix('freight-bill')->middleware('admin.token.session','auth.admin')->group(function () {
         Route::get('/', [FreightBillController::class, 'index'])->name('admin.freight-bill.index');
@@ -278,8 +259,6 @@ Route::prefix('admin')->group(function () {
         Route::get('/generate-invoice/{id}', [FreightBillController::class, 'generateInvoice'])->name('admin.freight-bill.generate-invoice');
 
     });
-
-   
     
     Route::prefix('role')->middleware('admin.token.session','auth.admin')->group(function () {
         Route::get('/', [RoleController::class, 'index'])->name('admin.role.index');
@@ -308,8 +287,7 @@ Route::prefix('admin')->group(function () {
         Route::get('/delete/{id}', [TestController::class, 'destroy'])->name('admin.user.delete');
 
     });
-    // Route::get('/stock-transfer/index', [StockTransferController::class, 'index'])->name('admin.stock.index');
-        
+    
     // voucher
     Route::prefix('voucher')->group(function () {
         Route::get('/', [VoucherController::class, 'index'])->name('admin.voucher.index');
@@ -362,11 +340,9 @@ Route::prefix('admin')->group(function () {
     // accounts-payable
     Route::prefix('accounts_payable')->group(function () {
         Route::get('/', [AccountsPayableController::class, 'index'])->name('admin.accounts_payable.index');
-        
         Route::get('/view', [AccountsPayableController::class, 'show'])->name('admin.accounts_payable.view');
     });
 
-    
     // profit-loss
     Route::prefix('profit_loss')->group(function () {
         Route::get('/', [ProfitLossController::class, 'index'])->name('admin.profit_loss.index');
@@ -376,7 +352,6 @@ Route::prefix('admin')->group(function () {
     // profit-loss
     Route::prefix('gst')->group(function () {
         Route::get('/', [GstController::class, 'index'])->name('admin.gst.index');
-        
     });
     
     // balance-sheet
