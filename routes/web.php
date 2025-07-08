@@ -1,12 +1,14 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Frontend\GST\GstEwayController;
 use App\Http\Controllers\Frontend\EraahiController;
 use App\Http\Controllers\Frontend\TrasporterauthController;
 use App\Http\Controllers\Frontend\HomeController;
 use App\Http\Controllers\Frontend\EwayBillGeberateController;
 use App\Http\Controllers\Frontend\MultiVehicleController;
 use App\Http\Controllers\Frontend\MultipleVehicleAddController;
+use App\Http\Controllers\Frontend\MultipleVehicleChangeController;
 use App\Http\Controllers\Frontend\EwayBillDetailController;
 use App\Http\Controllers\Frontend\EwayConsolidatedController;
 use App\Http\Controllers\Frontend\TransporterBillController;
@@ -36,6 +38,13 @@ use App\Http\Controllers\Backend\{
     Route::get('/ewaybill/transporter/gstin', [EwayBillGstinController::class, 'getEwayGstin']);
     Route::get('/ewaybill/multivehicle/initiate', [MultiVehicleController::class, 'initiateMultiVehicle']);
     Route::get('/ewaybill/multivehicle/add', [MultipleVehicleAddController::class, 'addMultiVehicle']);
+    Route::get('/ewaybill/multivehicle/chnage', [MultipleVehicleChangeController::class, 'ChnageMultiVehicle']);
+    
+   
+    // GST Eway Bill Api
+    Route::get('/gst/request-otp', [GstEwayController::class, 'requestOtp']);
+    Route::post('/gst/verify-otp', [GstEwayController::class, 'verifyOtp']);
+    
 
     // 🌐 Frontend Routes Group (user side)
     Route::prefix('user')->name('user.')->group(function () {
@@ -63,7 +72,6 @@ use App\Http\Controllers\Backend\{
             Route::get('/invoice-details/{id}', [DashboardController::class, 'invDetails'])->name('inv_details');
     });
 
-
     Route::get('/', [HomeController::class, 'index'])->middleware('guest.user')->name('front.index');
     Route::get('/about', [HomeController::class, 'about'])->name('front.about');
     Route::get('/contact', [HomeController::class, 'contact'])->name('front.contact');
@@ -71,7 +79,7 @@ use App\Http\Controllers\Backend\{
     Route::get('/privacy', [HomeController::class, 'privacy'])->name('front.privacy');
     Route::post('/save-order', [HomeController::class, 'saveOrder'])->name('order.save');
     Route::post('/request', [HomeController::class, 'requestStatus'])->name('order.requests');
-    // 📄 User Profile
+    
     // Authentication Routes
     Route::prefix('admin')->group(function () {
 
@@ -366,4 +374,121 @@ use App\Http\Controllers\Backend\{
         Route::get('/create', [CashFlowController::class, 'create'])->name('admin.cash_flow.create');
     });
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

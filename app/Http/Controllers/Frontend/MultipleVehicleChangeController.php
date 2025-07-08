@@ -6,13 +6,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use App\Http\Controllers\Controller;
 
-class MultipleVehicleAddController extends Controller
+class MultipleVehicleChangeController extends Controller
 {
     protected $subscriptionKey = 'AL5e2V9g1I2p9h4U3e';
     protected $username = 'AL001';
     protected $plainPassword = 'Alankit@123';
 
-public function addMultiVehicle(Request $request)
+public function ChnageMultiVehicle(Request $request)
 {
     // Static credentials (Replace with dynamic in real app)
     $authToken = '1wMSRe7KakwNpecMBQWRfepdF'; 
@@ -33,30 +33,28 @@ public function addMultiVehicle(Request $request)
         $decryptionKey,
         $options
     );
+   
 
     if (!$sekBinary) {
         return response()->json(['success' => false, 'error' => 'SEK decryption failed'], 500);
     }
 
-    // Step 2: Prepare New Vehicle Data
-    $addVehicleData = [
-        "ewbNo"         => "621011959442",
-        "fromPlace"     => "FRAZER TOWN",
-        "fromState"     => 07,
-        "toPlace"       => "Beml Nagar",
-        "toState"       => 27,
-        "reasonCode"    => 1,
-        "reasonRem"     => "Added second vehicle for transit",
-        "groupNo"       => 2,                     
-        "vehicleNo"     => "MP09CD4321",
-        "transMode"     => 1,
-        "transDocNo"    => "LR854788",
-        "transDocDate"  => "08/07/2025",
-        "totalQuantity" => 4,
-        "unitCode"      => "BOX"
-    ];
+    // Step 2: Create Vehicle Movement Payload
+    $changeVehicleData = [
+        "ewbNo"         => 621011959442,
+        "groupNo"       => 0,                    // existing groupNo from VehiclListDetails
+        "oldvehicleNo"  => "KA01AB1234",         // existing vehicleNo to be replaced
+        "newVehicleNo"  => "MP09CD1234",         // new vehicleNo you want to update
+        "oldTranNo"     => "LR123456",           // old transDocNo (existing)
+        "newTranNo"     => "LR789456",           // new transDocNo you want to use
+        "fromPlace"     => "FRAZER TOWN",        // fromPlace from ewb
+        "fromState"     => 7,                    // fromStateCode from ewb
+        "reasonCode"    => "1",                  // Transhipment reason code
+        "reasonRem"     => "vehicle broke down"  // Your own reason
+   ];
 
-    $jsonPayload = json_encode($addVehicleData , JSON_UNESCAPED_SLASHES);
+
+    $jsonPayload = json_encode($changeVehicleData , JSON_UNESCAPED_SLASHES);
     $base64Payload = base64_encode($jsonPayload);
     
     function encryptBySymmetricKey($dataB64, $sekRaw)
@@ -64,6 +62,7 @@ public function addMultiVehicle(Request $request)
         $data = base64_decode($dataB64);
         return openssl_encrypt($data, "aes-256-ecb", $sekRaw, OPENSSL_RAW_DATA);
     }
+    
 
     // Step 3: Encrypt using SEK
     $encryptedPayload = openssl_encrypt(base64_decode($base64Payload), "AES-256-ECB", $sekBinary, OPENSSL_RAW_DATA);
@@ -73,11 +72,11 @@ public function addMultiVehicle(Request $request)
     
     // Step 4: Final API Payload
     $payload = [
-        "action" => "MULTIVEHADD",
+        "action" => "MULTIVEHUPD",
         "data" => $finalEncryptedPayload
     ];
     
-    dd($payload);
+    // dd($payload);
     
     // Step 5: Headers
     $headers = [

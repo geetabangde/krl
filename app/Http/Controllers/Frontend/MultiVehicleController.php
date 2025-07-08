@@ -15,8 +15,8 @@ class MultiVehicleController extends Controller
 public function initiateMultiVehicle(Request $request)
 {
     // Static credentials (Replace with dynamic in real app)
-    $authToken = '1ApUMHKh4LS3peujlCAhFEWL0'; 
-    $encryptedSek = 'Hd0Z7y/7PFFUQlohUq+CNUrYlhY7ncbC8Di3PDBgEjpGgCjhGmGONERdukDluIoA'; 
+    $authToken = '1wMSRe7KakwNpecMBQWRfepdF'; 
+    $encryptedSek = 'fZFDbKo1Bpgf8UZt7TF3Gxzl5ex8lPKGS8FLjupJGupGgCjhGmGONERdukDluIoA'; 
     $appKey = 'RZbiPYuN3VTF2hMhQcMMBo0MfH4UVNZaSrIeTrpKopE='; 
     $gstin = '23AABFM6400F1ZX'; 
     $subscriptionKey = 'AL5e2V9g1I2p9h4U3e';
