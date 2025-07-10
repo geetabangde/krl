@@ -42,8 +42,8 @@ class EwayBillGeberateController extends Controller
 //         "subSupplyType" => "1",
 //         "subSupplyDesc" => "",
 //         "docType" => "INV",
-//         "docNo" => "Te85s105",
-//         "docDate" => "04/07/2025",
+//         "docNo" => "Test85s105",
+//         "docDate" => "09/07/2025",
 //         "fromGstin" => "23AABFM6400F1ZX",
 //         "fromTrdName" => "welton",
 //         "fromAddr1" => "2ND CROSS NO 59  19  A",
@@ -159,14 +159,73 @@ class EwayBillGeberateController extends Controller
 // }
 
 
+// {
+//   "supplyType": "O",
+//   "subSupplyType": "1",
+//   "subSupplyDesc": "",
+//   "docType": "INV",
+//   "docNo": "Test098547",
+//   "docDate": "09/07/2025",
+//   "fromGstin": "23AABFM6400F1ZX",
+//   "fromTrdName": "welton",
+//   "fromAddr1": "2ND CROSS NO 59  19  A",
+//   "fromAddr2": "GROUND FLOOR OSBORNE ROAD",
+//   "fromPlace": "FRAZER TOWN",
+//   "fromPincode": 110055,
+//   "actFromStateCode": 23,
+//   "fromStateCode": 23,
+//   "toGstin": "07AGAPA5363L002",
+//   "toTrdName": "sthuthya",
+//   "toAddr1": "Shree Nilaya",
+//   "toAddr2": "Dasarahosahalli",
+//   "toPlace": "Beml Nagar",
+//   "toPincode": 560090,
+//   "actToStateCode": 29,
+//   "toStateCode": 27,
+//   "transactionType": 4,
+//   "otherValue": "-100",
+//   "totalValue": 56099,
+//   "cgstValue": 0,
+//   "sgstValue": 0,
+//   "igstValue": 300.67,
+//   "cessValue": 400.56,
+//   "cessNonAdvolValue": 400,
+//   "totInvValue": 68358,
+//   "transporterId": "07AGAPA5363L002",
+//   "transporterName": "",
+//   "transDocNo": "",
+//   "transMode": "1",
+//   "transDistance": "2145",
+//   "transDocDate": "",
+//   "vehicleNo": "PVC1234",
+//   "vehicleType": "R",
+//   "itemList": [
+//     {
+//       "productName": "Wheat",
+//       "productDesc": "Wheat",
+//       "hsnCode": 1001,
+//       "quantity": 4,
+//       "qtyUnit": "BOX",
+//       "cgstRate": 0,
+//       "sgstRate": 0,
+//       "igstRate": 3,
+//       "cessRate": 3,
+//       "cessNonadvol": 0,
+//       "taxableAmount": 5609889
+//     }
+//   ]
+// }
+
+
+
 
 public function generateEwayBill(Request $request)
 {
     // 🔐 Step 1: Credentials and config
-    $authToken = '1b40BN7koFkNHDIDV5JZzy5ai'; 
-    $encryptedSek = 'ciyTsR8bypLHeJ98V2Km0wBQh0eWwFLBXp3yNc/VT8ZGgCjhGmGONERdukDluIoA'; 
+    $authToken = '1q1laJrrV9Unn81BfFSEAxwTt'; 
+    $encryptedSek = 'dAi4iQBUejOdrey3uZoYcJ+wBij7vEn9iQMX09QtjZ1GgCjhGmGONERdukDluIoA'; 
     $appKey = 'RZbiPYuN3VTF2hMhQcMMBo0MfH4UVNZaSrIeTrpKopE=';
-    $gstin = '23AABFM6400F1ZX'; 
+    $gstin = '07AGAPA5363L002'; 
 
     // 💡 Decrypt SEK
     $decryptionKey = base64_decode($appKey);
@@ -182,7 +241,7 @@ public function generateEwayBill(Request $request)
     }
 
     // 🟩 Step 2: Use your manually generated Base64 JSON payload (from CodeBeautify)
-    $base64JsonPayload = 'ewogICJzdXBwbHlUeXBlIjogIk8iLAogICJzdWJTdXBwbHlUeXBlIjogIjEiLAogICJzdWJTdXBwbHlEZXNjIjogIiIsCiAgImRvY1R5cGUiOiAiSU5WIiwKICAiZG9jTm8iOiAiVGU4NTQxMDUiLAogICJkb2NEYXRlIjogIjA0LzA3LzIwMjUiLAogICJmcm9tR3N0aW4iOiAiMjNBQUJGTTY0MDBGMVpYIiwKICAiZnJvbVRyZE5hbWUiOiAid2VsdG9uIiwKICAiZnJvbUFkZHIxIjogIjJORCBDUk9TUyBOTyA1OSAgMTkgIEEiLAogICJmcm9tQWRkcjIiOiAiR1JPVU5EIEZMT09SIE9TQk9STkUgUk9BRCIsCiAgImZyb21QbGFjZSI6ICJGUkFaRVIgVE9XTiIsCiAgImZyb21QaW5jb2RlIjogMTEwMDU1LAogICJhY3RGcm9tU3RhdGVDb2RlIjogNywKICAiZnJvbVN0YXRlQ29kZSI6IDcsCiAgInRvR3N0aW4iOiAiMDdBR0FQQTUzNjNMMDAyIiwKICAidG9UcmROYW1lIjogInN0aHV0aHlhIiwKICAidG9BZGRyMSI6ICJTaHJlZSBOaWxheWEiLAogICJ0b0FkZHIyIjogIkRhc2FyYWhvc2FoYWxsaSIsCiAgInRvUGxhY2UiOiAiQmVtbCBOYWdhciIsCiAgInRvUGluY29kZSI6IDU2MDA5MCwKICAiYWN0VG9TdGF0ZUNvZGUiOiAyOSwKICAidG9TdGF0ZUNvZGUiOiAyNywKICAidHJhbnNhY3Rpb25UeXBlIjogNCwKICAib3RoZXJWYWx1ZSI6IC0xMDAsCiAgInRvdGFsVmFsdWUiOiA1NjA5OSwKICAiY2dzdFZhbHVlIjogMCwKICAic2dzdFZhbHVlIjogMCwKICAiaWdzdFZhbHVlIjogMzAwLjY3LAogICJjZXNzVmFsdWUiOiA0MDAuNTYsCiAgImNlc3NOb25BZHZvbFZhbHVlIjogNDAwLAogICJ0b3RJbnZWYWx1ZSI6IDU3MjAwLjIzLAogICJ0cmFuc3BvcnRlcklkIjogIjA3QUdBUEE1MzYzTDAwMiIsCiAgInRyYW5zcG9ydGVyTmFtZSI6ICIiLAogICJ0cmFuc0RvY05vIjogIiIsCiAgInRyYW5zTW9kZSI6ICIxIiwKICAidHJhbnNEaXN0YW5jZSI6ICIyMTQ1IiwKICAidHJhbnNEb2NEYXRlIjogIiIsCiAgInZlaGljbGVObyI6ICJQVkMxMjM0IiwKICAidmVoaWNsZVR5cGUiOiAiUiIsCiAgIml0ZW1MaXN0IjogWwogICAgewogICAgICAicHJvZHVjdE5hbWUiOiAiV2hlYXQiLAogICAgICAicHJvZHVjdERlc2MiOiAiV2hlYXQiLAogICAgICAiaHNuQ29kZSI6IDEwMDEsCiAgICAgICJxdWFudGl0eSI6IDQsCiAgICAgICJxdHlVbml0IjogIkJPWCIsCiAgICAgICJjZ3N0UmF0ZSI6IDAsCiAgICAgICJzZ3N0UmF0ZSI6IDAsCiAgICAgICJpZ3N0UmF0ZSI6IDMsCiAgICAgICJjZXNzUmF0ZSI6IDMsCiAgICAgICJjZXNzTm9uYWR2b2wiOiAwLAogICAgICAidGF4YWJsZUFtb3VudCI6IDU2MDk5CiAgICB9CiAgXQp9Cg=='; // 🔁 Paste your full base64 JSON payload here
+    $base64JsonPayload = 'ewoJInN1cHBseVR5cGUiOiAiTyIsCgkic3ViU3VwcGx5VHlwZSI6ICIxIiwKCSJzdWJTdXBwbHlEZXNjIjogIiIsCgkiZG9jVHlwZSI6ICJJTlYiLAoJImRvY05vIjogIlRlc3QxMjU0MjAyNCIsCgkiZG9jRGF0ZSI6ICIxMC8wNy8yMDI1IiwKCSJmcm9tR3N0aW4iOiAiMDdBR0FQQTUzNjNMMDAyIiwKCSJmcm9tVHJkTmFtZSI6ICJ3ZWx0b24iLAoJImZyb21BZGRyMSI6ICIyTkQgQ1JPU1MgTk8gNTkgIDE5ICBBIiwKCSJmcm9tQWRkcjIiOiAiR1JPVU5EIEZMT09SIE9TQk9STkUgUk9BRCIsCgkiZnJvbVBsYWNlIjogIkZSQVpFUiBUT1dOIiwKCSJmcm9tUGluY29kZSI6IDExMDA1NSwKCSJhY3RGcm9tU3RhdGVDb2RlIjogMDcsCgkiZnJvbVN0YXRlQ29kZSI6IDA3LAoJInRvR3N0aW4iOiAiMDJBQUpGSDczNzZQMVpTIiwKCSJ0b1RyZE5hbWUiOiAic3RodXRoeWEiLAoJInRvQWRkcjEiOiAiU2hyZWUgTmlsYXlhIiwKCSJ0b0FkZHIyIjogIkRhc2FyYWhvc2FoYWxsaSIsCgkidG9QbGFjZSI6ICJCZW1sIE5hZ2FyIiwKCSJ0b1BpbmNvZGUiOiA1NjAwOTAsCgkiYWN0VG9TdGF0ZUNvZGUiOiAyOSwKCSJ0b1N0YXRlQ29kZSI6IDI3LAoJInRyYW5zYWN0aW9uVHlwZSI6IDQsCgkib3RoZXJWYWx1ZSI6ICItMTAwIiwKCSJ0b3RhbFZhbHVlIjogNTYwOTksCgkiY2dzdFZhbHVlIjogMCwKCSJzZ3N0VmFsdWUiOiAwLAoJImlnc3RWYWx1ZSI6IDMwMC42NywKCSJjZXNzVmFsdWUiOiA0MDAuNTYsCgkiY2Vzc05vbkFkdm9sVmFsdWUiOiA0MDAsCgkidG90SW52VmFsdWUiOiA2ODM1OCwKCSJ0cmFuc3BvcnRlcklkIjogIiIsCgkidHJhbnNwb3J0ZXJOYW1lIjogIiIsCgkidHJhbnNEb2NObyI6ICIiLAoJInRyYW5zTW9kZSI6ICIxIiwKCSJ0cmFuc0Rpc3RhbmNlIjogIjIxNDUiLAoJInRyYW5zRG9jRGF0ZSI6ICIiLAoJInZlaGljbGVObyI6ICJQVkMxMjM0IiwKCSJ2ZWhpY2xlVHlwZSI6ICJSIiwKCSJpdGVtTGlzdCI6IFt7CgkJInByb2R1Y3ROYW1lIjogIldoZWF0IiwKCQkicHJvZHVjdERlc2MiOiAiV2hlYXQiLAoJCSJoc25Db2RlIjogMTAwMSwKCQkicXVhbnRpdHkiOiA0LAoJCSJxdHlVbml0IjogIkJPWCIsCgkJImNnc3RSYXRlIjogMCwKCQkic2dzdFJhdGUiOiAwLAoJCSJpZ3N0UmF0ZSI6IDMsCgkJImNlc3NSYXRlIjogMywKCQkiY2Vzc05vbmFkdm9sIjogMCwKCQkidGF4YWJsZUFtb3VudCI6IDU2MDk4ODkKCX1dCn0='; // 🔁 Paste your full base64 JSON payload here
 
     // 🔐 Step 3: Encrypt Base64 JSON using SEK
     $encryptedPayload = openssl_encrypt(

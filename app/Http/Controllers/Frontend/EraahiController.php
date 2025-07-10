@@ -31,8 +31,8 @@ lQIDAQAB
   
 $RequestPayload = json_encode([
     'action' => 'ACCESSTOKEN',
-    'username' => 'Road3050',
-    'password' => 'Road@3050',
+    'username' => 'AL001',
+    'password' => 'Alankit@123',
     'app_key' => 'RZbiPYuN3VTF2hMhQcMMBo0MfH4UVNZaSrIeTrpKopE='
 ]);
 
@@ -52,11 +52,12 @@ openssl_public_encrypt($data, $encryptedData, $publicKey);
     $payload = [
         'Data' => $encryptedData_res
     ];
+    
     dd($payload);
 
     $response = Http::withHeaders([
         'Content-Type' => 'application/json',
-        'gstin' => '23AABFM6400F1ZX',
+        'gstin' => '07AGAPA5363L002',
         'Ocp-Apim-Subscription-Key' => 'AL5e2V9g1I2p9h4U3e',
         'Authorization' => 'Bearer YOUR_ACCESS_TOKEN_HERE', // Replace with real token
     ])->withBody(json_encode($payload), 'application/json')

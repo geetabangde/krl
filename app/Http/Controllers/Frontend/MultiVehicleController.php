@@ -15,10 +15,10 @@ class MultiVehicleController extends Controller
 public function initiateMultiVehicle(Request $request)
 {
     // Static credentials (Replace with dynamic in real app)
-    $authToken = '1wMSRe7KakwNpecMBQWRfepdF'; 
-    $encryptedSek = 'fZFDbKo1Bpgf8UZt7TF3Gxzl5ex8lPKGS8FLjupJGupGgCjhGmGONERdukDluIoA'; 
+    $authToken = '1q1laJrrV9Unn81BfFSEAxwTt'; 
+    $encryptedSek = 'dAi4iQBUejOdrey3uZoYcJ+wBij7vEn9iQMX09QtjZ1GgCjhGmGONERdukDluIoA'; 
     $appKey = 'RZbiPYuN3VTF2hMhQcMMBo0MfH4UVNZaSrIeTrpKopE='; 
-    $gstin = '23AABFM6400F1ZX'; 
+    $gstin = '07AGAPA5363L002'; 
     $subscriptionKey = 'AL5e2V9g1I2p9h4U3e';
 
     $ciphering = 'AES-256-ECB';
@@ -41,17 +41,17 @@ public function initiateMultiVehicle(Request $request)
 
     // Step 2: Create Vehicle Movement Payload
     $multiVehicleData = [
-    "ewbNo" => 621011959442,
-    "reasonCode" => 1, 
-    "reasonRem" => "Initial dispatch",
-    "fromPlace" => "GANDHI NAGAR",
-    "fromState" => 7,
-    "toPlace" => "Beml Nagar",
-    "toState" => 27,
-    "transMode" => 1,  
-    "totalQuantity" => 22,
-    "unitCode" => "NOS"
-    ];
+        "ewbNo" => 751008936089,
+        "reasonCode" => 1,
+        "reasonRem" => "vehicle broke down",
+        "fromPlace" => "BANGALORE",
+        "fromState" => 07,             
+        "toPlace" => "Chennai",
+        "toState" => 27,               
+        "transMode" => 1,
+        "totalQuantity" => 4,
+        "unitCode" => "BOX"
+   ];
     
     $jsonPayload = json_encode($multiVehicleData, JSON_UNESCAPED_SLASHES);
     $base64Payload = base64_encode($jsonPayload);
@@ -71,6 +71,7 @@ public function initiateMultiVehicle(Request $request)
         "action" => "MULTIVEHMOVINT",
         "data" => $finalEncryptedPayload
     ];
+    // dd($payload);
 
     // Step 5: Headers
     $headers = [

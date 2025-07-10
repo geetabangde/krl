@@ -16,8 +16,8 @@ class EwayBillDetailController extends Controller
 public function getEwayBillDetail($ewbNo)
 {
     // Static or load from env/db
-    $authToken = '1wMSRe7KakwNpecMBQWRfepdF'; 
-    $encryptedSek = 'fZFDbKo1Bpgf8UZt7TF3Gxzl5ex8lPKGS8FLjupJGupGgCjhGmGONERdukDluIoA'; 
+    $authToken = '1uqHxSLMWbnc8biCEYi3FthUH'; 
+    $encryptedSek = '7JxeAm11VkrDeo7Jz2eLo05Xp7AH0ddTWtIgQ2D1we9GgCjhGmGONERdukDluIoA'; 
     $appKey = 'RZbiPYuN3VTF2hMhQcMMBo0MfH4UVNZaSrIeTrpKopE='; 
     $gstin = '23AABFM6400F1ZX'; 
     $subscriptionKey = 'AL5e2V9g1I2p9h4U3e'; 

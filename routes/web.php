@@ -45,6 +45,7 @@ use App\Http\Controllers\Backend\{
     Route::get('/gst/request-otp', [GstEwayController::class, 'requestOtp']);
     Route::post('/gst/verify-otp', [GstEwayController::class, 'verifyOtp']);
     
+    
 
     // 🌐 Frontend Routes Group (user side)
     Route::prefix('user')->name('user.')->group(function () {

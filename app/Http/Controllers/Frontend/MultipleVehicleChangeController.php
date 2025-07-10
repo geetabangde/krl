@@ -15,17 +15,16 @@ class MultipleVehicleChangeController extends Controller
 public function ChnageMultiVehicle(Request $request)
 {
     // Static credentials (Replace with dynamic in real app)
-    $authToken = '1wMSRe7KakwNpecMBQWRfepdF'; 
-    $encryptedSek = 'fZFDbKo1Bpgf8UZt7TF3Gxzl5ex8lPKGS8FLjupJGupGgCjhGmGONERdukDluIoA'; 
+    $authToken = '1NM07DijNlNsqe6oUQIed4zfz'; 
+    $encryptedSek = 'ycKJPrzM/HHRjaJn3wL2EZcFsIYcACR64qiJvU8rI2lGgCjhGmGONERdukDluIoA'; 
     $appKey = 'RZbiPYuN3VTF2hMhQcMMBo0MfH4UVNZaSrIeTrpKopE='; 
-    $gstin = '23AABFM6400F1ZX'; 
+    $gstin = '07AGAPA5363L002'; 
     $subscriptionKey = 'AL5e2V9g1I2p9h4U3e';
 
     $ciphering = 'AES-256-ECB';
     $options = OPENSSL_RAW_DATA;
     $decryptionKey = base64_decode($appKey);
    
-
     // Step 1: Decrypt SEK
     $sekBinary = openssl_decrypt(
         base64_decode($encryptedSek),
@@ -33,7 +32,8 @@ public function ChnageMultiVehicle(Request $request)
         $decryptionKey,
         $options
     );
-   
+    
+    //  dd($sekBinary);
 
     if (!$sekBinary) {
         return response()->json(['success' => false, 'error' => 'SEK decryption failed'], 500);
@@ -41,31 +41,37 @@ public function ChnageMultiVehicle(Request $request)
 
     // Step 2: Create Vehicle Movement Payload
     $changeVehicleData = [
-        "ewbNo"         => 621011959442,
-        "groupNo"       => 0,                    // existing groupNo from VehiclListDetails
-        "oldvehicleNo"  => "KA01AB1234",         // existing vehicleNo to be replaced
-        "newVehicleNo"  => "MP09CD1234",         // new vehicleNo you want to update
-        "oldTranNo"     => "LR123456",           // old transDocNo (existing)
-        "newTranNo"     => "LR789456",           // new transDocNo you want to use
-        "fromPlace"     => "FRAZER TOWN",        // fromPlace from ewb
-        "fromState"     => 7,                    // fromStateCode from ewb
-        "reasonCode"    => "1",                  // Transhipment reason code
-        "reasonRem"     => "vehicle broke down"  // Your own reason
-   ];
+        "ewbNo"         => "751008936089",
+        "groupNo"       => "1",
+        "oldvehicleNo"  => "MP09CD1234",     
+        "newVehicleNo"  => "MP10XY7789",     
+        "oldTranNo"     => "L8897678",       
+        "newTranNo"     => "LR789456",      
+        "fromPlace"     => "BANGALORE",
+        "fromState"     => 07,
+        "reasonCode"    => "1",
+        "reasonRem"     => "vehicle broke down"
+    ];
 
-
+    //  dd($changeVehicleData);
+    
     $jsonPayload = json_encode($changeVehicleData , JSON_UNESCAPED_SLASHES);
     $base64Payload = base64_encode($jsonPayload);
-    
-    function encryptBySymmetricKey($dataB64, $sekRaw)
-    {
-        $data = base64_decode($dataB64);
-        return openssl_encrypt($data, "aes-256-ecb", $sekRaw, OPENSSL_RAW_DATA);
-    }
-    
 
-    // Step 3: Encrypt using SEK
-    $encryptedPayload = openssl_encrypt(base64_decode($base64Payload), "AES-256-ECB", $sekBinary, OPENSSL_RAW_DATA);
+    // dd($base64Payload);
+
+    // Step 3: Encrypt base64Payload using SEK
+    $encryptedPayload = openssl_encrypt(
+        base64_decode($base64Payload),
+        $ciphering,
+        $sekBinary,
+        $options
+    );
+
+    if (!$encryptedPayload) {
+        return response()->json(['success' => false, 'error' => 'Payload encryption failed'], 500);
+    }
+
     $finalEncryptedPayload = base64_encode($encryptedPayload);
 
     // dd($finalEncryptedPayload);
@@ -75,9 +81,9 @@ public function ChnageMultiVehicle(Request $request)
         "action" => "MULTIVEHUPD",
         "data" => $finalEncryptedPayload
     ];
-    
+
     // dd($payload);
-    
+
     // Step 5: Headers
     $headers = [
         'Content-Type' => 'application/json',
@@ -91,7 +97,7 @@ public function ChnageMultiVehicle(Request $request)
     $response = Http::withHeaders($headers)->post($url, $payload);
     $jsonResponse = $response->json();
 
-    dd($jsonResponse);
+    //  dd($jsonResponse);
       
     // Step 7: Handle API Response
     if (isset($jsonResponse['data'])) {
