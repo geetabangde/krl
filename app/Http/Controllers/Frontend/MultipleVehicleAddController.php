@@ -15,8 +15,8 @@ class MultipleVehicleAddController extends Controller
 public function addMultiVehicle_OLD(Request $request)
 {
     // Static credentials (Replace with dynamic in real app)
-    $authToken = '1uqHxSLMWbnc8biCEYi3FthUH'; 
-    $encryptedSek = '7JxeAm11VkrDeo7Jz2eLo05Xp7AH0ddTWtIgQ2D1we9GgCjhGmGONERdukDluIoA'; 
+    $authToken = '1wuF10gvTXYcPkiTWNN1a5wHW'; 
+    $encryptedSek = 'o7m1bM8msIbFhP9vLnUWx9dFjWq6KC4PcaIaMzPoNrVGgCjhGmGONERdukDluIoA'; 
     $appKey = 'RZbiPYuN3VTF2hMhQcMMBo0MfH4UVNZaSrIeTrpKopE='; 
     $gstin = '23AABFM6400F1ZX'; 
     $subscriptionKey = 'AL5e2V9g1I2p9h4U3e';
@@ -40,11 +40,11 @@ public function addMultiVehicle_OLD(Request $request)
 
     // Step 2: Prepare New Vehicle Data
     $addVehicleData = [
-        "ewbNo"         => 611011962418,                 
-        "groupNo"       => "2",                            
-        "vehicleNo"     => "PWQ4321",
+        "ewbNo"         => 731008936182,                 
+        "groupNo"       => "1",                            
+        "vehicleNo"     => "PWQ4312",
         "transDocNo"    => "1256",
-        "transDocDate"  => "09/07/2025",
+        "transDocDate"  => "14/07/2025",
         "quantity"     => 4,
     ];
 
@@ -212,8 +212,8 @@ public function addMultiVehicle_new(Request $request)
 public function addMultiVehicle(Request $request)
 {
     // Credentials
-    $authToken = '1q1laJrrV9Unn81BfFSEAxwTt'; 
-    $encryptedSek = 'dAi4iQBUejOdrey3uZoYcJ+wBij7vEn9iQMX09QtjZ1GgCjhGmGONERdukDluIoA'; 
+    $authToken = '1wuF10gvTXYcPkiTWNN1a5wHW'; 
+    $encryptedSek = 'o7m1bM8msIbFhP9vLnUWx9dFjWq6KC4PcaIaMzPoNrVGgCjhGmGONERdukDluIoA'; 
     $appKey = 'RZbiPYuN3VTF2hMhQcMMBo0MfH4UVNZaSrIeTrpKopE='; 
     $gstin = '07AGAPA5363L002'; 
     $subscriptionKey = 'AL5e2V9g1I2p9h4U3e';
@@ -243,11 +243,11 @@ public function addMultiVehicle(Request $request)
 
     // Step 2: Prepare the payload as per official documentation
     $addVehicleData = [
-        "ewbNo" => "751008936089",
+        "ewbNo" => "701008936183",
         "groupNo" => "1",
         "vehicleNo" => "MP09CD1234",
         "transDocNo" => "L8897678",
-        "transDocDate" => "10/07/2025",
+        "transDocDate" => "14/07/2025",
         "quantity" => 4,
     ];
 

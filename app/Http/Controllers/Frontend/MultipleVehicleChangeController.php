@@ -15,8 +15,8 @@ class MultipleVehicleChangeController extends Controller
 public function ChnageMultiVehicle(Request $request)
 {
     // Static credentials (Replace with dynamic in real app)
-    $authToken = '1NM07DijNlNsqe6oUQIed4zfz'; 
-    $encryptedSek = 'ycKJPrzM/HHRjaJn3wL2EZcFsIYcACR64qiJvU8rI2lGgCjhGmGONERdukDluIoA'; 
+    $authToken = '1wuF10gvTXYcPkiTWNN1a5wHW'; 
+    $encryptedSek = 'o7m1bM8msIbFhP9vLnUWx9dFjWq6KC4PcaIaMzPoNrVGgCjhGmGONERdukDluIoA'; 
     $appKey = 'RZbiPYuN3VTF2hMhQcMMBo0MfH4UVNZaSrIeTrpKopE='; 
     $gstin = '07AGAPA5363L002'; 
     $subscriptionKey = 'AL5e2V9g1I2p9h4U3e';
@@ -41,7 +41,7 @@ public function ChnageMultiVehicle(Request $request)
 
     // Step 2: Create Vehicle Movement Payload
     $changeVehicleData = [
-        "ewbNo"         => "751008936089",
+        "ewbNo"         => "701008936183",
         "groupNo"       => "1",
         "oldvehicleNo"  => "MP09CD1234",     
         "newVehicleNo"  => "MP10XY7789",     

@@ -36,6 +36,7 @@
                                 @endif
                                 <li><a href="{{ route('admin.consignments.multiplePodForm') }}">Multiple POD</a></li>
                                 <li><a href="{{ route('admin.freight-bill.invoice') }}">Tax Invoice</a></li>
+                                <li><a href="{{ route('admin.consignments.multi-vehicle-initiate') }}">Vehicle eWay Bill</a></li>
                             </ul>
                         </li>
                         @endif

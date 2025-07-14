@@ -15,8 +15,8 @@ class MultiVehicleController extends Controller
 public function initiateMultiVehicle(Request $request)
 {
     // Static credentials (Replace with dynamic in real app)
-    $authToken = '1q1laJrrV9Unn81BfFSEAxwTt'; 
-    $encryptedSek = 'dAi4iQBUejOdrey3uZoYcJ+wBij7vEn9iQMX09QtjZ1GgCjhGmGONERdukDluIoA'; 
+    $authToken = '1wuF10gvTXYcPkiTWNN1a5wHW'; 
+    $encryptedSek = 'o7m1bM8msIbFhP9vLnUWx9dFjWq6KC4PcaIaMzPoNrVGgCjhGmGONERdukDluIoA'; 
     $appKey = 'RZbiPYuN3VTF2hMhQcMMBo0MfH4UVNZaSrIeTrpKopE='; 
     $gstin = '07AGAPA5363L002'; 
     $subscriptionKey = 'AL5e2V9g1I2p9h4U3e';
@@ -41,7 +41,7 @@ public function initiateMultiVehicle(Request $request)
 
     // Step 2: Create Vehicle Movement Payload
     $multiVehicleData = [
-        "ewbNo" => 751008936089,
+        "ewbNo" => 701008936183,
         "reasonCode" => 1,
         "reasonRem" => "vehicle broke down",
         "fromPlace" => "BANGALORE",

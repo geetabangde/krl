@@ -251,6 +251,13 @@ use App\Http\Controllers\Backend\{
         Route::post('/assign/{lr_number}/save', [ConsignmentNoteController::class, 'assignSave'])->name('admin.consignments.assign.save');
         Route::get('/vehicle_eway_bill', [ConsignmentNoteController::class, 'fillFromEwayBill'])->name('admin.consignments.vehicle_eway_bill'); 
         Route::post('/vehicle_eway_bill/update', [ConsignmentNoteController::class, 'updatePartB'])->name('admin.consignments.vehicle_eway_bill.update');
+        Route::get('/multi-vehicle-initiate', [ConsignmentNoteController::class, 'multiVehicleInitiate'])->name('admin.consignments.multi-vehicle-initiate');
+        Route::post('/multi-vehicle-initiate', [ConsignmentNoteController::class, 'callInitiateApi'])->name('admin.consignments.call_initiate_api');
+        Route::get('/add-vehicle-ui', [ConsignmentNoteController::class, 'showAddVehicleForm'])->name('admin.consignments.add_vehicle_form');
+        Route::post('/add-vehicle-ui', [ConsignmentNoteController::class, 'callAddVehicleApi'])->name('admin.consignments.call_add_vehicle');
+        Route::get('/change-vehicle-ui', [ConsignmentNoteController::class, 'showChangeVehicleForm'])->name('admin.consignments.change_vehicle_form');
+        Route::post('/change-vehicle-ui', [ConsignmentNoteController::class, 'callChangeVehicleApi'])->name('admin.consignments.call_change_vehicle');
+
     });
     
     // Freight Bill Management
