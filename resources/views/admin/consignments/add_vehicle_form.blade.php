@@ -20,8 +20,15 @@
 
                 <form method="POST" action="{{ route('admin.consignments.call_add_vehicle') }}">
                     @csrf
-                    <input type="hidden" name="ewbNo" value="{{ $ewbNo }}">
-                    <input type="hidden" name="groupNo" value="{{ $groupNo }}">
+                    <div class="mb-2">
+                        <label> Eway Bill No</label>
+                        <input type="number" name="ewbNo" class="form-control" value="{{ $ewbNo }}" readonly>
+                    </div>
+                    <div class="mb-2">
+                        <label>Group No</label>
+                        <input type="number" name="groupNo" class="form-control" value="{{ $groupNo }}" readonly>
+                    </div>
+
                     <div class="mb-2">
                         <label> Vehicle No</label>
                         <input type="text" name="vehicleNo" class="form-control" placeholder="Enter a vehicle number MP09CD1234" required>

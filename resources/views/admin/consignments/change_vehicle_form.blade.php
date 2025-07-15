@@ -17,9 +17,14 @@
                 <form method="POST" action="{{ route('admin.consignments.call_change_vehicle') }}">
                     @csrf
 
-                    <input type="hidden" name="ewbNo" value="{{ $ewbNo }}">
-                    <input type="hidden" name="groupNo" value="{{ $groupNo }}">
-
+                    <div class="mb-2">
+                        <label> Eway Bill No</label>
+                        <input type="number" name="ewbNo" class="form-control" value="{{ $ewbNo }}" readonly>
+                    </div>
+                    <div class="mb-2">
+                        <label>Group No</label>
+                        <input type="number" name="groupNo" class="form-control" value="{{ $groupNo }}" readonly>
+                    </div>
                     <div class="mb-2">
                         <label>Old Vehicle No</label>
                         <input type="text" name="oldvehicleNo" class="form-control" required placeholder="Enter Old Vehicle No MP09CD1234">
@@ -54,12 +59,20 @@
                 </form>
 
 
+               @if(session('success'))
+                    <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+                        <strong>✅ {{ session('success') }}</strong>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                @endif
+
                 @if(session('error'))
-                <div class="alert alert-danger">{{ session('error') }}</div>
+                    <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+                        <strong>❌ {{ session('error') }}</strong>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
                 @endif
-                @if(session('success'))
-                <div class="alert alert-success">{{ session('success') }}</div>
-                @endif
+
             </div>
         </div>
     </div>

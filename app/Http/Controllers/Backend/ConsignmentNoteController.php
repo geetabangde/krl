@@ -1006,45 +1006,41 @@ class ConsignmentNoteController extends Controller implements HasMiddleware
     }
 
     public function callInitiateApi(Request $request)
-    {
-        $fromPlace = $request->input('fromPlace', 'BANGALORE');
-        $toPlace = $request->input('toPlace', 'CHENNAI');
-        $reasonRem = $request->input('reasonRem', 'vehicle broke down');
-        $totalQuantity = $request->input('totalQuantity', 4);
+  {
+    $response = $this->initiateMultiVehicle($request);
 
-        $response = $this->initiateMultiVehicle($fromPlace, $toPlace, $reasonRem, $totalQuantity);
+    if ($response['success']) {
+        $ewbNo = $response['ewaybill_response']['ewbNo'];
+        $groupNo = $response['ewaybill_response']['groupNo'];
+        $vehicleKey = "vehicle_added_{$ewbNo}_{$groupNo}";
+        $changedKey = "vehicle_changed_{$ewbNo}_{$groupNo}";
 
-        if ($response['success']) {
-            return view('admin.consignments.multi-vehicle-initiate', [
-                'response' => $response['ewaybill_response']
-            ]);
-        }
-
-        return back()->with('error', $response['error'] ?? 'API failed');
+        return view('admin.consignments.multi-vehicle-initiate', [
+            'response' => $response['ewaybill_response'],
+            'vehicleAdded' => session($vehicleKey, false),
+            'vehicleChanged' => session($changedKey, false),
+        ]);
     }
 
-    private function initiateMultiVehicle($fromPlace, $toPlace, $reasonRem, $totalQuantity)
+    return back()->with('error', $response['error'] ?? 'API failed');
+   }
+
+
+    
+
+
+    private function initiateMultiVehicle(Request $request)
     {
-        // $authToken = '1VWcaxF8ivD8OgPTJSPT1zWWR'; 
-        // $encryptedSek = 'SIMb1SYCUDR7Wdo3z8sfVaC/WlTxCND/sDQyT2mDYKlGgCjhGmGONERdukDluIoA'; 
-        // $appKey = 'RZbiPYuN3VTF2hMhQcMMBo0MfH4UVNZaSrIeTrpKopE='; 
-        // $gstin = '07AGAPA5363L002'; 
-        // $subscriptionKey = 'AL5e2V9g1I2p9h4U3e';
-        
         $authToken     = env('EWB_AUTH_TOKEN');
         $encryptedSek  = env('EWB_ENCRYPTED_SEK');
         $appKey        = env('EWB_APP_KEY');
         $gstin         = env('EWB_GSTIN');
         $subscriptionKey = env('EWB_API_SUBSCRIPTION_KEY', 'AL5e2V9g1I2p9h4U3e');
 
-
-        
-
         $ciphering = 'AES-256-ECB';
         $options = OPENSSL_RAW_DATA;
         $decryptionKey = base64_decode($appKey);
 
-        // Decrypt SEK
         $sekBinary = openssl_decrypt(
             base64_decode($encryptedSek),
             $ciphering,
@@ -1056,31 +1052,22 @@ class ConsignmentNoteController extends Controller implements HasMiddleware
             return ['success' => false, 'error' => 'SEK decryption failed'];
         }
 
-        // Vehicle Payload
         $multiVehicleData = [
-            "ewbNo" => 711008936371, // You can replace with real eWay Bill No.
-            "reasonCode" => 1,
-            "reasonRem" => $reasonRem,
-            "fromPlace" => $fromPlace,
-            "fromState" => 07,
-            "toPlace" => $toPlace,
-            "toState" => 27,
-            "transMode" => 1,
-            "totalQuantity" => $totalQuantity,
-            "unitCode" => "BOX"
+            "ewbNo"         => $request->ewbNo,
+            "reasonCode"    => 1,
+            "reasonRem"     => $request->reasonRem,
+            "fromPlace"     => $request->fromPlace,
+            "fromState"     => (int)$request->fromState,
+            "toPlace"       => $request->toPlace,
+            "toState"       => (int)$request->toState,
+            "transMode"     => (int)$request->transMode,
+            "totalQuantity" => (int)$request->totalQuantity,
+            "unitCode"      => $request->unitCode
         ];
 
         $jsonPayload = json_encode($multiVehicleData, JSON_UNESCAPED_SLASHES);
         $base64Payload = base64_encode($jsonPayload);
-
-        // Encrypt Payload using SEK
-        $encryptedPayload = openssl_encrypt(
-            base64_decode($base64Payload),
-            "AES-256-ECB",
-            $sekBinary,
-            $options
-        );
-
+        $encryptedPayload = openssl_encrypt(base64_decode($base64Payload), "AES-256-ECB", $sekBinary, $options);
         $finalEncryptedPayload = base64_encode($encryptedPayload);
 
         $payload = [
@@ -1101,12 +1088,7 @@ class ConsignmentNoteController extends Controller implements HasMiddleware
 
         if (isset($jsonResponse['data'])) {
             $encryptedResponse = base64_decode($jsonResponse['data']);
-            $decryptedData = openssl_decrypt(
-                $encryptedResponse,
-                $ciphering,
-                $sekBinary,
-                $options
-            );
+            $decryptedData = openssl_decrypt($encryptedResponse, $ciphering, $sekBinary, $options);
 
             if (!$decryptedData) {
                 return ['success' => false, 'error' => 'Response decryption failed'];
@@ -1123,6 +1105,7 @@ class ConsignmentNoteController extends Controller implements HasMiddleware
             'error' => $jsonResponse['message'] ?? 'Unknown error'
         ];
     }
+
    
     public function showAddVehicleForm(Request $request)
    {
@@ -1183,6 +1166,8 @@ class ConsignmentNoteController extends Controller implements HasMiddleware
         // dd($response); 
 
         if (isset($response['data'])) {
+            $key = "vehicle_added_" . $request->ewbNo . "_" . $request->groupNo;
+            session()->put($key, true);
             return view('admin.consignments.add_vehicle_form', [
                 'success' => true,
                 'ewbNo' => $request->ewbNo,
@@ -1258,13 +1243,13 @@ class ConsignmentNoteController extends Controller implements HasMiddleware
     $response = Http::withHeaders($headers)->post($url, $payload)->json();
 
     if (isset($response['data'])) {
+         $key = "vehicle_changed_{$request->ewbNo}_{$request->groupNo}";
+         session()->put($key, true); // ✅ Save change status
         return back()->with('success', 'Vehicle Changed Successfully');
     }
 
     return back()->with('error', $response['message'] ?? 'Vehicle Change Failed');
    }
-
-
 
 }
 
