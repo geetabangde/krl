@@ -804,7 +804,7 @@ class ConsignmentNoteController extends Controller implements HasMiddleware
         // dd($ewbQuery);
         return redirect()->route('admin.consignments.vehicle_eway_bill', ['ewbs' => $ewbQuery]);
     }
-
+    
 
     public function fillFromEwayBill_old(Request $request)
     {
@@ -1025,11 +1025,20 @@ class ConsignmentNoteController extends Controller implements HasMiddleware
 
     private function initiateMultiVehicle($fromPlace, $toPlace, $reasonRem, $totalQuantity)
     {
-        $authToken = '1wuF10gvTXYcPkiTWNN1a5wHW'; 
-        $encryptedSek = 'o7m1bM8msIbFhP9vLnUWx9dFjWq6KC4PcaIaMzPoNrVGgCjhGmGONERdukDluIoA'; 
-        $appKey = 'RZbiPYuN3VTF2hMhQcMMBo0MfH4UVNZaSrIeTrpKopE='; 
-        $gstin = '07AGAPA5363L002'; 
-        $subscriptionKey = 'AL5e2V9g1I2p9h4U3e';
+        // $authToken = '1VWcaxF8ivD8OgPTJSPT1zWWR'; 
+        // $encryptedSek = 'SIMb1SYCUDR7Wdo3z8sfVaC/WlTxCND/sDQyT2mDYKlGgCjhGmGONERdukDluIoA'; 
+        // $appKey = 'RZbiPYuN3VTF2hMhQcMMBo0MfH4UVNZaSrIeTrpKopE='; 
+        // $gstin = '07AGAPA5363L002'; 
+        // $subscriptionKey = 'AL5e2V9g1I2p9h4U3e';
+        
+        $authToken     = env('EWB_AUTH_TOKEN');
+        $encryptedSek  = env('EWB_ENCRYPTED_SEK');
+        $appKey        = env('EWB_APP_KEY');
+        $gstin         = env('EWB_GSTIN');
+        $subscriptionKey = env('EWB_API_SUBSCRIPTION_KEY', 'AL5e2V9g1I2p9h4U3e');
+
+
+        
 
         $ciphering = 'AES-256-ECB';
         $options = OPENSSL_RAW_DATA;
@@ -1049,7 +1058,7 @@ class ConsignmentNoteController extends Controller implements HasMiddleware
 
         // Vehicle Payload
         $multiVehicleData = [
-            "ewbNo" => 701008936183, // You can replace with real eWay Bill No.
+            "ewbNo" => 711008936371, // You can replace with real eWay Bill No.
             "reasonCode" => 1,
             "reasonRem" => $reasonRem,
             "fromPlace" => $fromPlace,
@@ -1123,13 +1132,15 @@ class ConsignmentNoteController extends Controller implements HasMiddleware
     ]);
    }
 
-   public function callAddVehicleApi(Request $request)
+    public function callAddVehicleApi(Request $request)
     {
-        $authToken = '1wuF10gvTXYcPkiTWNN1a5wHW'; 
-        $encryptedSek = 'o7m1bM8msIbFhP9vLnUWx9dFjWq6KC4PcaIaMzPoNrVGgCjhGmGONERdukDluIoA'; 
-        $appKey = 'RZbiPYuN3VTF2hMhQcMMBo0MfH4UVNZaSrIeTrpKopE='; 
-        $gstin = '07AGAPA5363L002'; 
-        $subscriptionKey = 'AL5e2V9g1I2p9h4U3e';
+        $authToken     = env('EWB_AUTH_TOKEN');
+        $encryptedSek  = env('EWB_ENCRYPTED_SEK');
+        $appKey        = env('EWB_APP_KEY');
+        $gstin         = env('EWB_GSTIN');
+        $subscriptionKey = env('EWB_API_SUBSCRIPTION_KEY', 'AL5e2V9g1I2p9h4U3e');
+
+
         $ciphering = 'AES-256-ECB';
         $options = OPENSSL_RAW_DATA;
         $decryptionKey = base64_decode($appKey);
@@ -1138,21 +1149,19 @@ class ConsignmentNoteController extends Controller implements HasMiddleware
         if (!$sekBinary) {
             return back()->with('error', 'SEK decryption failed');
         }
-
+        
         $addVehicleData = [
             "ewbNo" => $request->ewbNo,
             "groupNo" => $request->groupNo,
             "vehicleNo" => $request->vehicleNo,
             "transDocNo" => $request->transDocNo,
-            "transDocDate" => $request->transDocDate,
-            "fromPlace" => $request->fromPlace,
-            "fromState" => 27,
-            "reasonCode" => 1,
-            "reasonRem" => "Breakdown"
+            "transDocDate" => date('d/m/Y', strtotime($request->transDocDate)),
+            "quantity" => $request->quantity,
         ];
 
         $jsonPayload = json_encode($addVehicleData, JSON_UNESCAPED_SLASHES);
         $base64Payload = base64_encode($jsonPayload);
+
         $encryptedPayload = openssl_encrypt(base64_decode($base64Payload), $ciphering, $sekBinary, $options);
         $finalEncryptedPayload = base64_encode($encryptedPayload);
 
@@ -1170,6 +1179,8 @@ class ConsignmentNoteController extends Controller implements HasMiddleware
 
         $url = "https://developers.eraahi.com/api/ewaybillapi/v1.03/ewayapi";
         $response = Http::withHeaders($headers)->post($url, $payload)->json();
+        
+        // dd($response); 
 
         if (isset($response['data'])) {
             return view('admin.consignments.add_vehicle_form', [
@@ -1181,6 +1192,7 @@ class ConsignmentNoteController extends Controller implements HasMiddleware
 
         return back()->with('error', $response['message'] ?? 'Add Vehicle Failed');
     }
+    
 
     public function showChangeVehicleForm(Request $request)
    {
@@ -1196,11 +1208,13 @@ class ConsignmentNoteController extends Controller implements HasMiddleware
 
    public function callChangeVehicleApi(Request $request)
    {
-       $authToken = '1wuF10gvTXYcPkiTWNN1a5wHW'; 
-        $encryptedSek = 'o7m1bM8msIbFhP9vLnUWx9dFjWq6KC4PcaIaMzPoNrVGgCjhGmGONERdukDluIoA'; 
-        $appKey = 'RZbiPYuN3VTF2hMhQcMMBo0MfH4UVNZaSrIeTrpKopE='; 
-        $gstin = '07AGAPA5363L002'; 
-        $subscriptionKey = 'AL5e2V9g1I2p9h4U3e';
+        $authToken     = env('EWB_AUTH_TOKEN');
+        $encryptedSek  = env('EWB_ENCRYPTED_SEK');
+        $appKey        = env('EWB_APP_KEY');
+        $gstin         = env('EWB_GSTIN');
+        $subscriptionKey = env('EWB_API_SUBSCRIPTION_KEY', 'AL5e2V9g1I2p9h4U3e');
+
+
         $ciphering = 'AES-256-ECB';
         $options = OPENSSL_RAW_DATA;
         $decryptionKey = base64_decode($appKey);
@@ -1211,11 +1225,16 @@ class ConsignmentNoteController extends Controller implements HasMiddleware
         }
 
     $changeData = [
-        "ewbNo" => $request->ewbNo,
-        "groupNo" => $request->groupNo,
-        "vehicleNo" => $request->vehicleNo,
-        "reasonCode" => 1,
-        "reasonRem" => "Changed due to emergency"
+        "ewbNo"         => $request->ewbNo,
+        "groupNo"       => $request->groupNo,
+        "oldvehicleNo"  => $request->oldvehicleNo,
+        "newVehicleNo"  => $request->newVehicleNo,
+        "oldTranNo"     => $request->oldTranNo,
+        "newTranNo"     => $request->newTranNo,
+        "fromPlace"     => $request->fromPlace,
+        "fromState"     => (int)$request->fromState,
+        "reasonCode"    => 1,
+        "reasonRem"     => "vehicle broke down"
     ];
 
     $jsonPayload = json_encode($changeData, JSON_UNESCAPED_SLASHES);
@@ -1224,7 +1243,7 @@ class ConsignmentNoteController extends Controller implements HasMiddleware
     $finalEncryptedPayload = base64_encode($encryptedPayload);
 
     $payload = [
-        "action" => "MULTIVEHCHG",
+        "action" => "MULTIVEHUPD",
         "data" => $finalEncryptedPayload
     ];
 

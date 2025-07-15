@@ -56,9 +56,9 @@
                                 ➕ Add Vehicle
                             </a>
 
-                            <a href="{{ route('admin.consignments.change_vehicle_form', ['ewbNo' => $response['ewbNo'], 'groupNo' => $response['groupNo']]) }}" class="btn btn-warning">
+                            <!-- <a href="{{ route('admin.consignments.change_vehicle_form', ['ewbNo' => $response['ewbNo'], 'groupNo' => $response['groupNo']]) }}" class="btn btn-warning">
                                 🔁 Change Vehicle
-                            </a>
+                            </a> -->
                         </div>
                     </div>
                 @endif
