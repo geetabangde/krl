@@ -27,6 +27,8 @@ use App\Http\Controllers\Backend\{
     ProfitLossController,BalanceSheetController,CashFlowController,VoucherController,GstController
 };
 
+
+
     // Eway-Bill api
     Route::get('/ewaybill/auth', [EraahiController::class, 'getAccessToken']);
     Route::get('/ewaybill/Trasporter/auth', [TrasporterauthController::class, 'getTrasporterAuth']);
@@ -40,7 +42,6 @@ use App\Http\Controllers\Backend\{
     Route::get('/ewaybill/multivehicle/add', [MultipleVehicleAddController::class, 'addMultiVehicle']);
     Route::get('/ewaybill/multivehicle/chnage', [MultipleVehicleChangeController::class, 'ChnageMultiVehicle']);
     
-   
     // GST Eway Bill Api
     Route::get('/gst/request-otp', [GstEwayController::class, 'requestOtp']);
     Route::post('/gst/verify-otp', [GstEwayController::class, 'verifyOtp']);
@@ -314,6 +315,7 @@ use App\Http\Controllers\Backend\{
         Route::get('/edit/{id}', [VoucherController::class, 'edit'])->name('admin.voucher.edit');
         Route::post('/update/{id}', [VoucherController::class, 'update'])->name('admin.voucher.update');
         Route::get('/delete/{id}', [VoucherController::class, 'destroy'])->name('admin.voucher.delete');
+        Route::get('/sync-tally', [VoucherController::class, 'syncTally'])->name('admin.voucher.syncTally');
     });
 
     // Group

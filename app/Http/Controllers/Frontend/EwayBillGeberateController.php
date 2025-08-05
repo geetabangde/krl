@@ -222,10 +222,10 @@ class EwayBillGeberateController extends Controller
 public function generateEwayBill(Request $request)
 {
     // 🔐 Step 1: Credentials and config
-    $authToken = '15T7ou9Mt1iyrPja72ppZQt2h'; 
-    $encryptedSek = 'cn2H9QXMWWQkTyH2kinv6bH3y8CPn5Nc87AKchEr2AxGgCjhGmGONERdukDluIoA'; 
+    $authToken = '16ygAxLyuw3Pg3okxgnYvMAkB'; 
+    $encryptedSek = 'mmMDzyPoBzygF0TdarUlWmRO9gzxxH+dN1jwoL6kZ11GgCjhGmGONERdukDluIoA'; 
     $appKey = 'RZbiPYuN3VTF2hMhQcMMBo0MfH4UVNZaSrIeTrpKopE=';
-    $gstin = '07AGAPA5363L002'; 
+    $gstin = '23AABFM6400F1ZX'; 
 
     // 💡 Decrypt SEK
     $decryptionKey = base64_decode($appKey);
@@ -235,13 +235,14 @@ public function generateEwayBill(Request $request)
         $decryptionKey,
         OPENSSL_RAW_DATA
     );
+    
 
     if (!$sek) {
         return response()->json(['success' => false, 'message' => 'SEK decryption failed']);
     }
 
     // 🟩 Step 2: Use your manually generated Base64 JSON payload (from CodeBeautify)
-    $base64JsonPayload = 'ewoJInN1cHBseVR5cGUiOiAiTyIsCgkic3ViU3VwcGx5VHlwZSI6ICIxIiwKCSJzdWJTdXBwbHlEZXNjIjogIiIsCgkiZG9jVHlwZSI6ICJJTlYiLAoJImRvY05vIjogIlRlc3Q4NzIzIiwKCSJkb2NEYXRlIjogIjE1LzA3LzIwMjUiLAoJImZyb21Hc3RpbiI6ICIwN0FHQVBBNTM2M0wwMDIiLAoJImZyb21UcmROYW1lIjogIndlbHRvbiIsCgkiZnJvbUFkZHIxIjogIjJORCBDUk9TUyBOTyA1OSAgMTkgIEEiLAoJImZyb21BZGRyMiI6ICJHUk9VTkQgRkxPT1IgT1NCT1JORSBST0FEIiwKCSJmcm9tUGxhY2UiOiAiRlJBWkVSIFRPV04iLAoJImZyb21QaW5jb2RlIjogMTEwMDU1LAoJImFjdEZyb21TdGF0ZUNvZGUiOiAwNywKCSJmcm9tU3RhdGVDb2RlIjogMDcsCgkidG9Hc3RpbiI6ICIwMkFBSkZINzM3NlAxWlMiLAoJInRvVHJkTmFtZSI6ICJzdGh1dGh5YSIsCgkidG9BZGRyMSI6ICJTaHJlZSBOaWxheWEiLAoJInRvQWRkcjIiOiAiRGFzYXJhaG9zYWhhbGxpIiwKCSJ0b1BsYWNlIjogIkJlbWwgTmFnYXIiLAoJInRvUGluY29kZSI6IDU2MDA5MCwKCSJhY3RUb1N0YXRlQ29kZSI6IDI5LAoJInRvU3RhdGVDb2RlIjogMjcsCgkidHJhbnNhY3Rpb25UeXBlIjogNCwKCSJvdGhlclZhbHVlIjogIi0xMDAiLAoJInRvdGFsVmFsdWUiOiA1NjA5OSwKCSJjZ3N0VmFsdWUiOiAwLAoJInNnc3RWYWx1ZSI6IDAsCgkiaWdzdFZhbHVlIjogMzAwLjY3LAoJImNlc3NWYWx1ZSI6IDQwMC41NiwKCSJjZXNzTm9uQWR2b2xWYWx1ZSI6IDQwMCwKCSJ0b3RJbnZWYWx1ZSI6IDY4MzU4LAoJInRyYW5zcG9ydGVySWQiOiAiIiwKCSJ0cmFuc3BvcnRlck5hbWUiOiAiIiwKCSJ0cmFuc0RvY05vIjogIiIsCgkidHJhbnNNb2RlIjogIjEiLAoJInRyYW5zRGlzdGFuY2UiOiAiMjE0NSIsCgkidHJhbnNEb2NEYXRlIjogIiIsCgkidmVoaWNsZU5vIjogIlBWQzEyMzQiLAoJInZlaGljbGVUeXBlIjogIlIiLAoJIml0ZW1MaXN0IjogW3sKCQkicHJvZHVjdE5hbWUiOiAiV2hlYXQiLAoJCSJwcm9kdWN0RGVzYyI6ICJXaGVhdCIsCgkJImhzbkNvZGUiOiAxMDAxLAoJCSJxdWFudGl0eSI6IDQsCgkJInF0eVVuaXQiOiAiQk9YIiwKCQkiY2dzdFJhdGUiOiAwLAoJCSJzZ3N0UmF0ZSI6IDAsCgkJImlnc3RSYXRlIjogMywKCQkiY2Vzc1JhdGUiOiAzLAoJCSJjZXNzTm9uYWR2b2wiOiAwLAoJCSJ0YXhhYmxlQW1vdW50IjogNTYwOTg4OQoJfV0KfQ=='; // 🔁 Paste your full base64 JSON payload here
+    $base64JsonPayload = 'ewogICJzdXBwbHlUeXBlIjogIk8iLAogICJzdWJTdXBwbHlUeXBlIjogIjEiLAogICJzdWJTdXBwbHlEZXNjIjogIiIsCiAgImRvY1R5cGUiOiAiSU5WIiwKICAiZG9jTm8iOiAiVGVzdDc1NDciLAogICJkb2NEYXRlIjogIjMwLzA3LzIwMjUiLAogICJmcm9tR3N0aW4iOiAiMjNBQUJGTTY0MDBGMVpYIiwKICAiZnJvbVRyZE5hbWUiOiAid2VsdG9uIiwKICAiZnJvbUFkZHIxIjogIjJORCBDUk9TUyBOTyA1OSAgMTkgIEEiLAogICJmcm9tQWRkcjIiOiAiR1JPVU5EIEZMT09SIE9TQk9STkUgUk9BRCIsCiAgImZyb21QbGFjZSI6ICJGUkFaRVIgVE9XTiIsCiAgImZyb21QaW5jb2RlIjogMTEwMDU1LAogICJhY3RGcm9tU3RhdGVDb2RlIjogMjMsCiAgImZyb21TdGF0ZUNvZGUiOiAyMywKICAidG9Hc3RpbiI6ICIwN0FHQVBBNTM2M0wwMDIiLAogICJ0b1RyZE5hbWUiOiAic3RodXRoeWEiLAogICJ0b0FkZHIxIjogIlNocmVlIE5pbGF5YSIsCiAgInRvQWRkcjIiOiAiRGFzYXJhaG9zYWhhbGxpIiwKICAidG9QbGFjZSI6ICJCZW1sIE5hZ2FyIiwKICAidG9QaW5jb2RlIjogNTYwMDkwLAogICJhY3RUb1N0YXRlQ29kZSI6IDI5LAogICJ0b1N0YXRlQ29kZSI6IDI3LAogICJ0cmFuc2FjdGlvblR5cGUiOiA0LAogICJvdGhlclZhbHVlIjogIi0xMDAiLAogICJ0b3RhbFZhbHVlIjogNTYwOTksCiAgImNnc3RWYWx1ZSI6IDAsCiAgInNnc3RWYWx1ZSI6IDAsCiAgImlnc3RWYWx1ZSI6IDMwMC42NywKICAiY2Vzc1ZhbHVlIjogNDAwLjU2LAogICJjZXNzTm9uQWR2b2xWYWx1ZSI6IDQwMCwKICAidG90SW52VmFsdWUiOiA2ODM1OCwKICAidHJhbnNwb3J0ZXJJZCI6ICIwN0FHQVBBNTM2M0wwMDIiLAogICJ0cmFuc3BvcnRlck5hbWUiOiAiIiwKICAidHJhbnNEb2NObyI6ICIiLAogICJ0cmFuc01vZGUiOiAiMSIsCiAgInRyYW5zRGlzdGFuY2UiOiAiMjE0NSIsCiAgInRyYW5zRG9jRGF0ZSI6ICIiLAogICJ2ZWhpY2xlTm8iOiAiUFZDMTIzNCIsCiAgInZlaGljbGVUeXBlIjogIlIiLAogICJpdGVtTGlzdCI6IFsKICAgIHsKICAgICAgInByb2R1Y3ROYW1lIjogIldoZWF0IiwKICAgICAgInByb2R1Y3REZXNjIjogIldoZWF0IiwKICAgICAgImhzbkNvZGUiOiAxMDAxLAogICAgICAicXVhbnRpdHkiOiA0LAogICAgICAicXR5VW5pdCI6ICJCT1giLAogICAgICAiY2dzdFJhdGUiOiAwLAogICAgICAic2dzdFJhdGUiOiAwLAogICAgICAiaWdzdFJhdGUiOiAzLAogICAgICAiY2Vzc1JhdGUiOiAzLAogICAgICAiY2Vzc05vbmFkdm9sIjogMCwKICAgICAgInRheGFibGVBbW91bnQiOiA1NjA5ODg5CiAgICB9CiAgXQp9'; // 🔁 Paste your full base64 JSON payload here
 
     // 🔐 Step 3: Encrypt Base64 JSON using SEK
     $encryptedPayload = openssl_encrypt(
@@ -272,7 +273,7 @@ public function generateEwayBill(Request $request)
     ];
 
     // 📤 Step 6: API Call
-    $url = "https://developers.eraahi.com/api/ewaybillapi/v1.03/ewayapi";
+    $url = "https://newewaybill.alankitgst.com/ewaybillgateway/v1.03/ewayapi";
     $response = Http::withHeaders($headers)->post($url, $postPayload);
     $responseJson = $response->json();
 

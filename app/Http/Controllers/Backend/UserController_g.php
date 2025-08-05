@@ -54,7 +54,6 @@ class UserController extends Controller implements HasMiddleware
         'deductor' => 'nullable|string',
         'group_id' => 'required|integer|exists:groups,id',
         'address' => 'nullable|array',
-         'address.*.state' => 'nullable|string',
         'address.*.city' => 'nullable|string',
         'address.*.gstin' => 'nullable|string',
         'address.*.billing_address' => 'nullable|string',
@@ -62,13 +61,6 @@ class UserController extends Controller implements HasMiddleware
         'address.*.mobile_number' => 'nullable|string',
         'address.*.poc' => 'nullable|string',
         'address.*.email' => 'nullable|string|email',
-        'bank_name' => 'required|string|max:255',
-        'account_holder_name' => 'required|string|max:255',
-        'account_number' => 'required|numeric',
-        'ifsc_code' => 'required|string|max:20',
-        'branch' => 'required|string|max:255',
-        'account_type' => 'required|in:savings,current',
-        
     ]);
 
     $user = new User();
@@ -80,14 +72,6 @@ class UserController extends Controller implements HasMiddleware
     $user->tan_number = $validated['tan_number'] ?? null;
     $user->deductor = $validated['deductor'] ?? null;
     $user->group_id = $validated['group_id'];
-    //  Bank Details save
-    $user->bank_name = $validated['bank_name'] ?? null;
-    $user->account_holder_name = $validated['account_holder_name'] ?? null;
-    $user->account_number = $validated['account_number'] ?? null;
-    $user->ifsc_code = $validated['ifsc_code'] ?? null;
-    $user->branch = $validated['branch'] ?? null;
-    $user->account_type = $validated['account_type'] ?? null;
-   
     $user->address = $validated['address'] ?? [];
 
     $user->save();

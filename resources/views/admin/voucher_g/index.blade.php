@@ -25,11 +25,6 @@
                      <h4 class="card-title">🧾 Voucher List</h4>
                      <p class="card-title-desc">View, edit, or delete voucher records below.</p>
                   </div>
-                 
-                  <a href="{{ route('admin.voucher.syncTally') }}" class="btn" id="addVoucherBtn"
-                     style="background-color: #ca2639; color: white; border: none;">
-                  <i class="fas fa-plus"></i> Sync with Tally Prime
-                  </a>
                   <a href="{{ route('admin.voucher.create') }}" class="btn" id="addVoucherBtn"
                      style="background-color: #ca2639; color: white; border: none;">
                   <i class="fas fa-plus"></i> Add
