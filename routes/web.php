@@ -27,13 +27,16 @@ use App\Http\Controllers\Backend\{
     SettingsController, VehicleTypeController,RoleController,PermissionController,TestController,GroupController,ledgerMasterController,ledgerController,AccountsReceivableController,AccountsPayableController,
     ProfitLossController,BalanceSheetController,CashFlowController,VoucherController,GstController
 };
-   //   whitebox eway_bill
-   Route::get('/ewaybill/whitebox/auth', [EraahiWhiteController::class, 'getAccessToken']);
-   Route::get('/ewaybill/whitebox/generate', [EraahiWhiteController::class, 'generateEwayBill']);
-   Route::get('/ewaybill/whitebox/update-partb', [EraahiWhiteController::class, 'updatePartB']);
-   Route::get('/ewaybill/whitebox/details', [EraahiWhiteController::class, 'getEwayBillDetails']);
-   Route::get('/ewaybill/whitebox/report-by-transporter-date', [EraahiWhiteController::class, 'getEwayBillReportByTransporterDate']);
-   
+    //   whitebox eway_bill
+    Route::get('/ewaybill/whitebox/auth', [EraahiWhiteController::class, 'getAccessToken']);
+    Route::get('/ewaybill/whitebox/generate', [EraahiWhiteController::class, 'generateEwayBill']);
+    Route::get('/ewaybill/whitebox/update-partb', [EraahiWhiteController::class, 'updatePartB']);
+    Route::get('/ewaybill/whitebox/details', [EraahiWhiteController::class, 'getEwayBillDetails']);
+    Route::get('/ewaybill/whitebox/report-by-transporter-date', [EraahiWhiteController::class, 'getEwayBillReportByTransporterDate']);
+    Route::get('/ewaybill/whitebox/initiate-multi', [EraahiWhiteController::class, 'initiateMultiVehicle']);
+    Route::get('/ewaybill/whitebox/add-multi-vehicles', [EraahiWhiteController::class, 'addMultiVehicles']);
+    Route::get('/ewaybill/whitebox/change-multi-vehicles', [EraahiWhiteController::class, 'changeMultiVehicles']);
+    
     //alkit  Eway-Bill api
     Route::get('/ewaybill/auth', [EraahiController::class, 'getAccessToken']);
     Route::get('/ewaybill/Trasporter/auth', [TrasporterauthController::class, 'getTrasporterAuth']);
