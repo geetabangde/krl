@@ -60,7 +60,7 @@ $RequestPayload = json_encode([
 
     $data =  $Base64RequestPayload;
 
-// $data = 'ewoJImFjdGlvbiI6ICJBQ0NFU1NUT0tFTiIsCgkidXNlcm5hbWUiOiAiQUwwMDEiLAoJInBhc3N3b3JkIjogIkFsYW5raXRAMTIzIiwKCSJhcHBfa2V5IjogIlJaYmlQWXVOM1ZURjJoTWhRY01NQm8wTWZINFVWTlphU3JJZVRycEtvcEU9Igp9';
+    // $data = 'ewoJImFjdGlvbiI6ICJBQ0NFU1NUT0tFTiIsCgkidXNlcm5hbWUiOiAiQUwwMDEiLAoJInBhc3N3b3JkIjogIkFsYW5raXRAMTIzIiwKCSJhcHBfa2V5IjogIlJaYmlQWXVOM1ZURjJoTWhRY01NQm8wTWZINFVWTlphU3JJZVRycEtvcEU9Igp9';
   
    openssl_public_encrypt($data, $encryptedData, $publicKey);
   
@@ -93,7 +93,7 @@ $RequestPayload = json_encode([
             'source' => 'live', // just to show new fetch
         ]);
     }
-
+    
     return response()->json([
         'error' => $result['error'] ?? 'Unknown error',
         'raw_response' => $result,

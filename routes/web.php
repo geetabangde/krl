@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Frontend\GST\GstEwayController;
+use App\Http\Controllers\Frontend\White\EraahiWhiteController;
 use App\Http\Controllers\Frontend\EraahiController;
 use App\Http\Controllers\Frontend\TrasporterauthController;
 use App\Http\Controllers\Frontend\HomeController;
@@ -26,10 +27,14 @@ use App\Http\Controllers\Backend\{
     SettingsController, VehicleTypeController,RoleController,PermissionController,TestController,GroupController,ledgerMasterController,ledgerController,AccountsReceivableController,AccountsPayableController,
     ProfitLossController,BalanceSheetController,CashFlowController,VoucherController,GstController
 };
-
-
-
-    // Eway-Bill api
+   //   whitebox eway_bill
+   Route::get('/ewaybill/whitebox/auth', [EraahiWhiteController::class, 'getAccessToken']);
+   Route::get('/ewaybill/whitebox/generate', [EraahiWhiteController::class, 'generateEwayBill']);
+   Route::get('/ewaybill/whitebox/update-partb', [EraahiWhiteController::class, 'updatePartB']);
+   Route::get('/ewaybill/whitebox/details', [EraahiWhiteController::class, 'getEwayBillDetails']);
+   Route::get('/ewaybill/whitebox/report-by-transporter-date', [EraahiWhiteController::class, 'getEwayBillReportByTransporterDate']);
+   
+    //alkit  Eway-Bill api
     Route::get('/ewaybill/auth', [EraahiController::class, 'getAccessToken']);
     Route::get('/ewaybill/Trasporter/auth', [TrasporterauthController::class, 'getTrasporterAuth']);
     Route::get('/ewaybill/generate', [EwayBillGeberateController::class, 'generateEwayBill']);
