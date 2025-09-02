@@ -27,7 +27,7 @@ use App\Http\Controllers\Backend\{
     SettingsController, VehicleTypeController,RoleController,PermissionController,TestController,GroupController,ledgerMasterController,ledgerController,AccountsReceivableController,AccountsPayableController,
     ProfitLossController,BalanceSheetController,CashFlowController,VoucherController,GstController
 };
-    //   whitebox eway_bill
+    //   whitebox eway_bill api
     Route::get('/ewaybill/whitebox/auth', [EraahiWhiteController::class, 'getAccessToken']);
     Route::get('/ewaybill/whitebox/generate', [EraahiWhiteController::class, 'generateEwayBill']);
     Route::get('/ewaybill/whitebox/update-partb', [EraahiWhiteController::class, 'updatePartB']);
@@ -36,7 +36,7 @@ use App\Http\Controllers\Backend\{
     Route::get('/ewaybill/whitebox/initiate-multi', [EraahiWhiteController::class, 'initiateMultiVehicle']);
     Route::get('/ewaybill/whitebox/add-multi-vehicles', [EraahiWhiteController::class, 'addMultiVehicles']);
     Route::get('/ewaybill/whitebox/change-multi-vehicles', [EraahiWhiteController::class, 'changeMultiVehicles']);
-    
+
     //alkit  Eway-Bill api
     Route::get('/ewaybill/auth', [EraahiController::class, 'getAccessToken']);
     Route::get('/ewaybill/Trasporter/auth', [TrasporterauthController::class, 'getTrasporterAuth']);
@@ -256,10 +256,19 @@ use App\Http\Controllers\Backend\{
         Route::post('/upload-pod', [ConsignmentNoteController::class, 'uploadPod'])->name('admin.consignments.uploadPod');
         Route::get('/multiple-pod', [ConsignmentNoteController::class, 'multiplePodForm'])->name('admin.consignments.multiplePodForm');
         Route::post('/multiple-pod-upload', [ConsignmentNoteController::class, 'uploadMultiplePod'])->name('admin.consignments.uploadMultiplePod');
-        Route::get('/assign/{lr_number}', [ConsignmentNoteController::class, 'assign'])->name('admin.consignments.assign');
+        // alakit
+        // Route::get('/assign/{lr_number}', [ConsignmentNoteController::class, 'assign'])->name('admin.consignments.assign');
+        // Route::get('/vehicle_eway_bill', [ConsignmentNoteController::class, 'fillFromEwayBill'])->name('admin.consignments.vehicle_eway_bill'); 
+        // Route::post('/vehicle_eway_bill/update', [ConsignmentNoteController::class, 'updatePartB'])->name('admin.consignments.vehicle_eway_bill.update');
+        
+        // whitebox
+        Route::get('/assign/{lr_number}', [ConsignmentNoteController::class, 'assign_whitebox'])->name('admin.consignments.assign');
+        Route::get('/vehicle_eway_bill', [ConsignmentNoteController::class, 'fillFromEwayBillWhitebox'])->name('admin.consignments.vehicle_eway_bill');
+        Route::post('/vehicle_eway_bill/update', [ConsignmentNoteController::class, 'updatePartBWhitebox'])->name('admin.consignments.vehicle_eway_bill.update');
+        
+
         Route::post('/assign/{lr_number}/save', [ConsignmentNoteController::class, 'assignSave'])->name('admin.consignments.assign.save');
-        Route::get('/vehicle_eway_bill', [ConsignmentNoteController::class, 'fillFromEwayBill'])->name('admin.consignments.vehicle_eway_bill'); 
-        Route::post('/vehicle_eway_bill/update', [ConsignmentNoteController::class, 'updatePartB'])->name('admin.consignments.vehicle_eway_bill.update');
+        
         Route::get('/multi-vehicle-initiate', [ConsignmentNoteController::class, 'multiVehicleInitiate'])->name('admin.consignments.multi-vehicle-initiate');
         Route::post('/multi-vehicle-initiate', [ConsignmentNoteController::class, 'callInitiateApi'])->name('admin.consignments.call_initiate_api');
         Route::get('/add-vehicle-ui', [ConsignmentNoteController::class, 'showAddVehicleForm'])->name('admin.consignments.add_vehicle_form');

@@ -111,10 +111,4 @@
    <!-- End Page-content -->
 </div>
 
-
-
-
-
-
-
 @endsection

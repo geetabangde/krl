@@ -17,10 +17,10 @@ class EraahiWhiteController extends Controller
         $ip_address     = "49.37.135.42";
         $client_id      = "EWBS8c79e659-4ebf-41ed-a1f3-5dd7182ddc40";
         $client_secret  = "EWBS951c7b10-940a-40da-b850-651f41724b21";
-        $gstin          = "29AAGCB1286Q000";
+        $gstin          = "23AAGCB1286Q028";
         $email          = "ask.innovations1@gmail.com";
-        $username       = "BVMGSP";
-        $password       = "Wbooks@0142";
+        $username       = "BVMMP";
+        $password       = "Bvm@123456";
 
          $url = "https://apisandbox.whitebooks.in/ewaybillapi/v1.03/authenticate?email={$email}&username={$username}&password={$password}";
          // https://apisandbox.whitebooks.in/ewaybillapi/v1.03/authenticate?email=ask.innovations1%40gmail.com&username=BVMGSP&password=Wbooks%400142
@@ -55,7 +55,7 @@ class EraahiWhiteController extends Controller
             "ip_address"    => "49.37.135.42",  
             "client_id"     => "EWBS8c79e659-4ebf-41ed-a1f3-5dd7182ddc40",
             "client_secret" => "EWBS951c7b10-940a-40da-b850-651f41724b21",
-            "gstin"         => "29AAGCB1286Q000"
+            "gstin"         => "23AAGCB1286Q028"
         ];
 
         $query = [
@@ -65,22 +65,22 @@ class EraahiWhiteController extends Controller
         // ✅ Fixed Payload (all enums & numbers in correct type)
        $payload = [
         "supplyType"        => "O",       
-        "subSupplyType"     => "1",       
+        "subSupplyType"     => "5",       
         "subSupplyDesc"     => "",
-        "docType"           => "INV",     
-        "docNo"             => "Test0547",
-        "docDate"           => "29/08/2025",  
+        "docType"           => "CHL",     
+        "docNo"             => "doc/087787",
+        "docDate"           => "02/09/2025",  
 
-        "fromGstin"         => "29AAGCB1286Q000",
+        "fromGstin"         => "23AAGCB1286Q028",
         "fromTrdName"       => "welton",
         "fromAddr1"         => "2ND CROSS NO 59 19 A",
         "fromAddr2"         => "GROUND FLOOR OSBORNE ROAD",
         "fromPlace"         => "FRAZER TOWN",
         "fromPincode"       => 560001,    
         "actFromStateCode"  => 29,       
-        "fromStateCode"     => 29,        
+        "fromStateCode"     => 23,        
 
-        "toGstin"           => "07AGAPA5363L002",
+        "toGstin"           => "23AAGCB1286Q028",
         "toTrdName"         => "sthuthya",
         "toAddr1"           => "Shree Nilaya",
         "toAddr2"           => "Dasarahosahalli",
@@ -98,7 +98,7 @@ class EraahiWhiteController extends Controller
         "cessValue"         => 400.56,
         "cessNonAdvolValue" => 400,
         "totInvValue"       => 68358,
-        "transporterId"     => "07AGAPA5363L002",
+        "transporterId"     => "23AAGCB1286Q028",
         "transMode"         => "1",       
         "transDistance"     => "15",    
         "vehicleNo"         => "PVC1234",
@@ -119,8 +119,6 @@ class EraahiWhiteController extends Controller
             ]
         ]
     ];
-
-
         // Call API
         $response = Http::withHeaders($headers)
             ->withOptions(["verify" => false]) // disable SSL verify in sandbox
@@ -191,7 +189,7 @@ class EraahiWhiteController extends Controller
             "ip_address"    => "49.37.135.42",
             "client_id"     => "EWBS8c79e659-4ebf-41ed-a1f3-5dd7182ddc40",
             "client_secret" => "EWBS951c7b10-940a-40da-b850-651f41724b21",
-            "gstin"         => "29AAGCB1286Q000",
+            "gstin"         => "23AAGCB1286Q028",
             "accept"        => "*/*"
         ];
 
@@ -234,15 +232,15 @@ class EraahiWhiteController extends Controller
             "ip_address"    => "49.37.135.42",
             "client_id"     => "EWBS8c79e659-4ebf-41ed-a1f3-5dd7182ddc40",
             "client_secret" => "EWBS951c7b10-940a-40da-b850-651f41724b21",
-            "gstin"         => "07AGAPA5363L002",
+            "gstin"         => "23AAGCB1286Q028",
             "accept"        => "*/*"
         ];
 
         // Query params
         $query = [
             "email"     => "ask.innovations1@gmail.com",
-            "date"      => $request->date ?? "29/08/2025", // Date format must be dd/MM/yyyy
-            "stateCode" => $request->stateCode ?? "29"
+            "date"      => $request->date ?? "02/09/2025", // Date format must be dd/MM/yyyy
+            "stateCode" => $request->stateCode ?? "23"
         ];
 
         try {
@@ -438,3 +436,66 @@ class EraahiWhiteController extends Controller
 
 
 }
+
+
+// requested payloads
+// trsporterbygstin
+
+// {
+//   "supplyType": "O",
+//   "subSupplyType": "5",
+//   "subSupplyDesc": " ",
+//   "docType": "CHL",
+//   "docNo": "ratna/098",
+//   "docDate": "01/09/2025",
+//   "fromGstin": "23AAGCB1286Q028",
+//   "fromTrdName": "welton",
+//   "fromAddr1": "2ND CROSS NO 59  19  A",
+//   "fromAddr2": "GROUND FLOOR OSBORNE ROAD",
+//   "fromPlace": "FRAZER TOWN",
+//   "actFromStateCode": 29,
+//   "fromPincode": 560001,
+//   "fromStateCode": 23,
+//   "toGstin": "23AAGCB1286Q028",
+//   "toTrdName": "sthuthya",
+//   "toAddr1": "Shree Nilaya",
+//   "toAddr2": "Dasarahosahalli",
+//   "toPlace": "Beml Nagar",
+//   "toPincode": 263652,
+//   "actToStateCode": 5,
+//   "toStateCode": 5,
+//   "transactionType": 4,
+//   "dispatchFromGSTIN": "29AAAAA1303P1ZV",
+//   "dispatchFromTradeName": "ABC Traders",
+//   "shipToGSTIN": "29ALSPR1722R1Z3",
+//   "shipToTradeName": "XYZ Traders",
+//   "totalValue": 56099,
+//   "cgstValue": 0,
+//   "sgstValue": 0,
+//   "igstValue": 300.67,
+//   "cessValue": 400.56,
+//   "cessNonAdvolValue": 400,
+//   "totInvValue": 57200.23,
+//   "transMode": "1",
+//   "transDistance": "2487",
+//   "transporterName": "",
+//   "transporterId": "23AAGCB1286Q028",
+//   "transDocNo": "12",
+//   "transDocDate": "",
+//   "vehicleNo": "APR3214",
+//   "vehicleType": "R",
+//   "itemList": [
+//     {
+//       "productName": "Wheat",
+//       "productDesc": "Wheat",
+//       "hsnCode": 1001,
+//       "quantity": 4,
+//       "qtyUnit": "BOX",
+//       "taxableAmount": 56099,
+//       "sgstRate": 0,
+//       "cgstRate": 0,
+//       "igstRate": 3,
+//       "cessRate": 0
+//     }
+//   ]
+// }

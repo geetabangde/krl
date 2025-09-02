@@ -48,9 +48,6 @@ class ConsignmentNoteController extends Controller implements HasMiddleware
     return view('admin.consignments.create', compact('vehicles','users','vehiclesType','destination','package'));
     }
     
-    
-    
-    
     public function store(Request $request)
     {
         $order = new Order();
@@ -671,7 +668,7 @@ class ConsignmentNoteController extends Controller implements HasMiddleware
         return view('admin.consignments.assign-ewaybill', compact('lr_number', 'ewayBills', 'ewayBillDate'));
     }
 
-    public function assign($lr_number, Request $request)
+    public function assign_alkit($lr_number, Request $request)
     {
         $inputDate = $request->input('date');
 
@@ -726,6 +723,65 @@ class ConsignmentNoteController extends Controller implements HasMiddleware
 
         return view('admin.consignments.assign-ewaybill', compact('lr_number', 'ewayBills', 'ewayBillDate'));
     }
+
+    // whitebox assign
+
+    public function assign_whitebox($lr_number, Request $request)
+   {
+    // dd($request->all());
+
+    $inputDate = $request->input('date');
+
+    try {
+        $ewayBillDate = Carbon::parse($inputDate)->format('d/m/Y');
+    } catch (\Exception $e) {
+        $ewayBillDate = now()->format('d/m/Y');
+    }
+
+    // ✅ Fetch credentials from .env
+    
+    $headers = [
+        "ip_address"    => env('EWB_IP_ADDRESS'),
+        "client_id"     => env('EWB_CLIENT_ID'),
+        "client_secret" => env('EWB_CLIENT_SECRET'),
+        "gstin"         => env('EWB_GSTIN'),
+        "accept"        => "*/*"
+    ];
+
+    // ✅ Query params
+    $query = [
+        "email"     => env('EWB_EMAIL', 'ask.innovations1@gmail.com'),
+        "date"      => $ewayBillDate,
+        "stateCode" => $request->stateCode ?? "23"
+    ];
+
+    $ewayBills = [];
+
+    try {
+        // 🚀 Call Whitebox API
+        $url = "https://apisandbox.whitebooks.in/ewaybillapi/v1.03/ewayapi/getewaybillreportbytransporterassigneddate";
+
+        $response = Http::withHeaders($headers)
+            ->withOptions(["verify" => false])
+            ->get($url, $query);
+
+        $json = $response->json();
+
+        // dd($json);
+        if ($response->successful() && isset($json['status_cd']) && $json['status_cd'] == "1") {
+            // Whitebox response simple hota hai, directly data return hota hai
+            $ewayBills = $json['data'] ?? [];
+        }
+
+    } catch (\Exception $e) {
+        // agar api call fail ho jaye
+        $ewayBills = [];
+    }
+
+    // 🖼️ Return same Blade view jo aap Eraahi me use kar rahe ho
+    return view('admin.consignments.assign-ewaybill', compact('lr_number', 'ewayBills', 'ewayBillDate'));
+   }
+ 
 
 
 
@@ -862,7 +918,7 @@ class ConsignmentNoteController extends Controller implements HasMiddleware
     }
 
 
-    public function fillFromEwayBill(Request $request)
+    public function fillFromEwayBill_alkit(Request $request)
     {
         
 
@@ -915,6 +971,66 @@ class ConsignmentNoteController extends Controller implements HasMiddleware
         ]);
     }
 
+    // getewaybill details
+    public function fillFromEwayBillWhitebox(Request $request)
+    {
+        $ewbNos = explode(',', $request->query('ewbs'));
+
+        $ewayBillDetails = [];
+
+        // ✅ Fetch credentials from .env
+        $headers = [
+            "ip_address"    => env('EWB_IP_ADDRESS'),
+            "client_id"     => env('EWB_CLIENT_ID'),
+            "client_secret" => env('EWB_CLIENT_SECRET'),
+            "gstin"         => env('EWB_GSTIN'),
+            "accept"        => "*/*"
+        ];
+
+        foreach ($ewbNos as $ewbNo) {
+            
+            $url = "https://apisandbox.whitebooks.in/ewaybillapi/v1.03/ewayapi/getewaybill";
+
+            // ✅ Query params
+            $query = [
+                "email" => env('EWB_EMAIL', 'ask.innovations1@gmail.com'),
+                "ewbNo" => trim($ewbNo),
+            ];
+
+            try {
+                $response = \Http::withHeaders($headers)
+                    ->withOptions(["verify" => false])
+                    ->get($url, $query);
+
+                $json = $response->json();
+                
+
+
+                if ($response->successful() && isset($json['status_cd']) && $json['status_cd'] == "1") {
+                    $ewayBillDetails[] = $json['ewayBill'] ?? $json['data'] ?? [];
+                // dd($ewayBillDetails);
+                }
+
+            } catch (\Exception $e) {
+                \Log::error("Whitebox GetEwayBill failed: " . $e->getMessage());
+            }
+        }
+
+        // Debugging ke liye
+        // dd($ewayBillDetails);
+
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'ewaybill_data' => $ewayBillDetails[0] ?? null
+            ]);
+        }
+
+        return view('admin.consignments.vehicle_eway_bill', [
+            'ewaybills' => $ewayBillDetails
+        ]);
+    }
+    // alikit update part b
 
     public function updatePartB(Request $request)
     {
@@ -994,9 +1110,80 @@ class ConsignmentNoteController extends Controller implements HasMiddleware
         // dd($results);
 
         return back()->with('success', 'Part B updated for selected eWay Bills.')->with('results', $results);
+         }
     }
 
+    // whitebooks update updatePartB
+    public function updatePartBWhitebox(Request $request)
+    {
+        $ewaybills = $request->input('ewaybills', []);
+
+        $headers = [
+            "ip_address"    => env('EWB_IP_ADDRESS'),
+            "client_id"     => env('EWB_CLIENT_ID'),
+            "client_secret" => env('EWB_CLIENT_SECRET'),
+            "gstin"         => env('EWB_GSTIN'),
+            "accept"        => "*/*"
+        ];
+
+        $results = [];
+
+        foreach ($ewaybills as $bill) {
+            $payload = [
+                "ewbNo"       => (int) $bill['ewb_no'],
+                "vehicleNo"   => $bill['vehicle_no'],
+                "fromPlace"   => $bill['from_place'],
+                "fromState"   => (int) $bill['from_state_code'],
+                "reasonCode"  => (string) $bill['reasoncode'],
+                "reasonRem"   => $bill['reasonremarks'],
+                "transDocNo"  => $bill['transDocNo'],
+                "transDocDate"=> $bill['transDocDate'],
+                "transMode"   => (string) $bill['transMode'],
+                "vehicleType" => $bill['vehicleType'] ?? "R",
+            ];
+
+            try {
+                $url = "https://apisandbox.whitebooks.in/ewaybillapi/v1.03/ewayapi/vehewb";
+                $query = [
+                    "email" => env('EWB_EMAIL', 'ask.innovations1@gmail.com')
+                ];
+
+                $response = \Http::withHeaders($headers)
+                    ->withOptions(["verify" => false])
+                    ->post($url . '?' . http_build_query($query), $payload);
+
+                $json = $response->json();
+
+                if ($response->successful() && isset($json['status_cd']) && $json['status_cd'] == "1") {
+                    $results[] = [
+                        'ewbNo' => $bill['ewb_no'],
+                        'success' => true,
+                        'message' => $json['message'] ?? 'Part B updated successfully'
+                    ];
+                } else {
+                    $results[] = [
+                        'ewbNo' => $bill['ewb_no'],
+                        'error' => $json['error']['message'] ?? 'Failed to update'
+                    ];
+                }
+
+            } catch (\Exception $e) {
+                \Log::error("Whitebox Update PartB failed: " . $e->getMessage());
+                $results[] = [
+                    'ewbNo' => $bill['ewb_no'],
+                    'error' => $e->getMessage()
+                ];
+            }
+        }
+        // dd($results);
+        return back()->with('success', 'Part B updated for selected eWay Bills.')->with('results', $results);
+
+        // return response()->json([
+        //     'success' => true,
+        //     'results' => $results
+        // ]);
 }
+
 
     // multiVehicleAdd method to show the form for adding multiple vehicles to a single LR
     public function multiVehicleInitiate()

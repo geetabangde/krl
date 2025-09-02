@@ -68,7 +68,6 @@
                                         <i class="fas fa-eye text-primary"></i>
                                     </a>
                                     </td>
-
                                 </tr>
                             @endforeach
                         </tbody>
