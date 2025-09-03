@@ -23,47 +23,47 @@
 
                     <div class="form-group mt-2">
                         <label><strong>eWay Bill No</strong></label>
-                        <input type="number" class="form-control" name="ewbNo" value="721008936390" required>
+                        <input type="number" class="form-control" name="ewbNo" value="{{ old('ewbNo', $formData['ewbNo'] ?? '') }}" required>
                     </div>
 
                     <div class="form-group mt-2">
                         <label><strong>From Place</strong></label>
-                        <input type="text" class="form-control" name="fromPlace" value="BANGALORE" required>
+                        <input type="text" class="form-control" name="fromPlace"  value="{{ old('fromPlace', $formData['fromPlace'] ?? '') }}" required>
                     </div>
 
                     <div class="form-group mt-2">
                         <label><strong>From State Code</strong></label>
-                        <input type="number" class="form-control" name="fromState" value="07" required>
+                        <input type="number" class="form-control" name="fromState" value="{{ old('fromState', $formData['fromState'] ?? '') }}" required>
                     </div>
 
                     <div class="form-group mt-2">
                         <label><strong>To Place</strong></label>
-                        <input type="text" class="form-control" name="toPlace" value="CHENNAI" required>
+                        <input type="text" class="form-control" name="toPlace" value="{{ old('toPlace', $formData['toPlace'] ?? '') }}" required>
                     </div>
 
                     <div class="form-group mt-2">
                         <label><strong>To State Code</strong></label>
-                        <input type="number" class="form-control" name="toState" value="27" required>
+                        <input type="number" class="form-control" name="toState" value="{{ old('toState', $formData['toState'] ?? '') }}" required>
                     </div>
 
                     <div class="form-group mt-2">
                         <label><strong>Transport Mode</strong> <small>(1 = Road, 2 = Rail, etc.)</small></label>
-                        <input type="number" class="form-control" name="transMode" value="1" required>
+                        <input type="number" class="form-control" name="transMode" value="{{ old('transMode', $formData['transMode'] ?? '') }}" required>
                     </div>
 
                     <div class="form-group mt-2">
                         <label><strong>Reason for Multi Vehicle</strong></label>
-                        <input type="text" class="form-control" name="reasonRem" value="vehicle broke down" required>
+                        <input type="text" class="form-control" name="reasonRem" value="{{ old('reasonRem', $formData['reasonRem'] ?? '') }}" required>
                     </div>
 
                     <div class="form-group mt-2">
                         <label><strong>Total Quantity</strong></label>
-                        <input type="number" class="form-control" name="totalQuantity" value="4" required>
+                        <input type="number" class="form-control" name="totalQuantity" value="{{ old('totalQuantity', $formData['totalQuantity'] ?? '') }}" required>
                     </div>
 
                     <div class="form-group mt-2">
                         <label><strong>Unit Code</strong> <small>(BOX, NOS, LTR, etc.)</small></label>
-                        <input type="text" class="form-control" name="unitCode" value="BOX" required>
+                        <input type="text" class="form-control" name="unitCode"  value="{{ old('unitCode', $formData['unitCode'] ?? '') }}" required>
                     </div>
 
                     <button type="submit" class="btn btn-primary mt-3">🚛 Initiate Multi Vehicle</button>

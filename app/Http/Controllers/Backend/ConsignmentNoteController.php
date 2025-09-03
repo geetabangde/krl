@@ -1191,30 +1191,97 @@ class ConsignmentNoteController extends Controller implements HasMiddleware
         // dd('multiVehicleAdd called');
         return view('admin.consignments.multi-vehicle-initiate');
     }
-
+// 
     public function callInitiateApi(Request $request)
-  {
-    $response = $this->initiateMultiVehicle($request);
+   {
+        $response = $this->initiateMultiVehicleWhitebox($request);
 
-    if ($response['success']) {
-        $ewbNo = $response['ewaybill_response']['ewbNo'];
-        $groupNo = $response['ewaybill_response']['groupNo'];
-        $vehicleKey = "vehicle_added_{$ewbNo}_{$groupNo}";
-        $changedKey = "vehicle_changed_{$ewbNo}_{$groupNo}";
+                if ($response['success']) {
+            $data = $response['ewaybill_response']['data'] ?? [];
 
-        return view('admin.consignments.multi-vehicle-initiate', [
-            'response' => $response['ewaybill_response'],
-            'vehicleAdded' => session($vehicleKey, false),
-            'vehicleChanged' => session($changedKey, false),
-        ]);
-    }
+            return view('admin.consignments.multi-vehicle-initiate', [
+                'response' => [
+                    'ewbNo'      => $data['ewbNo'] ?? null,
+                    'groupNo'    => $data['groupNo'] ?? null,
+                    'createdDate'=> $data['createdDate'] ?? null,
+                ],
+                'formData' => $request->all(),
+                'vehicleAdded' => session("vehicle_added_{$data['ewbNo']}_{$data['groupNo']}", false),
+                'vehicleChanged' => session("vehicle_changed_{$data['ewbNo']}_{$data['groupNo']}", false),
+            ]);
+        }
 
-    return back()->with('error', $response['error'] ?? 'API failed');
+
+        return back()->with('error', $response['error'] ?? 'API failed');
    }
 
 
-    
+   
+   //    Whitebooks Initiate Multi-Vehicle API
+    private function initiateMultiVehicleWhitebox(Request $request)
+    {
+        $headers = [
+            "ip_address"    => env('EWB_IP_ADDRESS'),
+            "client_id"     => env('EWB_CLIENT_ID'),
+            "client_secret" => env('EWB_CLIENT_SECRET'),
+            "gstin"         => env('EWB_GSTIN'),
+            "accept"        => "*/*",
+            "Content-Type"  => "application/json"
+        ];
 
+        // Request body exactly API ke format me
+        $payload = [
+            "ewbNo"         => (int) $request->ewbNo,       // Number
+            "fromPlace"     => (string) $request->fromPlace,
+            "fromState"     => (int) $request->fromState,   // Number
+            "toPlace"       => (string) $request->toPlace,
+            "toState"       => (int) $request->toState,     // Number
+            "reasonCode"    => (string) ($request->reasonCode ?? "1"), // String
+            "reasonRem"     => (string) ($request->reasonRem ?? "Due to Break Down"),
+            "totalQuantity" => (int) $request->totalQuantity, // Number
+            "unitCode"      => (string) ($request->unitCode ?? "BOX"), // String
+            "transMode"     => (string) ($request->transMode ?? "1")   // String
+        ];
+
+        try {
+            $url = "https://apisandbox.whitebooks.in/ewaybillapi/v1.03/ewayapi/initmulti";
+            $query = [
+                "email" => env('EWB_EMAIL', 'ask.innovations1@gmail.com')
+            ];
+
+            $response = \Http::withHeaders($headers)
+                ->withOptions(["verify" => false]) // SSL bypass
+                ->post($url . '?' . http_build_query($query), $payload);
+
+            $json = $response->json();
+            // dd($json); 
+
+            if ($response->successful() && isset($json['status_cd']) && $json['status_cd'] == "1") {
+                return [
+                    'success' => true,
+                    'ewaybill_response' => $json
+                ];
+            } else {
+                return [
+                    'success' => false,
+                    'error'   => $json['error']['message'] ?? 'Unknown error',
+                    'response'=> $json
+                ];
+            }
+
+        } catch (\Exception $e) {
+            \Log::error("Whitebox InitiateMultiVehicle failed: " . $e->getMessage());
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+   }
+
+
+
+
+  //    alkit Initiate Multi-Vehicle API
 
     private function initiateMultiVehicle(Request $request)
     {
@@ -1301,8 +1368,73 @@ class ConsignmentNoteController extends Controller implements HasMiddleware
         'groupNo' => $request->input('groupNo'),
     ]);
    }
+//    addmultivehiclefor whitebox public function addMultiVehicle(Request $request)
+    public function addMultiVehicleWhitebox(Request $request)
+   {
+    
+    $headers = [
+        "ip_address"    => env('EWB_IP_ADDRESS'),
+        "client_id"     => env('EWB_CLIENT_ID'),
+        "client_secret" => env('EWB_CLIENT_SECRET'),
+        "gstin"         => env('EWB_GSTIN'),
+        "accept"        => "*/*",
+        "Content-Type"  => "application/json"
+    ];
 
-    public function callAddVehicleApi(Request $request)
+    // Request body exactly API format me
+        $payload = [
+        "ewbNo"         => (int) $request->ewbNo,   // API कुछ cases में string मांगती है
+        "vehicleNo"    => strtoupper((string) $request->vehicleNo), // vehicle no capital में
+        "groupNo"      => (string) $request->groupNo,
+        "transDocNo"   => (string) $request->transDocNo,
+        "transDocDate" => date('d/m/Y', strtotime($request->transDocDate)), // dd/MM/yyyy
+        "quantity"     => (int) $request->quantity,
+    ];
+
+
+    try {
+        $url = "https://apisandbox.whitebooks.in/ewaybillapi/v1.03/ewayapi/addmulti";
+        $query = [
+            "email" => env('EWB_EMAIL', 'ask.innovations1@gmail.com')
+        ];
+
+        $response = \Http::withHeaders($headers)
+            ->withOptions(["verify" => false]) // SSL bypass
+            ->post($url . '?' . http_build_query($query), $payload);
+
+        $json = $response->json();
+
+        // Debugging ke liye
+        // return($json);
+
+        if ($response->successful() && isset($json['status_cd']) && $json['status_cd'] == "1") {
+            // ✅ Vehicle Added Successfully
+            $key = "vehicle_added_" . $request->ewbNo . "_" . $request->groupNo;
+            session()->put($key, true);
+
+            return view('admin.consignments.add_vehicle_form', [
+                'success' => true,
+                'ewbNo'   => $request->ewbNo,
+                'groupNo' => $request->groupNo,
+                'data'    => $json['data'] ?? []
+            ]);
+        } else {
+            // ❌ API Error
+            return back()->with('error', $json['status_desc'] ?? 'Add Vehicle Failed');
+        }
+
+    } catch (\Exception $e) {
+        \Log::error("Whitebox AddMultiVehicle failed: " . $e->getMessage());
+        return back()->with('error', $e->getMessage());
+    }
+}
+
+
+
+
+
+    // addvehiclemulti for alkkit
+    public function callAddVehicleApi_alkit(Request $request)
     {
         $authToken     = env('EWB_AUTH_TOKEN');
         $encryptedSek  = env('EWB_ENCRYPTED_SEK');
@@ -1377,6 +1509,55 @@ class ConsignmentNoteController extends Controller implements HasMiddleware
         'groupNo' => $request->input('groupNo'),
     ]);
    }
+//    callChangeVehicleApi assign_whitebox
+public function callChangeVehicleWhitebox(Request $request)
+{
+    $headers = [
+        "ip_address"    => env('EWB_IP_ADDRESS'),
+        "client_id"     => env('EWB_CLIENT_ID'),
+        "client_secret" => env('EWB_CLIENT_SECRET'),
+        "gstin"         => env('EWB_GSTIN'),
+        "accept"        => "*/*",
+        "Content-Type"  => "application/json"
+    ];
+
+    // Prepare payload
+    $payload = [
+        "ewbNo"         => (string) $request->ewbNo,
+        "groupNo"       => (string) $request->groupNo,
+        "oldvehicleNo"  => strtoupper(trim($request->oldvehicleNo)),
+        "newVehicleNo"  => strtoupper(trim($request->newVehicleNo)),
+        "oldTranNo"     => (string) $request->oldTranNo,
+        "newTranNo"     => (string) $request->newTranNo,
+        "fromPlace"     => (string) $request->fromPlace,
+        "fromState"     => (int) $request->fromState,
+        "reasonCode"    => 1,
+        "reasonRem"     => "Due to Break Down",
+    ];
+
+    try {
+        $url = "https://apisandbox.whitebooks.in/ewaybillapi/v1.03/ewayapi/updtmulti";
+        $query = ["email" => env('EWB_EMAIL', 'ask.innovations1@gmail.com')];
+
+        $response = \Http::withHeaders($headers)
+            ->withOptions(["verify" => false])
+            ->post($url . '?' . http_build_query($query), $payload);
+
+        $json = $response->json();
+
+        // 🔹 Debug the full API response
+        dd($json);
+
+        // The rest of your success/error logic will go here if needed
+    } catch (\Exception $e) {
+        \Log::error("Whitebox ChangeVehicle failed: " . $e->getMessage());
+        return back()->with('error', $e->getMessage());
+    }
+}
+
+
+
+//    assign_alkit
 
    public function callChangeVehicleApi(Request $request)
    {
