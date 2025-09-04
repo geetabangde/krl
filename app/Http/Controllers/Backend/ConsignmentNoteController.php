@@ -1156,14 +1156,18 @@ class ConsignmentNoteController extends Controller implements HasMiddleware
 
                 if ($response->successful() && isset($json['status_cd']) && $json['status_cd'] == "1") {
                     $results[] = [
-                        'ewbNo' => $bill['ewb_no'],
+                        'ewbNo'   => $bill['ewb_no'],
                         'success' => true,
                         'message' => $json['message'] ?? 'Part B updated successfully'
                     ];
                 } else {
                     $results[] = [
-                        'ewbNo' => $bill['ewb_no'],
-                        'error' => $json['error']['message'] ?? 'Failed to update'
+                        'ewbNo'     => $bill['ewb_no'],
+                        'error'     => $json['errorDesc'] 
+                                    ?? ($json['error']['message'] ?? 'Failed to update'),
+                        'errorCode' => $json['errorCode']  // ✅ सही key
+                                    ?? $json['status_cd'] 
+                                    ?? null,
                     ];
                 }
 
@@ -1564,9 +1568,6 @@ public function callChangeVehicleWhitebox(Request $request)
         ], 500);
     }
 }
-
-
-
 
 //    assign_alkit
 

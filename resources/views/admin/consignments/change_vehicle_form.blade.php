@@ -14,7 +14,7 @@
                         <h4 class="text-center">Multi Vehicle Change</h4>
                     </div>
                 </div> 
-                
+
                  @if(session('success'))
                     <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
                         <strong>✅ {{ session('success') }}</strong>
@@ -72,10 +72,6 @@
 
                     <button class="btn btn-danger mt-2">Change Vehicle</button>
                 </form>
-
-
-              
-
             </div>
         </div>
     </div>

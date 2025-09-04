@@ -69,7 +69,7 @@ class EraahiWhiteController extends Controller
         "subSupplyDesc"     => "",
         "docType"           => "CHL",     
         "docNo"             => "doc/087787",
-        "docDate"           => "02/09/2025",  
+        "docDate"           => "04/09/2025",  
 
         "fromGstin"         => "23AAGCB1286Q028",
         "fromTrdName"       => "welton",

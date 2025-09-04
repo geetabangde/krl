@@ -261,6 +261,7 @@ use App\Http\Controllers\Backend\{
         // Route::get('/vehicle_eway_bill', [ConsignmentNoteController::class, 'fillFromEwayBill'])->name('admin.consignments.vehicle_eway_bill'); 
         // Route::post('/vehicle_eway_bill/update', [ConsignmentNoteController::class, 'updatePartB'])->name('admin.consignments.vehicle_eway_bill.update');
         
+        
         // whitebox
         Route::get('/assign/{lr_number}', [ConsignmentNoteController::class, 'assign_whitebox'])->name('admin.consignments.assign');
         Route::get('/vehicle_eway_bill', [ConsignmentNoteController::class, 'fillFromEwayBillWhitebox'])->name('admin.consignments.vehicle_eway_bill');

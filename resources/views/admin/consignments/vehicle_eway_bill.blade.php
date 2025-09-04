@@ -15,28 +15,41 @@
                 </a>
             </div>
             <div class="card-body">
-
                 <form action="{{ route('admin.consignments.vehicle_eway_bill.update') }}" method="POST">
                     @if(session('results'))
                         <div class="mt-3">
                             @foreach(session('results') as $result)
-                                @if(isset($result['ewbNo']) && isset($result['error']))
-                                    <div class="alert alert-danger">
-                                        eWay Bill #{{ $result['ewbNo'] }} - {{ $result['error'] }}
-                                    </div>
-                                @elseif(isset($result['ewbNo']))
+                                @if(isset($result['success']) && $result['success'])
                                     <div class="alert alert-success">
-                                        eWay Bill #{{ $result['ewbNo'] }} updated successfully.
+                                        ✅ eWay Bill #{{ $result['ewbNo'] }} updated successfully.  
+                                        <small>{{ $result['message'] ?? '' }}</small>
+                                    </div>
+                                @elseif(isset($result['error']))
+                                    <div class="alert alert-danger">
+                                        ❌ eWay Bill #{{ $result['ewbNo'] }} failed.  
+                                        <br><strong>Message:</strong> {{ $result['error'] }}  
+                                        @if(!empty($result['errorCode']))
+                                            <br><strong>Code:</strong> {{ $result['errorCode'] }}
+                                        @endif
                                     </div>
                                 @endif
                             @endforeach
                         </div>
                     @endif
+                    @if ($errors->any())
+                        <div class="alert alert-danger">
+                            <ul>
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
 
+                    <!-- CSRF Token -->
 
                     @csrf
                     @foreach($ewaybills as $index => $bill)
-                    
                         <h4 class="mb-3">Update Part B: <strong>{{ $bill['ewbNo'] ?? '' }}</strong></h4>
 
                         @php

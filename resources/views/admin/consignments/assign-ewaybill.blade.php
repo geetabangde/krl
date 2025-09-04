@@ -33,6 +33,8 @@
                     <div class="alert alert-success">{{ session('success') }}</div>
                 @endif
 
+                
+
                 @if(count($ewayBills) > 0)
                 <form id="assignForm" method="POST" action="{{ route('admin.consignments.assign.save', [$lr_number]) }}" enctype="multipart/form-data">
                     @csrf
