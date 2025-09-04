@@ -14,6 +14,21 @@
                         <h4 class="text-center">Multi Vehicle Change</h4>
                     </div>
                 </div> 
+                
+                 @if(session('success'))
+                    <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+                        <strong>✅ {{ session('success') }}</strong>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                @endif
+
+                @if(session('error'))
+                    <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+                        <strong>❌ {{ session('error') }}</strong>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                @endif
+
                 <form method="POST" action="{{ route('admin.consignments.call_change_vehicle') }}">
                     @csrf
 
@@ -59,19 +74,7 @@
                 </form>
 
 
-               @if(session('success'))
-                    <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
-                        <strong>✅ {{ session('success') }}</strong>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                @endif
-
-                @if(session('error'))
-                    <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
-                        <strong>❌ {{ session('error') }}</strong>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                @endif
+              
 
             </div>
         </div>

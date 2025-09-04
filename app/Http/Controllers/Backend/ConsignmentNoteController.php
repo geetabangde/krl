@@ -1517,27 +1517,30 @@ public function callChangeVehicleWhitebox(Request $request)
         "client_id"     => env('EWB_CLIENT_ID'),
         "client_secret" => env('EWB_CLIENT_SECRET'),
         "gstin"         => env('EWB_GSTIN'),
-        "accept"        => "*/*",
+        "Accept"        => "application/json",
         "Content-Type"  => "application/json"
     ];
 
-    // Prepare payload
+    // ✅ Payload as per API Docs
+    
     $payload = [
-        "ewbNo"         => (string) $request->ewbNo,
-        "groupNo"       => (string) $request->groupNo,
-        "oldvehicleNo"  => strtoupper(trim($request->oldvehicleNo)),
-        "newVehicleNo"  => strtoupper(trim($request->newVehicleNo)),
-        "oldTranNo"     => (string) $request->oldTranNo,
-        "newTranNo"     => (string) $request->newTranNo,
-        "fromPlace"     => (string) $request->fromPlace,
+        "ewbNo"         => (int) $request->ewbNo,          // Number
+        "groupNo"       => (int) $request->groupNo,        // Number
+        "oldvehicleNo"  => $request->oldvehicleNo,         // 🔹 Small v
+        "newVehicleNo"  => $request->newVehicleNo,
+        "oldTranNo"     => $request->oldTranNo,
+        "newTranNo"     => $request->newTranNo,
+        "fromPlace"     => $request->fromPlace,
         "fromState"     => (int) $request->fromState,
-        "reasonCode"    => 1,
-        "reasonRem"     => "Due to Break Down",
+        "reasonCode"    => (string) ($request->reasonCode ?? "1"), // String
+        "reasonRem"     => $request->reasonRem ?? "Vehicle broke down"
     ];
 
     try {
         $url = "https://apisandbox.whitebooks.in/ewaybillapi/v1.03/ewayapi/updtmulti";
-        $query = ["email" => env('EWB_EMAIL', 'ask.innovations1@gmail.com')];
+        $query = [
+            "email" => env('EWB_EMAIL', 'ask.innovations1@gmail.com')
+        ];
 
         $response = \Http::withHeaders($headers)
             ->withOptions(["verify" => false])
@@ -1545,21 +1548,29 @@ public function callChangeVehicleWhitebox(Request $request)
 
         $json = $response->json();
 
-        // 🔹 Debug the full API response
-        dd($json);
-
-        // The rest of your success/error logic will go here if needed
+        // 🔹 Debug Response
+        if (isset($response['data'])) {
+            $key = "vehicle_changed_" . $request->ewbNo . "_" . $request->groupNo;
+            session()->put($key, true); // ✅ Save change status
+        return back()->with('success', 'Vehicle Changed Successfully');
+        } else {
+            return back()->with('error', $json['error']['message'] ?? 'Vehicle Change Failed');
+        }
     } catch (\Exception $e) {
         \Log::error("Whitebox ChangeVehicle failed: " . $e->getMessage());
-        return back()->with('error', $e->getMessage());
+        return response()->json([
+            "success" => false,
+            "message" => $e->getMessage()
+        ], 500);
     }
 }
 
 
 
+
 //    assign_alkit
 
-   public function callChangeVehicleApi(Request $request)
+   public function callChangeVehicleApi_alkit(Request $request)
    {
         $authToken     = env('EWB_AUTH_TOKEN');
         $encryptedSek  = env('EWB_ENCRYPTED_SEK');

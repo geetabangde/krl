@@ -265,7 +265,7 @@ use App\Http\Controllers\Backend\{
         Route::get('/assign/{lr_number}', [ConsignmentNoteController::class, 'assign_whitebox'])->name('admin.consignments.assign');
         Route::get('/vehicle_eway_bill', [ConsignmentNoteController::class, 'fillFromEwayBillWhitebox'])->name('admin.consignments.vehicle_eway_bill');
         Route::post('/vehicle_eway_bill/update', [ConsignmentNoteController::class, 'updatePartBWhitebox'])->name('admin.consignments.vehicle_eway_bill.update');
-        Route::post('/multi-vehicle-initiate', [ConsignmentNoteController::class, 'initiateMultiVehicleWhitebox']);
+        Route::post('/multi-vehicle-initiate', [ConsignmentNoteController::class, 'initiateMultiVehicleWhitebox'])->name('admin.consignments.multi-vehicle-initiate');;
         Route::post('/add-vehicle-ui', [ConsignmentNoteController::class, 'addMultiVehicleWhitebox'])->name('admin.consignments.call_add_vehicle');
         Route::post('/change-vehicle-ui', [ConsignmentNoteController::class, 'callChangeVehicleWhitebox'])->name('admin.consignments.call_change_vehicle');
 
@@ -276,7 +276,7 @@ use App\Http\Controllers\Backend\{
         Route::get('/add-vehicle-ui', [ConsignmentNoteController::class, 'showAddVehicleForm'])->name('admin.consignments.add_vehicle_form');
         // Route::post('/add-vehicle-ui', [ConsignmentNoteController::class, 'callAddVehicleApi'])->name('admin.consignments.call_add_vehicle');
         Route::get('/change-vehicle-ui', [ConsignmentNoteController::class, 'showChangeVehicleForm'])->name('admin.consignments.change_vehicle_form');
-        Route::post('/change-vehicle-ui', [ConsignmentNoteController::class, 'callChangeVehicleApi'])->name('admin.consignments.call_change_vehicle');
+        // Route::post('/change-vehicle-ui', [ConsignmentNoteController::class, 'callChangeVehicleApi'])->name('admin.consignments.call_change_vehicle');
 
     });
     
