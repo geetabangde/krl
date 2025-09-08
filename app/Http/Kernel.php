@@ -55,9 +55,8 @@ class Kernel extends HttpKernel
         'permission' => \Spatie\Permission\Middlewares\PermissionMiddleware::class,
         'role_or_permission' => \Spatie\Permission\Middlewares\RoleOrPermissionMiddleware::class,
         'auth.admin_or_employee' => \App\Http\Middleware\AuthenticateAdminOrEmployee::class,
-        // new middlewr
         'admin.token.session' => \App\Http\Middleware\AdminTokenSession::class,
-         'guest.user' => \App\Http\Middleware\RedirectIfAuthenticatedUser::class,
+        'guest.user' => \App\Http\Middleware\RedirectIfAuthenticatedUser::class,
     ];
        
 

@@ -19,7 +19,8 @@ use Symfony\Component\HttpKernel\Event\ResponseEvent;
 
 
 class VoucherController extends Controller
-{
+{   
+    // Display a listing of the resource.
     public function index()
     {
         // Fetch vouchers with their related ledger information
@@ -36,7 +37,45 @@ class VoucherController extends Controller
 
         return view('admin.voucher.index', compact('vouchers'));
     }
+    // Show the form for creating a new resource.
+    public function create()
+    { 
+        $ledgers = User::all(); 
+        return view('admin.voucher.create', compact('ledgers')); 
+    }
+    public function show($id)
+    {
+        $voucher = Voucher::with(['fromLedger', 'toLedger'])->findOrFail($id);
+        return view('admin.voucher.show', compact('voucher'));
+    }
+    
+    public function destroy($id)
+   {
+    $voucher = Voucher::findOrFail($id);
+    $voucher->delete();
+    return redirect()->route('admin.voucher.index')->with('success', 'Voucher deleted successfully!');
+   }
 
+    public function edit($id)
+{
+    $voucher = Voucher::findOrFail($id); 
+    $ledgers = User::all();
+
+    $voucherRows = is_string($voucher->vouchers) 
+        ? json_decode($voucher->vouchers, true) 
+        : $voucher->vouchers;
+    $voucherApiRows = is_string($voucher->VoucherApi) 
+        ? json_decode($voucher->VoucherApi, true) 
+        : $voucher->VoucherApi;
+    
+    // dd($voucherApiRows, $voucherRows);
+    
+    return view('admin.voucher.edit', compact('voucher', 'ledgers', 'voucherRows', 'voucherApiRows'));
+}
+
+
+
+    //  Store a newly created resource in storage.
     public function getLedgers(Request $request)
     {
         $voucherType = $request->voucher_type;
@@ -76,14 +115,18 @@ class VoucherController extends Controller
                         }
 
                 }
-
+                
                 return $formatted;
             };
 
             // Format voucher labels
             $formatVoucherLabel = function ($voucher) {
-                $entries = json_decode($voucher->vouchers, true);
+                $entries = $voucher->vouchers;
                 $labels = [];
+
+                if (!is_array($entries)) {
+                    return [];
+                }
 
                 foreach ($entries as $v) {
                     $from = User::find($v['from_account'])?->name ?? 'From';
@@ -99,6 +142,7 @@ class VoucherController extends Controller
 
                 return $labels;
             };
+
 
             if ($voucherType === 'Payment') {
                 $fromGroupIds = Group::whereIn('group_name', ['Cash', 'Bank'])->pluck('id');
@@ -135,8 +179,6 @@ class VoucherController extends Controller
                         $formatVoucherLabel($voucher)
                     );
                 }
-                
-            
 
             } elseif ($voucherType === 'Journal') {
                 $allUsers = User::select('id', 'name', 'address')->get();
@@ -180,13 +222,7 @@ class VoucherController extends Controller
         }
     }
 
-    public function create()
-    { 
-        $ledgers = User::all(); 
-        return view('admin.voucher.create', compact('ledgers')); 
-    }
-  
-
+    // Store a newly created resource in storage.
     public function store(Request $request)
     {
         // Validate & receive input (optional — adjust rules as needed)
@@ -288,7 +324,6 @@ class VoucherController extends Controller
                 'cash_credit'    => $voucher['cash_credit'] ?? null,
                 'tds_payable'    => $voucher['tds_payable'] ?? null,
             ];
-
         
             if ($request->voucher_type === "Receipt") {
                 $bodies[] = [
@@ -345,6 +380,106 @@ class VoucherController extends Controller
                     "Narration"         => $voucher['narration'] ?? '',
                 ];
             }
+            if ($request->voucher_type === "Sales") {
+                $bodies[] = [
+                    "Date"                 => $request->voucher_date,
+                    "Voucher No"           => $voucher['voucher_no'] ?? '',
+                    "Voucher Type"         => $request->voucher_type,
+                    "IS Invoice"           => $request->is_invoice ?? 'Yes',
+                    "Bill Wise Details"    => $request->bill_wise_details ?? 'PO - 55555',
+                    "Debit / Party Ledger" => $toUser->name,
+                    "Address 1"            => $toAddress['consignment_address'] ?? '',
+                    "Address 2"            => $toAddress['billing_address'] ?? '',
+                    "Address 3"            => $toAddress['billing_address'] ?? '',
+                    "Pincode"              => $toAddress['pincode'] ?? '',
+                    "State"                => $toAddress['state'] ?? null,
+                    "Place of Supply"      => $toAddress['state'] ?? null,
+                    "Country"              => "India",
+                    "GSTIN"                => $toAddress['gstin'] ?? '',
+                    "GST Registration Type"=> "Regular",
+                    "Consignee Name"       => $toUser->name ?? '',
+                    "Consignee Add 1"      => $toAddress['consignment_address'] ?? '',
+                    "Consignee Add 2"      => $toAddress['billing_address'] ?? '',
+                    "Consignee Add 3"      => $toAddress['billing_address'] ?? '',
+                    "Consignee State"      => $toAddress['state'] ?? null,
+                    "Consignee Country"    => "India",
+                    "Consignee Pincode"    => $toAddress['pincode'] ?? '',
+                    "Consignee GSTIN"      => $toAddress['gstin'] ?? '',
+                    "Credit Ledger 1"      => "Sales GST Local @ 18%",
+                    "Credit Ledger 1 Amount" => $amount,
+                    "Ledger 1 Description"   => "This is ledger description",
+                    // 
+                    "Credit Period"        => $voucher['credit_day'] ?? '',
+                    "Cost Center"          => "Office",
+                    "Narration"            => $voucher['narration'] ?? '',
+                    "IRN Ack No"           => $voucher['irn_ack_no'] ?? '',
+                    "IRN Ack Date"         => $voucher['irn_ack_date'] ?? '',
+                    "IRN No"               => $voucher['irn_no'] ?? '',
+                    "IRN Bill to Place"    => $voucher['irn_bill_to_place'] ?? '',
+                    "IRN Ship to State"    => $voucher['irn_ship_to_state'] ?? '',
+                ];
+            }
+            if ($request->voucher_type === "Purchase") {
+                $bodies[] = [
+                    "Date"                 => $request->voucher_date,
+                    "Voucher No"           => $voucher['voucher_no'] ?? '',
+                    "Voucher Type"         => $request->voucher_type,
+                    
+                    "Supplier Inv No"      => $voucher['supplier_inv_no'] ?? '',
+                    "Supplier Inv Date"    => $voucher['supplier_inv_date'] ?? '',
+                    "Credit / Party Ledger"=> $toUser->name,
+                    "Address 1"            => $toAddress['consignment_address'] ?? '',
+                    "Address 2"            => $toAddress['billing_address'] ?? '',
+                    "Address 3"            => $toAddress['billing_address'] ?? '',
+                    "State"                => $toAddress['state'] ?? null,
+                    "Place of Supply"      => $toAddress['state'] ?? null,
+                    "VAT Tin No"           => $voucher['vat_tin_no'] ?? '',
+                    "CST No"               => $voucher['cst_no'] ?? '',
+                    "Service Tax No"       => $voucher['service_tax_no'] ?? '',
+                    "GSTIN"                => $toAddress['gstin'] ?? '',
+                    "GST Registration Type"=> "Regular",
+
+                    // Example fixed entries, but you can push dynamically
+                    "Debit Ledger 1"       => "Purchase GST Interstate @ 18%",
+                    "Debit Ledger 1 Amount"=> $amount,
+                    "Ledger 1 Description" => "This is Ledger Description",
+
+                    "Debit Period"         => $voucher['debit_day'] ?? '30 Days',
+                    "Cost Center"          => "Department - B",
+                    "Narration"            => $voucher['narration'] ?? '',
+                ];
+            }
+            if ($request->voucher_type === "Journal") {
+                
+                $voucherData = is_array($voucher) ? $voucher : $voucher->toArray();
+
+                // Example fixed entries, but you can push dynamically
+                $bodies[] = [
+                    "Date"             => $request->voucher_date,
+                    "Voucher Number"   => $voucherData['voucher_no']   ?? '',
+                    "Voucher Ref No"   => $voucherData['voucher_no'] ?? '',
+                    "Voucher Ref Date" => $voucherData['voucher_date'] ?? '',
+                    "Voucher Type"     => $request->voucher_type,
+
+                    "From Ledger"      => $fromUser->name,
+                    "To Ledger"        => $toUser->name,
+                    "Debit / Credit"   => $voucherData['dr_cr'] ?? '',
+                    "Bill Ref No"      => $voucherData['bill_ref_no'] ?? '',
+                    "Amount"           => $voucherData['amount'] ?? 0,
+
+                    "Cost Center"      => $voucherData['cost_center'] ?? null,
+                    "Stock Item"       => $voucherData['stock_item'] ?? null,
+                    "Godown"           => $voucherData['godown'] ?? null,
+                    "Batch No"         => $voucherData['batch_no'] ?? null,
+                    "QTY"              => $voucherData['qty'] ?? null,
+                    "Rate"             => $voucherData['rate'] ?? null,
+                    "UOM"              => $voucherData['uom'] ?? null,
+                    "Item Amount"      => $voucherData['amount'] ?? null,
+
+                    "Narration"        => $voucherData['narration'] ?? '',
+                ];
+            }
+
         }
 
         
@@ -357,237 +492,14 @@ class VoucherController extends Controller
             'updated_at'   => now(),
         ]);
 
-        return redirect()->route('admin.voucher.index')->with('success', 'Voucher stored successfully.');
-
-        // return response()->json([
-        //     'message'  => 'Voucher stored successfully.',
-        //     'vouchers' => $finalVouchers,
-        //     'bodies'   => $bodies,
-        // ]);
-    }
-
-   public function getLedgers_OLD(Request $request)
-    {
-        $request->validate([
-            'voucher_type' => 'required|string|in:Payment,Receipt,Contra,Journal,Sales,Purchase,Expense',
-        ]);
-
-        $voucherType = $request->voucher_type;
-        try {
-            // Payment
-            if ($voucherType === 'Payment') {
-                // Payment special case
-                $fromGroupIds = Group::whereIn('group_name', ['Cash', 'Bank'])->pluck('id');
-                $fromLedgers = User::whereIn('group_id', $fromGroupIds)
-                                    ->select('id', 'name')
-                                    ->get();
-
-                // Get all ledgers that are NOT in Cash or Bank group
-                $toLedgers = User::whereNotIn('group_id', $fromGroupIds)
-                                    ->select('id', 'name')
-                                    ->get();
-
-                return response()->json([
-                    'from' => $fromLedgers,
-                    'to' => $toLedgers,
-                ]);
-            }
-            // Receipt
-
-            if ($voucherType === 'Receipt') {
-                    // Get group IDs for 'Cash' and 'Bank'
-                    $cashBankGroupIds = Group::whereIn('group_name', ['Cash', 'Bank'])->pluck('id');
-
-                    // FROM: All ledgers EXCEPT those in 'Cash' or 'Bank' group
-                    $fromLedgers = User::whereNotIn('group_id', $cashBankGroupIds)
-                                        ->select('id', 'name')
-                                        ->get();
-
-                    // TO: Only ledgers from 'Cash' or 'Bank' group
-                    $toLedgers = User::whereIn('group_id', $cashBankGroupIds)
-                                        ->select('id', 'name')
-                                        ->get();
-
-                    return response()->json([
-                        'from' => $fromLedgers,
-                        'to'   => $toLedgers,
-                    ]);
-            }
-            if ($voucherType === 'Receipt') {
-        // Step 1: Get group IDs for 'Cash' and 'Bank'
-        $cashBankGroupIds = Group::whereIn('group_name', ['Cash', 'Bank'])->pluck('id');
-
-        // Step 2: Get FROM users (NOT in Cash/Bank groups)
-        $fromUsers = User::whereNotIn('group_id', $cashBankGroupIds)->get();
-        $fromLedgers = [];
-
-        foreach ($fromUsers as $user) {
-            $address = json_decode($user->address, true);
-            $city = $address[0]['city'] ?? 'Unknown';
-
-            $fromLedgers[] = [
-                'id'   => $user->id,
-                'name' => $user->name . ' - ' . $city,
-            ];
-        }
-
-        // Step 3: Get TO users (IN Cash/Bank groups)
-        $toUsers = User::whereIn('group_id', $cashBankGroupIds)->get();
-        $toLedgers = [];
-
-        foreach ($toUsers as $user) {
-            $address = json_decode($user->address, true);
-            $city = $address[0]['city'] ?? 'Unknown';
-
-            $toLedgers[] = [
-                'id'   => $user->id,
-                'name' => $user->name . ' - ' . $city,
-            ];
-        }
-    
         return response()->json([
-            'from' => $fromLedgers,
-            'to'   => $toLedgers,
+            'message'  => 'Voucher stored successfully.',
+            'vouchers' => $finalVouchers,
+            'bodies'   => $bodies,
         ]);
     }
-
-            // Journal
-            if ($voucherType === 'Journal') {
-                $allLedgers = \App\Models\User::select('id', 'name')->get();
-
-                return response()->json([
-                    'from' => $allLedgers,
-                    'to'   => $allLedgers,
-                ]);
-            }
-
-            // Contra
-            if ($voucherType === 'Contra') {
-                // Get group IDs for 'Cash' and 'Bank'
-                $cashBankGroupIds = \App\Models\Group::whereIn('group_name', ['Cash', 'Bank'])->pluck('id');
-
-                // Get ledgers only from those groups
-                $ledgers = \App\Models\User::whereIn('group_id', $cashBankGroupIds)
-                                ->select('id', 'name')
-                                ->get();
-
-                return response()->json([
-                    'from' => $ledgers,
-                    'to'   => $ledgers,
-                ]);
-            }
-
-                // Sales
-            if ($voucherType === 'Sales') {
-                // FROM: Only 'Sales' group ledgers
-                $salesGroupId = \App\Models\Group::where('group_name', 'Sales')->pluck('id'); // Fetch Sales group by name
-                $fromLedgers = \App\Models\User::whereIn('group_id', $salesGroupId)
-                                                    ->select('id', 'name')
-                                                    ->get();
-
-                // TO: Only 'Cash', 'Bank', 'Loan', and 'Expense' group ledgers
-                $includedGroupIds = \App\Models\Group::whereIn('group_name', ['Cash', 'Bank', 'Loan', 'Expense'])->pluck('id');
-                $toLedgers = \App\Models\User::whereIn('group_id', $includedGroupIds)
-                                                    ->select('id', 'name')
-                                                    ->get();
-
-                return response()->json([
-                    'from' => $fromLedgers,
-                    'to'   => $toLedgers,
-                ]);
-            }
-
-
-            // Purchase
-            if ($voucherType === 'Purchase') {
-                // Get Vendors Group ID
-                $vendorsGroupId = \App\Models\Group::where('group_name', 'Vendors')->pluck('id');
-
-                // FROM: Only users from Vendors Group
-                $fromLedgers = \App\Models\User::whereIn('group_id', $vendorsGroupId)
-                                            ->select('id', 'name')
-                                            ->get();
-
-                // TO: All users excluding Vendors Group
-                $toLedgers = \App\Models\User::whereNotIn('group_id', $vendorsGroupId)
-                                            ->select('id', 'name')
-                                            ->get();
-                    return response()->json([
-                    'from' => $fromLedgers,
-                    'to'   => $toLedgers,
-                ]);
-                
-            }
-
-        //Expense
-
-        if ($voucherType === 'Expense') {
-                $expenseGroupId = \App\Models\Group::where('group_name', 'Expense')->pluck('id');
-            
-
-                $fromLedgers = \App\Models\User::whereIn('group_id', $expenseGroupId)
-                                            ->select('id', 'name')
-                                            ->get();
-
-
-                $toLedgers = \App\Models\User::whereNotIn('group_id', $expenseGroupId)
-                                            ->select('id', 'name')
-                                            ->get();
-
-                
-
-                return response()->json([
-                    'from' => $fromLedgers,
-                    'to'   => $toLedgers,
-                ]);
-            }
-
-
-            
-
-        // Normal case for other voucher types
-            if (!isset($map[$voucherType])) {
-                return response()->json(['from' => [], 'to' => []]);
-            }
-
-            $fromGroupIds = \App\Models\Group::whereIn('group_name', $map[$voucherType]['from'])->pluck('id');
-            $fromLedgers = \App\Models\User::whereIn('group_id', $fromGroupIds)->select('id', 'name')->get();
-
-            $toGroupIds = \App\Models\Group::whereIn('group_name', $map[$voucherType]['to'])->pluck('id');
-            $toLedgers = \App\Models\User::whereIn('group_id', $toGroupIds)->select('id', 'name')->get();
-
-            return response()->json([
-                'from' => $fromLedgers,
-                'to' => $toLedgers,
-            ]);
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'Error: ' . $e->getMessage()]);
-        }
-    }
-
-    public function show($id)
-    {
-        $voucher = Voucher::with(['fromLedger', 'toLedger'])->findOrFail($id);
-
-        return view('admin.voucher.show', compact('voucher'));
-    }
     
-    public function destroy($id)
-    {
-        $voucher = Voucher::findOrFail($id);
-        $voucher->delete();
-        return redirect()->route('admin.voucher.index')->with('success', 'Voucher deleted successfully!');
-    }
-
-    public function edit($id)
-    {
-        $voucher = Voucher::find($id);
-        $ledgers = User::all(); 
-        $voucherRows = is_string($voucher->vouchers) ? json_decode($voucher->vouchers, true) : $voucher->vouchers;
-
-        return view('admin.voucher.edit', compact('voucher', 'ledgers', 'voucherRows'));
-    }
-
+   
 
     public function update(Request $request, $id)
     {
@@ -701,7 +613,101 @@ class VoucherController extends Controller
                         "Narration"           => $voucherItem['narration'] ?? '',
                     ];
                 }
-            }
+                if ($request->voucher_type === "Sales") {
+                    $bodies[] = [
+                        "Date"                 => $request->voucher_date,
+                        "Voucher No"           => $voucherItem['voucher_no'] ?? '',
+                        "Voucher Type"         => $request->voucher_type,
+                        "IS Invoice"           => $request->is_invoice ?? 'Yes',
+                        "Bill Wise Details"    => $request->bill_wise_details ?? 'PO - 55555',
+                        "Debit / Party Ledger" => $toUser->name,
+                        "Address 1"            => $toAddress['consignment_address'] ?? '',
+                        "Address 2"            => $toAddress['billing_address'] ?? '',
+                        "Address 3"            => $toAddress['billing_address'] ?? '',
+                        "Pincode"              => $toAddress['pincode'] ?? '',
+                        "State"                => $toAddress['state'] ?? null,
+                        "Place of Supply"      => $toAddress['state'] ?? null,
+                        "Country"              => "India",
+                        "GSTIN"                => $toAddress['gstin'] ?? '',
+                        "GST Registration Type"=> "Regular",
+                        "Consignee Name"       => $toUser->name ?? '',
+                        "Consignee Add 1"      => $toAddress['consignment_address'] ?? '',
+                        "Consignee Add 2"      => $toAddress['billing_address'] ?? '',
+                        "Consignee Add 3"      => $toAddress['billing_address'] ?? '',
+                        "Consignee State"      => $toAddress['state'] ?? null,
+                        "Consignee Country"    => "India",
+                        "Consignee Pincode"    => $toAddress['pincode'] ?? '',
+                        "Consignee GSTIN"      => $toAddress['gstin'] ?? '',
+                        "Credit Ledger 1"      => "Sales GST Local @ 18%",
+                        "Credit Ledger 1 Amount" => $amount,
+                        "Ledger 1 Description"   => "This is ledger description",
+                        // 
+                        "Credit Period"        => $voucherItem['credit_day'] ?? '',
+                        "Cost Center"          => "Office",
+                        "Narration"            => $voucherItem['narration'] ?? '',
+                        "IRN Ack No"           => $voucherItem['irn_ack_no'] ?? '',
+                        "IRN Ack Date"         => $voucherItem['irn_ack_date'] ?? '',
+                        "IRN No"               => $voucherItem['irn_no'] ?? '',
+                        "IRN Bill to Place"    => $voucherItem['irn_bill_to_place'] ?? '',
+                        "IRN Ship to State"    => $voucherItem['irn_ship_to_state'] ?? '',  
+                    ];
+                }
+                if ($request->voucher_type === "Purchase") {
+                    $bodies[] = [
+                        "Date"                 => $request->voucher_date,
+                        "Voucher No"           => $voucherItem['voucher_no'] ?? '',
+                        "Voucher Type"         => $request->voucher_type,
+                        
+                        "Supplier Inv No"      => $voucherItem['supplier_inv_no'] ?? '',
+                        "Supplier Inv Date"    => $voucherItem['supplier_inv_date'] ?? '',
+                        "Credit / Party Ledger"=> $toUser->name,
+                        "Address 1"            => $toAddress['consignment_address'] ?? '',
+                        "Address 2"            => $toAddress['billing_address'] ?? '',
+                        "Address 3"            => $toAddress['billing_address'] ?? '',
+                        "State"                => $toAddress['state'] ?? null,
+                        "Place of Supply"      => $toAddress['state'] ?? null,
+                        "VAT Tin No"           => $voucherItem['vat_tin_no'] ?? '',
+                        "CST No"               => $voucherItem['cst_no'] ?? '',
+                        "Service Tax No"       => $voucherItem['service_tax_no'] ?? '',
+                        "GSTIN"                => $toAddress['gstin'] ?? '',
+                        "GST Registration Type"=> "Regular",
+
+                        // Example fixed entries, but you can push dynamically
+                        "Debit Ledger 1"       => "Purchase GST Interstate @ 18%",
+                        "Debit Ledger 1 Amount"=> $amount,
+                        "Ledger 1 Description" => "This is Ledger Description",
+
+                        "Debit Period"         => $voucherItem['debit_day'] ?? '30 Days',
+                        "Cost Center"          => "Department - B",
+                        "Narration"            => $voucherItem['narration'] ?? '',
+                    ];
+                }
+                if ($request->voucher_type === "Journal") {
+                    $voucherData = is_array($voucherItem) ? $voucherItem : $voucherItem->toArray();
+                    // Example fixed entries, but you can push dynamically
+                    $bodies[] = [
+                        "Date"             => $request->voucher_date,
+                        "Voucher Number"   => $voucherData['voucher_no']   ?? '',
+                        "Voucher Ref No"   => $voucherData['voucher_no'] ?? '',
+                        "Voucher Ref Date" => $voucherData['voucher_date'] ?? '',
+                        "Voucher Type"     => $request->voucher_type,
+                        "From Ledger"      => $fromUser->name,
+                        "To Ledger"        => $toUser->name,
+                        "Debit / Credit"   => $voucherData['dr_cr'] ?? '',
+                        "Bill Ref No"      => $voucherData['bill_ref_no'] ?? '',
+                        "Amount"           => $voucherData['amount'] ?? 0,
+                        "Cost Center"      => $voucherData['cost_center'] ?? null,
+                        "Stock Item"       => $voucherData['stock_item'] ?? null,
+                        "Godown"           => $voucherData['godown'] ?? null,
+                        "Batch No"         => $voucherData['batch_no'] ?? null,
+                        "QTY"              => $voucherData['qty'] ?? null,
+                        "Rate"             => $voucherData['rate'] ?? null,
+                        "UOM"              => $voucherData['uom'] ?? null,
+                        "Item Amount"      => $voucherData['amount'] ?? null,
+                        "Narration"        => $voucherData['narration'] ?? '',  // Ensure narration is included
+                        // Ensure other dynamic entries are included as needed
+                    ];
+                }
 
             // Update the voucher record
             $voucher->update([
@@ -711,12 +717,12 @@ class VoucherController extends Controller
                 'VoucherApi'   => json_encode($bodies),
             ]);
 
-            // return response()->json([
-            //     'message' => 'Voucher updated successfully!',
-            //     // 'voucher' => $voucher->fresh(),
-            //     'VoucherApi' => $bodies
-            // ]);
-            return redirect()->route('admin.voucher.index')->with('success', 'Voucher updated successfully!');
+            return response()->json([
+                'message' => 'Voucher updated successfully!',
+                // 'voucher' => $voucher->fresh(),
+                'VoucherApi' => $bodies
+            ]);
+        }
         } catch (\Exception $e) {
             logger("Error updating voucher: " . $e->getMessage());
             return response()->json([
@@ -729,13 +735,8 @@ class VoucherController extends Controller
 
     public function syncTally()
     {
+        // -------- Receipt Vouchers --------
         $receiptVouchers = Voucher::where('voucher_type', 'Receipt')
-            ->where('sataus', '0')
-            ->whereNotNull('VoucherApi')
-            ->where('VoucherApi', '!=', '')
-            ->get();
-
-        $paymentVouchers = Voucher::where('voucher_type', 'Payment')
             ->where('sataus', '0')
             ->whereNotNull('VoucherApi')
             ->where('VoucherApi', '!=', '')
@@ -743,7 +744,6 @@ class VoucherController extends Controller
 
         $receiptBody = [];
         $receiptIds = [];
-
         foreach ($receiptVouchers as $voucher) {
             $decodedApi = json_decode($voucher->VoucherApi, true);
             if (is_array($decodedApi)) {
@@ -754,9 +754,28 @@ class VoucherController extends Controller
             }
         }
 
+        $receiptResponse = null;
+        if (!empty($receiptBody)) {
+            $receiptResponse = Http::withHeaders([
+                'X-Auth-Key'   => 'test_946ead867e5344189312ff54fd4097e4',
+                'Template-Key' => '12',
+                'CompanyName'  => 'Tally Company Name',
+                'version'      => '3'
+            ])->post('https://api.api2books.com/api/User/ReceiptVoucher', [
+                'body' => $receiptBody
+            ]);
+            Voucher::whereIn('id', $receiptIds)->update(['sataus' => '1']);
+        }
+
+        // -------- Payment Vouchers --------
+        $paymentVouchers = Voucher::where('voucher_type', 'Payment')
+            ->where('sataus', '0')
+            ->whereNotNull('VoucherApi')
+            ->where('VoucherApi', '!=', '')
+            ->get();
+
         $paymentBody = [];
         $paymentIds = [];
-
         foreach ($paymentVouchers as $voucher) {
             $decodedApi = json_decode($voucher->VoucherApi, true);
             if (is_array($decodedApi)) {
@@ -767,48 +786,135 @@ class VoucherController extends Controller
             }
         }
 
-        // Call Receipt API if there is any data
-        $receiptResponse = null;
-        if (!empty($receiptBody)) {
-            $receiptResponse = Http::withHeaders([
-                'X-Auth-Key' => 'test_992471d0e4cd4d12a0000000000000',
-                'Template-Key' => '12',
-                'CompanyName' => 'Tally Company Name',
-                'version' => '3'
-            ])->post('https://api.excel2tally.in/api/User/ReceiptVoucher', [
-                'body' => $receiptBody
-            ]);
-
-            Voucher::whereIn('id', $receiptIds)->update(['sataus' => '1']);
-        }
-
-        // Call Payment API if there is any data
         $paymentResponse = null;
         if (!empty($paymentBody)) {
             $paymentResponse = Http::withHeaders([
-                'X-Auth-Key' => 'test_992471d0e4cd4d12a0000000000000',
+                'X-Auth-Key'   => 'test_946ead867e5344189312ff54fd4097e4',
                 'Template-Key' => '13',
-                'CompanyName' => 'Tally Company Name',
-                'version' => '3'
-            ])->post('https://api.excel2tally.in/api/User/PaymentVoucher', [
+                'CompanyName'  => 'Tally Company Name',
+                'version'      => '3'
+            ])->post('https://api.api2books.com/api/User/PaymentVoucher', [
                 'body' => $paymentBody
             ]);
-
             Voucher::whereIn('id', $paymentIds)->update(['sataus' => '1']);
         }
 
+        // -------- Purchase Vouchers --------
+        $purchaseVouchers = Voucher::where('voucher_type', 'Purchase')
+            ->where('sataus', '0')
+            ->whereNotNull('VoucherApi')
+            ->where('VoucherApi', '!=', '')
+            ->get();
+
+        $purchaseBody = [];
+        $purchaseIds = [];
+        foreach ($purchaseVouchers as $voucher) {
+            $decodedApi = json_decode($voucher->VoucherApi, true);
+            if (is_array($decodedApi)) {
+                foreach ($decodedApi as $entry) {
+                    $purchaseBody[] = $entry;
+                }
+                $purchaseIds[] = $voucher->id;
+            }
+        }
+
+        $purchaseResponse = null;
+        if (!empty($purchaseBody)) {
+            $purchaseResponse = Http::withHeaders([
+                'X-Auth-Key'   => 'test_946ead867e5344189312ff54fd4097e4',
+                'Template-Key' => '8',
+                'CompanyName'  => 'Tally Company Name',
+                'version'      => '3'
+            ])->post('https://api.api2books.com/api/User/PurchaseWithoutInventory', [
+                'body' => $purchaseBody
+            ]);
+            Voucher::whereIn('id', $purchaseIds)->update(['sataus' => '1']);
+        }
+
+        // -------- Journal Vouchers --------
+        $journalVouchers = Voucher::where('voucher_type', 'Journal')
+            ->where('sataus', '0')
+            ->whereNotNull('VoucherApi')
+            ->where('VoucherApi', '!=', '')
+            ->get();
+
+        $journalBody = [];
+        $journalIds = [];
+        foreach ($journalVouchers as $voucher) {
+            $decodedApi = json_decode($voucher->VoucherApi, true);
+            if (is_array($decodedApi)) {
+                foreach ($decodedApi as $entry) {
+                    $journalBody[] = $entry;
+                }
+                $journalIds[] = $voucher->id;
+            }
+        }
+
+        $journalResponse = null;
+        if (!empty($journalBody)) {
+            $journalResponse = Http::withHeaders([
+                'X-Auth-Key'   => 'test_946ead867e5344189312ff54fd4097e4',
+                'Template-Key' => '18',
+                'CompanyName'  => 'Tally Company Name',
+                'version'      => '3'
+            ])->post('https://api.api2books.com/api/User/JournalTemplate', [
+                'body' => $journalBody
+            ]);
+            Voucher::whereIn('id', $journalIds)->update(['sataus' => '1']);
+        }
+
+        // -------- Sales Vouchers --------
+        $salesVouchers = Voucher::where('voucher_type', 'Sales')
+            ->where('sataus', '0')
+            ->whereNotNull('VoucherApi')
+            ->where('VoucherApi', '!=', '')
+            ->get();
+
+        $salesBody = [];
+        $salesIds = [];
+        foreach ($salesVouchers as $voucher) {
+            $decodedApi = json_decode($voucher->VoucherApi, true);
+            if (is_array($decodedApi)) {
+                foreach ($decodedApi as $entry) {
+                    $salesBody[] = $entry;
+                }
+                $salesIds[] = $voucher->id;
+            }
+        }
+
+        $salesResponse = null;
+        if (!empty($salesBody)) {
+            $salesResponse = Http::withHeaders([
+                'X-Auth-Key'   => 'test_946ead867e5344189312ff54fd4097e4',
+                'Template-Key' => '2', // Sales Template Key
+                'CompanyName'  => 'Tally Company Name',
+                'version'      => '3'
+            ])->post('https://api.api2books.com/api/User/SalesWithoutInventory', [
+                'body' => $salesBody
+            ]);
+            Voucher::whereIn('id', $salesIds)->update(['sataus' => '1']);
+        }
+        // Return response
         return response()->json([
             'status' => 'success',
-            'receipt_count' => count($receiptBody),
-            'payment_count' => count($paymentBody),
-            'receipt_body' => $receiptBody,
-            'payment_body' => $paymentBody,
-            'receipt_api_response' => $receiptResponse ? $receiptResponse->json() : null,
-            'payment_api_response' => $paymentResponse ? $paymentResponse->json() : null,
+            'receipt_count'  => count($receiptBody),
+            'payment_count'  => count($paymentBody),
+            'purchase_count' => count($purchaseBody),
+            'journal_count'  => count($journalBody),
+            'sales_count'    => count($salesBody),
+
+            'receipt_body'   => $receiptBody,
+            'payment_body'   => $paymentBody,
+            'purchase_body'  => $purchaseBody,
+            'journal_body'   => $journalBody,
+            'sales_body'     => $salesBody,
+
+            'receipt_api_response'  => $receiptResponse ? $receiptResponse->json() : null,
+            'payment_api_response'  => $paymentResponse ? $paymentResponse->json() : null,
+            'purchase_api_response' => $purchaseResponse ? $purchaseResponse->json() : null,
+            'journal_api_response'  => $journalResponse ? $journalResponse->json() : null,
+            'sales_api_response'    => $salesResponse ? $salesResponse->json() : null,
         ]);
     }
 
 }
-  
-
- 

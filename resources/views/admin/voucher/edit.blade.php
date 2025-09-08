@@ -54,7 +54,8 @@
           <div id="voucherRows">
           @php
         $voucherRows = is_string($voucher->vouchers) ? json_decode($voucher->vouchers, true) : $voucher->vouchers;
-       @endphp
+      
+         @endphp
           @foreach($voucherRows as $index => $row)
           <div class="voucher-row" data-index="{{ $index }}">
           <!-- Voucher Number -->
@@ -131,40 +132,248 @@
           </div>
           </div>
           {{-- @dd($voucher->vouchers); --}}
-          <div class="col-md-6 mb-3 sales-voucher-container payment-container"
+          <div class="col-md-6 sales-voucher-container payment-container"
           style="display: {{ in_array($voucher->voucher_type, ['Receipt']) ? 'block' : 'none' }};">
-          <label class="form-label">Is Advance Receipt</label>
-          <select name="vouchers[0][is_advance_receipt]" class="form-control">
-            <option value="">Select an Option</option>
-            <option value="Yes" {{ (isset($row['is_advance_receipt']) && $row['is_advance_receipt'] == 'Yes') ? 'selected' : '' }}>Yes
-            </option>
-            <option value="No" {{ (isset($row['is_advance_receipt']) && $row['is_advance_receipt'] == 'No') ? 'selected' : '' }}>No</option>
-          </select>
+            <div class="mb-3">
+              <label class="form-label">Is Advance Receipt</label>
+              <select name="vouchers[0][is_advance_receipt]" class="form-control">
+                <option value="">Select an Option</option>
+                <option value="Yes" {{ (isset($row['is_advance_receipt']) && $row['is_advance_receipt'] == 'Yes') ? 'selected' : '' }}>Yes
+                </option>
+                <option value="No" {{ (isset($row['is_advance_receipt']) && $row['is_advance_receipt'] == 'No') ? 'selected' : '' }}>No</option>
+              </select>
+            </div>
           </div>
-          <div class="col-md-6 mb-3 sales-voucher-container payment-container"
+          <div class="col-md-6 sales-voucher-container payment-container"
           style="display: {{ in_array($voucher->voucher_type, ['Payment', 'Receipt']) ? 'block' : 'none' }};">
-          <label class="form-label">Instrument Type</label>
-          <select name="vouchers[{{ $index }}][instrument_type]" class="form-control">
-            <option value="">Select Type</option>
-            @foreach(['Cheque', 'NEFT', 'RTGS'] as $type)
-          <option value="{{ $type }}" {{ (isset($row['instrument_type']) && $row['instrument_type'] == $type) ? 'selected' : '' }}>
-          {{ $type }}
-          </option>
-        @endforeach
-          </select>
+              <div class="mb-3">
+                  <label class="form-label">Instrument Type</label>
+                  <select name="vouchers[{{ $index }}][instrument_type]" class="form-control">
+                    <option value="">Select Type</option>
+                    @foreach(['Cheque', 'NEFT', 'RTGS'] as $type)
+                  <option value="{{ $type }}" {{ (isset($row['instrument_type']) && $row['instrument_type'] == $type) ? 'selected' : '' }}>
+                  {{ $type }}
+                  </option>
+                @endforeach
+                  </select>
+              </div>
           </div>
-          <div class="col-md-6 mb-3 sales-voucher-container payment-container"
+
+          <div class="col-md-6 sales-voucher-container payment-container"
           style="display: {{ in_array($voucher->voucher_type, ['Payment', 'Receipt']) ? 'block' : 'none' }};">
-          <label class="form-label">Instrument Number</label>
-          <input type="text" name="vouchers[0][instrument_number]" class="form-control"
-            value="{{ old("vouchers.$index.instrument_number", $row['instrument_number'] ?? '') }}">
+          <div class="mb-3">
+            <label class="form-label">Instrument Number</label>
+            <input type="text" name="vouchers[0][instrument_number]" class="form-control"
+              value="{{ old("vouchers.$index.instrument_number", $row['instrument_number'] ?? '') }}">
+            </div>
           </div>
-          <div class="col-md-6 mb-3 sales-voucher-container payment-container"
+
+          <div class="col-md-6 sales-voucher-container payment-container"
           style="display: {{ in_array($voucher->voucher_type, ['Payment', 'Receipt']) ? 'block' : 'none' }};">
+          <div class="mb-3">
           <label class="form-label">Instrument Date</label>
           <input type="date" name="vouchers[0][instrument_date]" class="form-control"
             value="{{ old("vouchers.$index.instrument_date", $row['instrument_date'] ?? '') }}">
           </div>
+          </div>
+          <!-- Is Invoice for sales -->
+          <div class="col-md-6 is-invoice-container" style="display: {{ in_array($voucher->voucher_type, ['Sales']) ? 'block' : 'none' }};">
+            <div class="mb-3">
+                <label class="form-label">Is Invoice</label>
+                <select name="vouchers[{{ $index }}][is_invoice]" class="form-control">
+                  <option value="">Select an Option</option>
+                  <option value="Yes" {{ (isset($row['is_invoice']) && $row['is_invoice'] == 'Yes') ? 'selected' : '' }}>Yes
+                  </option>
+                  <option value="No" {{ (isset($row['is_invoice']) && $row['is_invoice'] == 'No') ? 'selected' : '' }}>No</option>
+                </select>
+            </div>
+          </div>
+          <!-- bill wise details -->
+          <div class="col-md-6 bill-wise-container"
+          style="display: {{ in_array($voucher->voucher_type, ['Sales']) ? 'block' : 'none' }};">
+            <div class="mb-3">
+            <label class="form-label">Bill Wise</label>
+            <select name="vouchers[{{ $index }}][bill_wise]" class="form-control">
+              <option value="">Select an Option</option>
+              <option value="Yes" {{ (isset($row['bill_wise']) && $row['bill_wise'] == 'Yes') ? 'selected' : '' }}>Yes
+              </option>
+              <option value="No" {{ (isset($row['bill_wise']) && $row['bill_wise'] == 'No') ? 'selected' : '' }}>No</option>
+            </select>
+            </div>
+          </div>
+          <!-- irn ack no for sales -->
+          <div class="col-md-6 irn-ack-no-container"
+          style="display: {{ in_array($voucher->voucher_type, ['Sales']) ? 'block' : 'none' }};">
+          <div class="mb-3">
+          <label class="form-label">IRN Ack No</label>
+          <input type="text" name="vouchers[{{ $index }}][irn_ack_no]" class="form-control"
+            value="{{ old("vouchers.$index.irn_ack_no", $row['irn_ack_no'] ?? '') }}">
+          </div>
+          </div>
+          <!-- irn ack date for sales -->
+          <div class="col-md-6 irn-ack-date-container"
+          style="display: {{ in_array($voucher->voucher_type, ['Sales']) ? 'block' : 'none' }};">
+          <div class="mb-3">
+          <label class="form-label">IRN Ack Date</label>
+          <input type="date" name="vouchers[{{ $index }}][irn_ack_date]" class="form-control"
+            value="{{ old("vouchers.$index.irn_ack_date", $row['irn_ack_date'] ?? '') }}">
+          </div>
+          </div>
+          <!-- irn_no for sales -->
+          <div class="col-md-6 irn-no-container"
+          style="display: {{ in_array($voucher->voucher_type, ['Sales']) ? 'block' : 'none' }};">
+          <div class="mb-3">
+          <label class="form-label">IRN No</label>
+          <input type="text" name="vouchers[{{ $index }}][irn_no]" class="form-control"
+            value="{{ old("vouchers.$index.irn_no", $row['irn_no'] ?? '') }}">
+          </div>
+          </div>
+          <!-- irn bill to place -->
+          <div class="col-md-6 irn-bill-to-place-container"
+          style="display: {{ in_array($voucher->voucher_type, ['Sales']) ? 'block' : 'none' }};">
+          <div class="mb-3">
+          <label class="form-label">IRN Bill To Place</label>
+          <input type="text" name="vouchers[{{ $index }}][irn_bill_to_place]" class="form-control"
+            value="{{ old("vouchers.$index.irn_bill_to_place", $row['irn_bill_to_place'] ?? '') }}">
+          </div>
+          </div>
+          <!-- irn ship to state -->
+           <div class="col-md-6 irn-ship-to-state-container"
+          style="display: {{ in_array($voucher->voucher_type, ['Sales']) ? 'block' : 'none' }};">
+          <div class="mb-3">
+          <label class="form-label">IRN Ship To State</label>
+          <input type="text" name="vouchers[{{ $index }}][irn_ship_to_state]" class="form-control"
+            value="{{ old("vouchers.$index.irn_ship_to_state", $row['irn_ship_to_state'] ?? '') }}">
+          </div>
+          </div>
+          
+          <!-- purchase for supplier inv no -->
+          <div class="col-md-6supplier-inv-no-container"
+          style="display: {{ in_array($voucher->voucher_type, ['Purchase']) ? 'block' : 'none' }};">
+          <div class="mb-3">
+          <label class="form-label">Supplier Inv No</label>
+          <input type="text" name="vouchers[{{ $index }}][supplier_inv_no]" class="form-control"
+            value="{{ old("vouchers.$index.supplier_inv_no", $row['supplier_inv_no'] ?? '') }}">
+          </div>
+          </div>
+          <!-- purchase for supplier inv date -->
+          <div class="col-md-6 supplier-inv-date-container" style="display: {{ in_array($voucher->voucher_type, ['Purchase']) ? 'block' : 'none' }};"> 
+            <div class="mb-3">
+          <label class="form-label">Supplier Inv Date</label>
+          <label class="form-label">Supplier Inv Date</label>
+          <input type="date" name="vouchers[{{ $index }}][supplier_inv_date]" class="form-control"
+            value="{{ old("vouchers.$index.supplier_inv_date", $row['supplier_inv_date'] ?? '') }}">
+          </div>
+          </div>
+          <!-- vat tin no -->
+          <div class="col-md-6 vat-tin-no-container"
+          style="display: {{ in_array($voucher->voucher_type, ['Purchase']) ? 'block' : 'none' }};">
+          <div class="mb-3">
+          <label class="form-label">VAT Tin No</label>
+          <input type="text" name="vouchers[{{ $index }}][vat_tin_no]" class="form-control"
+            value="{{ old("vouchers.$index.vat_tin_no", $row['vat_tin_no'] ?? '') }}">
+          </div>
+          </div>
+          <!-- cst no -->
+          <div class="col-md-6 cst-no-container"
+          style="display: {{ in_array($voucher->voucher_type, ['Purchase']) ? 'block' : 'none' }};">
+          <div class="mb-3">
+          <label class="form-label">CST No</label>
+          <input type="text" name="vouchers[{{ $index }}][cst_no]" class="form-control"
+            value="{{ old("vouchers.$index.cst_no", $row['cst_no'] ?? '') }}">
+          </div>
+          </div>
+          <!-- service tax no -->
+          <div class="col-md-6 service-tax-no-container"
+          style="display: {{ in_array($voucher->voucher_type, ['Purchase']) ? 'block' : 'none' }};">
+          <div class="mb-3">
+          <label class="form-label">Service Tax No</label>
+          <input type="text" name="vouchers[{{ $index }}][service_tax_no]" class="form-control"
+          value="{{ old("vouchers.$index.service_tax_no", $row['service_tax_no']?? '') }}">
+          </div>
+          </div>
+           <!-- dr cr journal -->
+          <div class="col-md-6 dr-cr-journal-container"
+          style="display: {{ in_array($voucher->voucher_type, ['Journal']) ? 'block' : 'none' }};">
+            <div class="mb-3">
+            <label class="form-label">DR/CR Journal</label>
+            <input type="text" name="vouchers[{{ $index }}][dr_cr_journal]" class="form-control"
+              value="{{ old("vouchers.$index.dr_cr_journal", $row['dr_cr_journal'] ?? '') }}">
+            </div>
+          </div>
+          <!-- bill ref no -->
+          <div class="col-md-6 mb-3 bill-ref-no-container"
+          style="display: {{ in_array($voucher->voucher_type, ['Purchase']) ? 'block' : 'none' }};">
+          <div class="mb-3">
+          <label class="form-label">Bill Ref No</label>
+          <input type="text" name="vouchers[{{ $index }}][bill_ref_no]" class="form-control"
+            value="{{ old("vouchers.$index.bill_ref_no", $row['bill_ref_no'] ?? '') }}">
+          </div>
+          </div>
+          <!-- cost center -->
+          <div class="col-md-6 cost-center-container"
+          style="display: {{ in_array($voucher->voucher_type, ['Purchase']) ? 'block' : 'none' }};">
+          <div class="mb-3">
+          <label class="form-label">Cost Center</label>
+          <input type="text" name="vouchers[{{ $index }}][cost_center]" class="form-control"
+            value="{{ old("vouchers.$index.cost_center", $row['cost_center'] ?? '') }}">
+          </div>
+          </div>
+          <!-- stock item -->
+          <div class="col-md-6 stock-item-container"
+          style="display: {{ in_array($voucher->voucher_type, ['Purchase']) ? 'block' : 'none' }};">
+          <div class="mb-3">
+          <label class="form-label">Stock Item</label>
+          <input type="text" name="vouchers[{{ $index }}][stock_item]" class="form-control"
+            value="{{ old("vouchers.$index.stock_item", $row['stock_item'] ?? '') }}">
+          </div>
+          </div>
+          <!-- godown -->
+          <div class="col-md-6 godown-container"
+          style="display: {{ in_array($voucher->voucher_type, ['Purchase']) ? 'block' : 'none' }};">
+          <div class="mb-3">
+          <label class="form-label">Godown</label>
+          <input type="text" name="vouchers[{{ $index }}][godown]" class="form-control"
+          value="{{ old("vouchers.$index.godown", $row['godown']?? '') }}">
+          </div>
+          </div>
+          <!-- batch no -->
+          <div class="col-md-6 batch-no-container"
+          style="display: {{ in_array($voucher->voucher_type, ['Purchase']) ? 'block' : 'none' }};">
+          <div class="mb-3">
+          <label class="form-label">Batch No</label>
+          <input type="text" name="vouchers[{{ $index }}][batch_no]" class="form-control"
+            value="{{ old("vouchers.$index.batch_no", $row['batch_no'] ?? '') }}">
+          </div>
+          </div>
+          <!-- qty -->
+           <div class="col-md-6 qty-container"
+          style="display: {{ in_array($voucher->voucher_type, ['Purchase']) ? 'block' : 'none' }};">
+          <div class="mb-3">
+          <label class="form-label">Quantity</label>
+          <input type="number" name="vouchers[{{ $index }}][qty]" class="form-control"
+            value="{{ old("vouchers.$index.qty", $row['qty'] ?? '') }}">
+          </div>
+          </div>
+          <!-- rate -->
+          <div class="col-md-6 rate-container"
+          style="display: {{ in_array($voucher->voucher_type, ['Purchase']) ? 'block' : 'none' }};">
+          <div class="mb-3">
+          <label class="form-label">Rate</label>
+          <input type="number" name="vouchers[{{ $index }}][rate]" class="form-control"
+            value="{{ old("vouchers.$index.rate", $row['rate'] ?? '') }}">
+          </div>
+          </div>
+          <!-- uom -->
+           <div class="col-md-6 uom-container"
+          style="display: {{ in_array($voucher->voucher_type, ['Purchase']) ? 'block' : 'none' }};">
+          <div class="mb-3">
+          <label class="form-label">UOM</label>
+          <input type="text" name="vouchers[{{ $index }}][uom]" class="form-control"
+          value="{{ old("vouchers.$index.uom", $row['uom']?? '') }}">
+          </div>
+          </div>
+
           <!-- Credit Days (conditionally shown) -->
           <div class="col-md-6 credit-days-container"
           style="display: {{ in_array($voucher->voucher_type, ['Sales', 'Purchase', 'Expense']) ? 'block' : 'none' }};">
@@ -269,7 +478,7 @@
           </div>
           <hr>
           </div>
-      @endforeach
+          @endforeach
           </div>
           <div class="mb-3">
           <button type="button" class="btn btn-secondary" id="addMoreBtn">+ Add More</button>
@@ -387,6 +596,33 @@
       const creditDaysContainer = row.querySelector('.credit-days-container');
       const cashCreditContainer = row.querySelector('.cash-credit-container');
       const tdsPayableContainer = row.querySelector('.tds-payable-container');
+      // for sales
+      const isInvoiceContainer = row.querySelector('.is-invoice-container');
+      const billWiseContainer = row.querySelector('.bill-wise-container');
+      const irnAckNoContainer = row.querySelector('.irn-ack-no-container');
+      const irnAckDateContainer = row.querySelector('.irn-ack-date-container');
+      const irnNoContainer = row.querySelector('.irn-no-container');
+      const irnBillToPlaceContainer = row.querySelector('.irn-bill-to-place-container');
+      const irnShipToStateContainer = row.querySelector('.irn-ship-to-state-container');
+      const irnShipToStateCodeContainer = row.querySelector('.irn-ship-to-state-code-container');
+      // for purchase
+      const supplierInvNoContainer = row.querySelector('.supplier-inv-no-container');
+      const supplierInvDateContainer = row.querySelector('.supplier-inv-date-container');
+      const vatTinNoContainer = row.querySelector('.vat-tin-no-container');
+      const cstNoContainer = row.querySelector('.cst-no-container');  
+      const cstDateContainer = row.querySelector('.cst-date-container');  
+      const serviceTaxNoContainer = row.querySelector('.service-tax-no-container');
+
+      // for journal
+      const drCrJournalContainer = row.querySelector('.dr-cr-journal-container');
+      const billRefNoContainer = row.querySelector('.bill-ref-no-container');
+      const costCenterContainer = row.querySelector('.cost-center-container');
+      const stockItemContainer = row.querySelector('.stock-item-container');
+      const godownContainer = row.querySelector('.godown-container');
+      const batchNoContainer = row.querySelector('.batch-no-container');
+      const qtyContainer = row.querySelector('.qty-container');
+      const rateContainer = row.querySelector('.rate-container');
+      const uomContainer = row.querySelector('.uom-container');
 
       // Hide all containers first
       againstVoucherContainer.style.display = 'none';
@@ -395,6 +631,34 @@
       creditDaysContainer.style.display = 'none';
       cashCreditContainer.style.display = 'none';
       tdsPayableContainer.style.display = 'none';
+
+      // and for sales
+      isInvoiceContainer.style.display = 'none';
+      billWiseContainer.style.display = 'none';
+      irnAckNoContainer.style.display = 'none';
+      irnAckDateContainer.style.display = 'none';
+      irnNoContainer.style.display = 'none';
+      irnBillToPlaceContainer.style.display = 'none';
+      irnShipToStateContainer.style.display = 'none';
+      irnShipToStateCodeContainer.style.display = 'none';
+
+      // and for purchase
+      supplierInvNoContainer.style.display = 'none';
+      supplierInvDateContainer.style.display = 'none';
+      vatTinNoContainer.style.display = 'none';
+      cstNoContainer.style.display = 'none';  
+      cstDateContainer.style.display = 'none';  
+      serviceTaxNoContainer.style.display = 'none';
+      // for journal
+      drCrJournalContainer.style.display = 'none';
+      billRefNoContainer.style.display = 'none';
+      costCenterContainer.style.display = 'none';
+      stockItemContainer.style.display = 'none';
+      godownContainer.style.display = 'none';
+      batchNoContainer.style.display = 'none';
+      qtyContainer.style.display = 'none';
+      rateContainer.style.display = 'none';
+      uomContainer.style.display = 'none';
 
       // Show relevant containers based on type
       if (type === 'Payment') {
@@ -415,11 +679,40 @@
       } else if (type === 'Sales') {
       creditDaysContainer.style.display = 'block';
       cashCreditContainer.style.display = 'block';
+
+      // for sales
+
+      isInvoiceContainer.style.display = 'block';
+      billWiseContainer.style.display = 'block';
+      irnAckNoContainer.style.display = 'block';
+      irnAckDateContainer.style.display = 'block';
+      irnNoContainer.style.display = 'block';
+      irnBillToPlaceContainer.style.display = 'block';
+      irnShipToStateContainer.style.display = 'block';
+      irnShipToStateCodeContainer.style.display = 'block';
+
       } else if (type === 'Purchase' || type === 'Expense') {
       creditDaysContainer.style.display = 'block';
       cashCreditContainer.style.display = 'block';
       tdsPayableContainer.style.display = 'block';
+      // for purchase
+      supplierInvNoContainer.style.display = 'block';
+      supplierInvDateContainer.style.display = 'block';
+      vatTinNoContainer.style.display = 'block';
+      cstNoContainer.style.display = 'block';
+      cstDateContainer.style.display = 'block';
+      serviceTaxNoContainer.style.display = 'block';
       }
+      else if (type === 'Journal') {
+      drCrJournalContainer.style.display = 'block';
+      billRefNoContainer.style.display = 'block';
+      costCenterContainer.style.display = 'block';
+      stockItemContainer.style.display = 'block';
+      godownContainer.style.display = 'block';
+      batchNoContainer.style.display = 'block';
+      qtyContainer.style.display = 'block';
+      rateContainer.style.display = 'block';
+      uomContainer.style.display = 'block';
     }
 
     // Voucher type change handler
@@ -538,6 +831,7 @@
     // Initialize on page load
     initSelect2();
     fetchLedgersAndPopulateDropdowns(voucherTypeSelect.value);
-    });
+  });
+
   </script>
 @endsection

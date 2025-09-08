@@ -34,9 +34,7 @@ class Voucher extends Model
         'vouchers' => 'array',
         
     ];
-
     
-
     // Fetch 'from' and 'to' ledgers based on group ID
     public function fromLedger()
     {

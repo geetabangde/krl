@@ -123,7 +123,6 @@
 <!-- POD Upload Modal -->
 <div class="modal fade" id="podUploadModal" tabindex="-1" aria-labelledby="podUploadModalLabel" aria-hidden="true">
   <div class="modal-dialog">
-
     <form action="{{ route('admin.consignments.uploadPod') }}" method="POST" enctype="multipart/form-data">
        @csrf
       <div class="modal-content">
