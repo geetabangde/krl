@@ -33,6 +33,8 @@
                         <option value="Sales">Sales</option>
                         <option value="Purchase">Purchase</option>
                         <option value="Expense">Expense</option>
+                        <option value="Credit Note">Credit Note</option>
+                        <option value="Debit Note">Debit Note</option>
                      </select>
                      </div>
                      <div class="col-md-6 mb-3">
@@ -249,12 +251,10 @@
                               <input type="text" class="form-control" name="vouchers[0][uom]">
                            </div>
                         </div>
-                        
                         <div class="col-md-6 credit-days-container" style="display: none;">
                            <label class="form-label">Credit Days</label>
                            <input type="text" class="form-control" name="vouchers[0][credit_day]">
                         </div>
-
                         <div class="col-md-6 mb-3 cash-credit-container" style="display:none;">
                            <label class="form-label d-block">Cash / Credit</label>
                            <div class="form-check form-check-inline">

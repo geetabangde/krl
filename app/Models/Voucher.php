@@ -26,7 +26,6 @@ class Voucher extends Model
         'credit_day',
         'cash_credit',
         'tds_payable',
-        
     ];
 
     

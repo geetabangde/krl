@@ -15,23 +15,24 @@ class GroupController extends Controller
 {
    
     public function index()
-{
-    
-    $groups = Group::paginate(10);
-    return view('admin.group.index', compact('groups'));
-}
+    {
+        $groups = Group::paginate(10);
+        return view('admin.group.index', compact('groups'));
+    }
 
     
     public function create()
     { 
-        $groups = Group::whereNull('parent_id')->get(); 
+        // $groups = Group::whereNull('parent_id')->get(); 
+        
+        $groups = Group::orderBy('group_name', 'asc')->get();
         return view('admin.group.create', compact('groups')); 
     }
     public function store(Request $request)
     {
         Group::create([
             'group_name' => $request->group_name,
-            'sub_group' => $request->sub_group,
+            'status' => $request->status,
             'parent_id' => $request->parent_id, 
         ]);
     
@@ -54,7 +55,8 @@ class GroupController extends Controller
    public function edit($id)
    {
     $group = Group::findOrFail($id); // Singular name used
-    $parentGroups = Group::whereNull('parent_id')->where('id', '!=', $id)->get();
+    // $parentGroups = Group::whereNull('parent_id')->where('id', '!=', $id)->get();
+    $parentGroups = Group::orderBy('group_name', 'asc')->get();
 
     return view('admin.group.edit', compact('group', 'parentGroups'));
    }
@@ -66,7 +68,8 @@ class GroupController extends Controller
        $group = Group::findOrFail($id);
    
        $group->group_name = $request->group_name;
-       $group->sub_group = $request->sub_group;
+         $group->status = $request->status;
+    //    $group->sub_group = $request->sub_group;
        $group->parent_id = $request->parent_id; // Include this line
    
        $group->save();

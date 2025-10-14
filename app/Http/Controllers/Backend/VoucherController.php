@@ -57,23 +57,21 @@ class VoucherController extends Controller
    }
 
     public function edit($id)
-{
-    $voucher = Voucher::findOrFail($id); 
-    $ledgers = User::all();
+   {
+        $voucher = Voucher::findOrFail($id); 
+        $ledgers = User::all();
 
-    $voucherRows = is_string($voucher->vouchers) 
-        ? json_decode($voucher->vouchers, true) 
-        : $voucher->vouchers;
-    $voucherApiRows = is_string($voucher->VoucherApi) 
-        ? json_decode($voucher->VoucherApi, true) 
-        : $voucher->VoucherApi;
-    
-    // dd($voucherApiRows, $voucherRows);
-    
-    return view('admin.voucher.edit', compact('voucher', 'ledgers', 'voucherRows', 'voucherApiRows'));
-}
-
-
+        $voucherRows = is_string($voucher->vouchers) 
+            ? json_decode($voucher->vouchers, true) 
+            : $voucher->vouchers;
+        $voucherApiRows = is_string($voucher->VoucherApi) 
+            ? json_decode($voucher->VoucherApi, true) 
+            : $voucher->VoucherApi;
+        
+        dd($voucherApiRows, $voucherRows);
+        
+        return view('admin.voucher.edit', compact('voucher', 'ledgers', 'voucherRows', 'voucherApiRows'));
+   }
 
     //  Store a newly created resource in storage.
     public function getLedgers(Request $request)
@@ -289,7 +287,6 @@ class VoucherController extends Controller
                 }
             }
 
-        
             $salesVoucherReadable = [];
             if (!empty($voucher['sales_voucher'])) {
                 foreach ($voucher['sales_voucher'] as $id) {
@@ -303,7 +300,6 @@ class VoucherController extends Controller
                     ];
                 }
             }
-
         
             $finalVouchers[] = [
                 'voucher_no'     => $voucher['voucher_no'],

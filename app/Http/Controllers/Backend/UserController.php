@@ -68,6 +68,7 @@ class UserController extends Controller implements HasMiddleware
         'ifsc_code' => 'required|string|max:20',
         'branch' => 'required|string|max:255',
         'account_type' => 'required|in:savings,current',
+        'upi_id' => 'nullable|string|max:255',
         
     ]);
 
@@ -87,6 +88,7 @@ class UserController extends Controller implements HasMiddleware
     $user->ifsc_code = $validated['ifsc_code'] ?? null;
     $user->branch = $validated['branch'] ?? null;
     $user->account_type = $validated['account_type'] ?? null;
+    $user->upi_id = $validated['upi_id'] ?? null;
    
     $user->address = $validated['address'] ?? [];
 
@@ -133,6 +135,8 @@ public function update(Request $request, $id)
     $user->tan_number = $request->tan_number;
     $user->deductor = $request->deductor;
     $user->group_id = $request->group_id;
+    //  Bank Details update
+    
 
     if ($request->has('address')) {
         $user->address = $request->address; // Assuming 'address' is casted as array/json in User model
@@ -143,11 +147,6 @@ public function update(Request $request, $id)
 
     return redirect()->route('admin.users.index')->with('success', 'User updated successfully!');
 }
-
-
-
-
-
 public function destroy($id)
    {
     $user = User::findOrFail($id);

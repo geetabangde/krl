@@ -157,8 +157,6 @@
                                 @if (hasAdminPermission('manage role'))
                                 <li><a href="{{ route('admin.role.index') }}">Roles</a></li>
                                 @endif
-                                 
-                                
                             </ul>
                         </li>
                         @endif
@@ -179,9 +177,9 @@
                             </a>
                             <ul class="sub-menu" aria-expanded="false">
                                 <li><a href="{{ route('admin.voucher.index') }}" data-key="t-voucher">Voucher</a></li>
+                                <li><a href="{{ route('admin.voucherList.index') }}" data-key="t-transaction">Voucher List</a></li>
                                 <li><a href="{{ route('admin.group.index') }}" data-key="t-group">Group</a></li>
                                 <li><a href="{{ route('admin.users.index') }}" data-key="t-ledger-master">Ledger Master</a></li>
-                                {{-- <li><a href="{{ route('admin.ledger_master.index') }}" data-key="t-ledger-master">Ledger Master</a></li> --}}
                                 <li><a href="{{ route('admin.ledger.index') }}" data-key="t-ledgers">Ledgers</a></li>
                                 <li><a href="{{ route('admin.accounts_receivable.index') }}" data-key="t-accounts-receivable">Accounts Receivable</a></li>
                                 <li><a href="{{ route('admin.accounts_payable.index') }}" data-key="t-accounts-payable">Accounts Payable</a></li>

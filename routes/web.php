@@ -25,7 +25,7 @@ use App\Http\Controllers\Backend\{
     ConsignmentNoteController, FreightBillController, StockTransferController, DriverController,
     AttendanceController, MaintenanceController, VehicleController, TaskManagmentController, ContractController,
     SettingsController, VehicleTypeController,RoleController,PermissionController,TestController,GroupController,ledgerMasterController,ledgerController,AccountsReceivableController,AccountsPayableController,
-    ProfitLossController,BalanceSheetController,CashFlowController,VoucherController,GstController
+    ProfitLossController,BalanceSheetController,CashFlowController,VoucherController,GstController,VoucherListController
 };
     //   whitebox eway_bill api
     Route::get('/ewaybill/whitebox/auth', [EraahiWhiteController::class, 'getAccessToken']);
@@ -336,6 +336,18 @@ use App\Http\Controllers\Backend\{
         Route::post('/update/{id}', [VoucherController::class, 'update'])->name('admin.voucher.update');
         Route::get('/delete/{id}', [VoucherController::class, 'destroy'])->name('admin.voucher.delete');
         Route::get('/sync-tally', [VoucherController::class, 'syncTally'])->name('admin.voucher.syncTally');
+    });
+    // voucherList
+    Route::prefix('voucherList')->group(function () {
+        Route::get('/', [VoucherListController::class, 'index'])->name('admin.voucherList.index');
+        Route::get('/create', [VoucherListController::class, 'create'])->name('admin.voucherList.create');
+        // Route::post('/voucher-permission/store', [App\Http\Controllers\Backend\VoucherListController::class, 'store'])->name('voucher.permission.store');
+
+        Route::post('/store', [VoucherListController::class, 'store'])->name('admin.voucherList.store');
+        Route::get('/edit/{id}', [VoucherListController::class, 'edit'])->name('admin.voucherList.edit');
+        Route::post('/permission/update', [VoucherController::class, 'updatePermission'])->name('admin.voucherList.permission.update');
+        Route::post('/update/{id}', [VoucherListController::class, 'update'])->name('admin.voucherList.update');
+        Route::get('/delete/{id}', [VoucherListController::class, 'destroy'])->name('admin.voucherList.delete');
     });
 
     // Group

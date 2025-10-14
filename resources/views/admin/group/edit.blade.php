@@ -49,6 +49,18 @@
                     </div>
                 </div>
             </div>
+            <!-- Row 3: Status Dropdown -->
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Status</label>
+                        <select name="status" class="form-control" required>
+                            <option value="1" {{ $group->status == 1 ? 'selected' : '' }}>Active</option>
+                            <option value="0" {{ $group->status == 0 ? 'selected' : '' }}>Inactive</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
 
             <!-- Submit Button -->
             <div class="text-end">

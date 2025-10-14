@@ -11,12 +11,17 @@ class Group extends Model
 
     protected $fillable = [
         'group_name',
-        'sub_group',
+        'status',
         'parent_id',
     ];
     public function parent()
-   {
-    return $this->belongsTo(Group::class, 'parent_id');
-   }
+    {
+        return $this->belongsTo(Group::class, 'parent_id');
+    }
+
+    public function children()
+    {
+        return $this->hasMany(Group::class, 'parent_id');
+    }
 
 }

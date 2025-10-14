@@ -17,38 +17,47 @@
                                     </a>
                                 </div>
                                 <form method="POST" action="{{ route('admin.group.store') }}">
-    @csrf
-    <div class="card-body">
-        <div class="row">
-            {{-- Category Title as Group Name --}}
-            <div class="col-md-6">
-                <div class="mb-3">
-                    <label class="form-label">Category Title (Main Group)</label>
-                    <input type="text" class="form-control" name="group_name" placeholder="Enter category title" required>
-                </div>
-            </div>
+                                    @csrf
+                                    <div class="card-body">
+                                        <div class="row">
+                                            {{-- Category Title as Group Name --}}
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Category Title (Main Group)</label>
+                                                    <input type="text" class="form-control" name="group_name" placeholder="Enter category title" required>
+                                                </div>
+                                            </div>
 
-            {{-- Parent Group Dropdown as Sub Group --}}
-            <div class="col-md-6">
-                <div class="mb-3">
-                    <label class="form-label">Parent Sub Group (Optional)</label>
-                    <select name="parent_id" class="form-control">
-                        <option value="">None (Create Main Group)</option>
-                        @foreach ($groups as $group)
-                            <option value="{{ $group->id }}">{{ $group->group_name }}</option>
-                        @endforeach
-                    </select>
-                    <small class="text-muted">Select None to create a parent category</small>
-                </div>
-            </div>
-        </div>
+                                            {{-- Parent Group Dropdown as Group --}}
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Parent Group (Optional)</label>
+                                                    <select name="parent_id" class="form-control">
+                                                        <option value="">None (Create Main Group)</option>
+                                                        @foreach ($groups as $group)
+                                                            <option value="{{ $group->id }}">{{ $group->group_name }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                    <small class="text-muted">Select None to create a parent category</small>
+                                                </div>
+                                            </div>
+                                            {{-- ✅ Status Field --}}
+                                            <div class="col-md-4">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Status</label>
+                                                    <select name="status" class="form-control" required>
+                                                        <option value="1" selected>Active</option>
+                                                        <option value="0">Inactive</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
 
-        <div class="text-end">
-            <button class="btn btn-primary">Save Group</button>
-        </div>
-    </div>
-</form>
-
+                                        <div class="text-end">
+                                            <button class="btn btn-primary">Save Group</button>
+                                        </div>
+                                    </div>
+                                </form>
                             </div>
                         </div>
                     </div>

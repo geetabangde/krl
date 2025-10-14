@@ -40,7 +40,8 @@
                                             <tr>
                                                 <th>#</th>
                                                 <th>Group Name</th>
-                                                <th>Sub Group</th>
+                                                <th>Parent Group</th>
+                                                <th>Status</th>
                                                 <th>Actions</th>
                                             </tr>
                                         </thead>
@@ -50,6 +51,13 @@
                                                     <td>{{ $index + 1 }}</td>
                                                     <td>{{ $group->group_name }}</td>
                                                     <td>{{ $group->parent->group_name ?? '-' }}</td>
+                                                    <td>
+                                                        @if($group->status == 1)
+                                                            <span class="badge bg-success">Active</span>
+                                                        @else
+                                                            <span class="badge bg-danger">Inactive</span>
+                                                        @endif
+                                                    </td>
                                                     <td class="text-center">
                                                         <div class="d-flex align-items-center gap-2">
                                                             <a href="{{ route('admin.group.view', $group->id) }}" class="btn btn-sm btn-light view-group-btn">
