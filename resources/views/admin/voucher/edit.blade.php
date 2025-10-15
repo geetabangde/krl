@@ -59,13 +59,13 @@
           @foreach($voucherRows as $index => $row)
           <div class="voucher-row" data-index="{{ $index }}">
           <!-- Voucher Number -->
-          <div class="col-md-6">
-          <div class="mb-3">
-            <label class="form-label">Voucher Number<span class="text-danger">*</span></label>
-            <input type="text" class="form-control" name="vouchers[{{ $index }}][voucher_no]"
-            value="{{ $row['voucher_no'] ?? '' }}" required>
-          </div>
-          </div>
+          <!-- <div class="col-md-6">
+            <div class="mb-3">
+              <label class="form-label">Voucher Number<span class="text-danger">*</span></label>
+              <input type="text" class="form-control" name="vouchers[{{ $index }}][voucher_no]"
+              value="{{ $row['voucher_no'] ?? '' }}" required>
+            </div>
+          </div> -->
           {{-- @dd($voucher); --}}
           <!-- Against Voucher (conditionally shown) -->
           <div class="col-md-6 against-voucher-container"
@@ -422,10 +422,10 @@
           </div>
           <div class="col-md-6">
             <div class="mb-3">
-            <label class="form-label">To Account <span class="text-danger">*</span></label>
+            <label class="form-label">By Account <span class="text-danger">*</span></label>
             <select class="form-control to_account" name="vouchers[{{ $index }}][to_account]" required
             data-selected="{{ $row['to_account'] ?? '' }}">
-            <option value="">-- Select To Account --</option>
+            <option value="">-- Select By Account --</option>
             </select>
             </div>
           </div>
@@ -443,11 +443,14 @@
             <div class="mb-3">
             <label class="form-label">Assign</label>
             <select class="form-control" name="vouchers[{{ $index }}][assigned_to]">
-            <option value="">-- Select --</option>
-            <option value="Person A" {{ isset($row['assigned_to']) && $row['assigned_to'] == 'Person A' ? 'selected' : '' }}>Person A</option>
-            <option value="Person B" {{ isset($row['assigned_to']) && $row['assigned_to'] == 'Person B' ? 'selected' : '' }}>Person B</option>
-            <option value="Entity X" {{ isset($row['assigned_to']) && $row['assigned_to'] == 'Entity X' ? 'selected' : '' }}>Entity X</option>
-            </select>
+                  <option value="">-- Select Person or Entity --</option>
+                  @foreach($ledgers as $ledger)
+                      <option value="{{ $ledger->id }}" 
+                          {{ isset($voucher['assigned_to']) && $voucher['assigned_to'] == $ledger->id ? 'selected' : '' }}>
+                          {{ $ledger->name }}
+                      </option>
+                  @endforeach
+              </select>
             </div>
           </div>
           </div>

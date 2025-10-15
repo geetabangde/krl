@@ -62,14 +62,14 @@
                                             <button type="button" class="btn btn-sm btn-primary btn-edit"
                                                 data-voucher="{{ $voucher }}" data-type="from"
                                                 data-current="{{ $voucherPermissions[$voucher]['from'] ?? '' }}">
-                                                <i class="bx bx-edit"></i> Edit
+                                                <i class="bx bx-edit"></i> From
                                             </button>
                                         </td>
                                         <td class="text-center">
                                             <button type="button" class="btn btn-sm btn-primary btn-edit"
                                                 data-voucher="{{ $voucher }}" data-type="to"
                                                 data-current="{{ $voucherPermissions[$voucher]['to'] ?? '' }}">
-                                                <i class="bx bx-edit"></i> Edit
+                                                <i class="bx bx-edit"></i> To
                                             </button>
                                         </td>
                                     </tr>

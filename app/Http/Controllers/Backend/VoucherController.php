@@ -68,12 +68,156 @@ class VoucherController extends Controller
             ? json_decode($voucher->VoucherApi, true) 
             : $voucher->VoucherApi;
         
-        dd($voucherApiRows, $voucherRows);
+        // dd($voucherApiRows, $voucherRows);
         
         return view('admin.voucher.edit', compact('voucher', 'ledgers', 'voucherRows', 'voucherApiRows'));
    }
 
     //  Store a newly created resource in storage.
+    // public function getLedgers(Request $request)
+    // {
+    //     $voucherType = $request->voucher_type;
+
+    //     try {
+    //         $response = [
+    //             'from' => [],
+    //             'to' => [],
+    //             'against_vouchers' => [],
+    //         ];
+
+    //         // Format user entries with multiple cities
+    //         $formatUsersWithCities = function ($users) {
+    //             $formatted = [];
+
+    //             foreach ($users as $user) {
+    //                 $addresses = $user->address;
+
+    //                 if (is_string($addresses)) {
+    //                     $addresses = json_decode($addresses, true); 
+    //                 }
+
+    //                 if (empty($addresses) || !is_array($addresses)) continue;
+    //                 // if (!is_array($addresses)) continue;
+
+                
+    //                 foreach ($addresses as $index => $entry) {
+    //                     $city = $entry['city'] ?? null;
+    //                     if ($city) {
+    //                         $formatted[] = [
+    //                             'id' => $user->id,
+    //                             'name' => "{$user->name} ({$city})",
+    //                             'address_index' => $index,
+    //                             'city' => $city
+    //                         ];
+    //                     }
+    //                     }
+    //             }
+    //             return $formatted;
+    //         };
+
+    //         // Format voucher labels
+    //         $formatVoucherLabel = function ($voucher) {
+    //             $entries = $voucher->vouchers;
+    //             $labels = [];
+
+    //             if (!is_array($entries)) {
+    //                 return [];
+    //             }
+
+    //             foreach ($entries as $v) {
+    //                 $from = User::find($v['from_account'])?->name ?? 'From';
+    //                 $to = User::find($v['to_account'])?->name ?? 'To';
+    //                 $date = $voucher->voucher_date ?? 'N/A';
+    //                 $amount = $v['amount'] ?? '0.00';
+
+    //                 $labels[] = [
+    //                     'value' => "{$voucher->voucher_type}_{$voucher->id}",
+    //                     'label' => "{$voucher->voucher_type} - {$from} → {$to} ({$date}) → ₹{$amount}",
+    //                 ];
+    //             }
+
+    //             return $labels;
+    //         };
+
+
+    //         if ($voucherType === 'Payment') {
+    //             $fromGroupIds = Group::whereIn('group_name', ['Cash', 'Bank'])->pluck('id');
+    //             $fromUsers = User::whereIn('group_id', $fromGroupIds)->select('id', 'name', 'address')->get();
+    //             $toUsers = User::whereNotIn('group_id', $fromGroupIds)->select('id', 'name', 'address')->get();
+
+    //             $response['from'] = $formatUsersWithCities($fromUsers);
+    //             $response['to'] = $formatUsersWithCities($toUsers);
+
+    //             $purchaseVouchers = Voucher::where('voucher_type', 'Purchase')->get();
+    //             $expenseVouchers = Voucher::where('voucher_type', 'Expense')->get();
+
+    //             $allVouchers = $purchaseVouchers->merge($expenseVouchers);
+    //             foreach ($allVouchers as $voucher) {
+    //                 $response['against_vouchers'] = array_merge(
+    //                     $response['against_vouchers'],
+    //                     $formatVoucherLabel($voucher)
+    //                 );
+    //             }
+
+    //         } elseif ($voucherType === 'Receipt') {
+    //             $cashBankGroupIds = Group::whereIn('group_name', ['Cash', 'Bank'])->pluck('id');
+    //             $fromUsers = User::whereNotIn('group_id', $cashBankGroupIds)->select('id', 'name', 'address')->get();
+    //             $toUsers = User::whereIn('group_id', $cashBankGroupIds)->select('id', 'name', 'address')->get();
+
+    //             $response['from'] = $formatUsersWithCities($fromUsers);
+    //             $response['to'] = $formatUsersWithCities($toUsers);
+    
+    //             $salesVouchers = Voucher::where('voucher_type', 'Sales')->get();
+        
+    //             foreach ($salesVouchers as $voucher) {
+    //                 $response['against_vouchers'] = array_merge(
+    //                     $response['against_vouchers'],
+    //                     $formatVoucherLabel($voucher)
+    //                 );
+    //             }
+
+    //         } elseif ($voucherType === 'Journal') {
+    //             $allUsers = User::select('id', 'name', 'address')->get();
+    //             $response['from'] = $response['to'] = $formatUsersWithCities($allUsers);
+
+    //         } elseif ($voucherType === 'Contra') {
+    //             $groupIds = Group::whereIn('group_name', ['Cash', 'Bank'])->pluck('id');
+    //             $ledgers = User::whereIn('group_id', $groupIds)->select('id', 'name', 'address')->get();
+    //             $response['from'] = $response['to'] = $formatUsersWithCities($ledgers);
+
+    //         } elseif ($voucherType === 'Sales') {
+    //             $salesGroupId = Group::where('group_name', 'Sales')->pluck('id');
+    //             $includedGroupIds = Group::whereIn('group_name', ['Cash', 'Bank', 'Loan', 'Expense'])->pluck('id');
+
+    //             $fromUsers = User::whereIn('group_id', $salesGroupId)->select('id', 'name', 'address')->get();
+    //             $toUsers = User::whereIn('group_id', $includedGroupIds)->select('id', 'name', 'address')->get();
+
+    //             $response['from'] = $formatUsersWithCities($fromUsers);
+    //             $response['to'] = $formatUsersWithCities($toUsers);
+
+    //         } elseif ($voucherType === 'Purchase') {
+    //             $vendorsGroupId = Group::where('group_name', 'Vendors')->pluck('id');
+    //             $fromUsers = User::whereIn('group_id', $vendorsGroupId)->select('id', 'name', 'address')->get();
+    //             $toUsers = User::whereNotIn('group_id', $vendorsGroupId)->select('id', 'name', 'address')->get();
+
+    //             $response['from'] = $formatUsersWithCities($fromUsers);
+    //             $response['to'] = $formatUsersWithCities($toUsers);
+
+    //         } elseif ($voucherType === 'Expense') {
+    //             $expenseGroupId = Group::where('group_name', 'Expense')->pluck('id');
+    //             $fromUsers = User::whereIn('group_id', $expenseGroupId)->select('id', 'name', 'address')->get();
+    //             $toUsers = User::whereNotIn('group_id', $expenseGroupId)->select('id', 'name', 'address')->get();
+
+    //             $response['from'] = $formatUsersWithCities($fromUsers);
+    //             $response['to'] = $formatUsersWithCities($toUsers);
+    //         }
+
+    //         return response()->json($response);
+    //     } catch (\Exception $e) {
+    //         return response()->json(['error' => 'Error: ' . $e->getMessage()]);
+    //     }
+    // }
+
     public function getLedgers(Request $request)
     {
         $voucherType = $request->voucher_type;
@@ -85,21 +229,18 @@ class VoucherController extends Controller
                 'against_vouchers' => [],
             ];
 
-            // Format user entries with multiple cities
+            // 🔹 Helper 1: Format users having multiple addresses (cities)
             $formatUsersWithCities = function ($users) {
                 $formatted = [];
-
                 foreach ($users as $user) {
                     $addresses = $user->address;
 
                     if (is_string($addresses)) {
-                        $addresses = json_decode($addresses, true); 
+                        $addresses = json_decode($addresses, true);
                     }
 
                     if (empty($addresses) || !is_array($addresses)) continue;
-                    // if (!is_array($addresses)) continue;
 
-                
                     foreach ($addresses as $index => $entry) {
                         $city = $entry['city'] ?? null;
                         if ($city) {
@@ -110,14 +251,12 @@ class VoucherController extends Controller
                                 'city' => $city
                             ];
                         }
-                        }
-
+                    }
                 }
-                
                 return $formatted;
             };
 
-            // Format voucher labels
+            // 🔹 Helper 2: Format voucher labels for "against_vouchers"
             $formatVoucherLabel = function ($voucher) {
                 $entries = $voucher->vouchers;
                 $labels = [];
@@ -141,84 +280,71 @@ class VoucherController extends Controller
                 return $labels;
             };
 
+            // 🔹 Step 1: Fetch dynamic group IDs for "from" and "to" from voucher_permissions
+            $fromPermission = DB::table('voucher_permissions')
+                ->where('voucher_type', $voucherType)
+                ->where('permission_type', 'from')
+                ->first();
 
-            if ($voucherType === 'Payment') {
-                $fromGroupIds = Group::whereIn('group_name', ['Cash', 'Bank'])->pluck('id');
-                $fromUsers = User::whereIn('group_id', $fromGroupIds)->select('id', 'name', 'address')->get();
-                $toUsers = User::whereNotIn('group_id', $fromGroupIds)->select('id', 'name', 'address')->get();
+            $toPermission = DB::table('voucher_permissions')
+                ->where('voucher_type', $voucherType)
+                ->where('permission_type', 'to')
+                ->first();
 
-                $response['from'] = $formatUsersWithCities($fromUsers);
-                $response['to'] = $formatUsersWithCities($toUsers);
+            // Convert comma-separated IDs to array
+            $fromGroupIds = $fromPermission ? explode(',', $fromPermission->group_id) : [];
+            $toGroupIds = $toPermission ? explode(',', $toPermission->group_id) : [];
 
-                $purchaseVouchers = Voucher::where('voucher_type', 'Purchase')->get();
-                $expenseVouchers = Voucher::where('voucher_type', 'Expense')->get();
+            // 🔹 Step 2: Fetch users dynamically using those groups
+            $fromUsers = !empty($fromGroupIds)
+                ? User::whereIn('group_id', $fromGroupIds)->select('id', 'name', 'address')->get()
+                : collect();
 
-                $allVouchers = $purchaseVouchers->merge($expenseVouchers);
-                foreach ($allVouchers as $voucher) {
-                    $response['against_vouchers'] = array_merge(
-                        $response['against_vouchers'],
-                        $formatVoucherLabel($voucher)
-                    );
-                }
+            $toUsers = !empty($toGroupIds)
+                ? User::whereIn('group_id', $toGroupIds)->select('id', 'name', 'address')->get()
+                : collect();
 
-            } elseif ($voucherType === 'Receipt') {
-                $cashBankGroupIds = Group::whereIn('group_name', ['Cash', 'Bank'])->pluck('id');
-                $fromUsers = User::whereNotIn('group_id', $cashBankGroupIds)->select('id', 'name', 'address')->get();
-                $toUsers = User::whereIn('group_id', $cashBankGroupIds)->select('id', 'name', 'address')->get();
+            $response['from'] = $formatUsersWithCities($fromUsers);
+            $response['to'] = $formatUsersWithCities($toUsers);
 
-                $response['from'] = $formatUsersWithCities($fromUsers);
-                $response['to'] = $formatUsersWithCities($toUsers);
-    
-                $salesVouchers = Voucher::where('voucher_type', 'Sales')->get();
-        
-                foreach ($salesVouchers as $voucher) {
-                    $response['against_vouchers'] = array_merge(
-                        $response['against_vouchers'],
-                        $formatVoucherLabel($voucher)
-                    );
-                }
+            // 🔹 Step 3: Dynamic "against vouchers" logic per voucher type (if needed)
+            switch ($voucherType) {
+                case 'Payment':
+                    $vouchers = Voucher::whereIn('voucher_type', ['Purchase', 'Expense'])->get();
+                    break;
 
-            } elseif ($voucherType === 'Journal') {
-                $allUsers = User::select('id', 'name', 'address')->get();
-                $response['from'] = $response['to'] = $formatUsersWithCities($allUsers);
+                case 'Receipt':
+                    $vouchers = Voucher::where('voucher_type', 'Sales')->get();
+                    break;
 
-            } elseif ($voucherType === 'Contra') {
-                $groupIds = Group::whereIn('group_name', ['Cash', 'Bank'])->pluck('id');
-                $ledgers = User::whereIn('group_id', $groupIds)->select('id', 'name', 'address')->get();
-                $response['from'] = $response['to'] = $formatUsersWithCities($ledgers);
+                case 'Credit Note':
+                    $vouchers = Voucher::where('voucher_type', 'Sales')->get();
+                    break;
 
-            } elseif ($voucherType === 'Sales') {
-                $salesGroupId = Group::where('group_name', 'Sales')->pluck('id');
-                $includedGroupIds = Group::whereIn('group_name', ['Cash', 'Bank', 'Loan', 'Expense'])->pluck('id');
+                case 'Debit Note':
+                    $vouchers = Voucher::where('voucher_type', 'Purchase')->get();
+                    break;
 
-                $fromUsers = User::whereIn('group_id', $salesGroupId)->select('id', 'name', 'address')->get();
-                $toUsers = User::whereIn('group_id', $includedGroupIds)->select('id', 'name', 'address')->get();
-
-                $response['from'] = $formatUsersWithCities($fromUsers);
-                $response['to'] = $formatUsersWithCities($toUsers);
-
-            } elseif ($voucherType === 'Purchase') {
-                $vendorsGroupId = Group::where('group_name', 'Vendors')->pluck('id');
-                $fromUsers = User::whereIn('group_id', $vendorsGroupId)->select('id', 'name', 'address')->get();
-                $toUsers = User::whereNotIn('group_id', $vendorsGroupId)->select('id', 'name', 'address')->get();
-
-                $response['from'] = $formatUsersWithCities($fromUsers);
-                $response['to'] = $formatUsersWithCities($toUsers);
-
-            } elseif ($voucherType === 'Expense') {
-                $expenseGroupId = Group::where('group_name', 'Expense')->pluck('id');
-                $fromUsers = User::whereIn('group_id', $expenseGroupId)->select('id', 'name', 'address')->get();
-                $toUsers = User::whereNotIn('group_id', $expenseGroupId)->select('id', 'name', 'address')->get();
-
-                $response['from'] = $formatUsersWithCities($fromUsers);
-                $response['to'] = $formatUsersWithCities($toUsers);
+                default:
+                    $vouchers = collect(); // no against vouchers
+                    break;
             }
+
+            foreach ($vouchers as $voucher) {
+                $response['against_vouchers'] = array_merge(
+                    $response['against_vouchers'],
+                    $formatVoucherLabel($voucher)
+                );
+            }
+
+            // dd($response);
 
             return response()->json($response);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Error: ' . $e->getMessage()]);
         }
     }
+
 
     // Store a newly created resource in storage.
     public function store(Request $request)
@@ -229,6 +355,38 @@ class VoucherController extends Controller
             'voucher_date' => 'required|date',
             'vouchers'     => 'required|array',
         ]);
+        // Generate unique voucher ID prefix based on voucher type
+        $typePrefixes = [
+            'Payment'     => 'PY',
+            'Receipt'     => 'RC',
+            'Journal'     => 'JR',
+            'Contra'      => 'CT',
+            'Sales'       => 'SL',
+            'Purchase'    => 'PC',
+            'Expense'     => 'EX',
+            'Credit Note' => 'CN',
+            'Debit Note'  => 'DN',
+        ];
+
+        // Default prefix if type not found
+        $prefix = $typePrefixes[$request->voucher_type] ?? 'VC';
+
+        // Get last voucher with same type
+        $lastVoucher = DB::table('vouchers')
+            ->where('voucher_type', $request->voucher_type)
+            ->orderByDesc('id')
+            ->first();
+
+        if ($lastVoucher && !empty($lastVoucher->voucher_no)) {
+            // Extract numeric part (e.g., PY005 → 5)
+            preg_match('/\d+$/', $lastVoucher->voucher_no, $matches);
+            $nextNumber = isset($matches[0]) ? (int)$matches[0] + 1 : 1;
+        } else {
+            $nextNumber = 1;
+        }
+
+        $generatedVoucherNo = $prefix . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
+
 
         // This maps voucher IDs to labels sent from frontend
         $againstVoucherLabels = $request->input('against_voucher_labels', []);
@@ -272,7 +430,6 @@ class VoucherController extends Controller
 
             $taxableValue = $amount - $totalTax;
 
-            
             $readableAgainstVouchers = [];
             if (!empty($voucher['against_voucher'])) {
                 foreach ($voucher['against_voucher'] as $id) {
@@ -302,7 +459,8 @@ class VoucherController extends Controller
             }
         
             $finalVouchers[] = [
-                'voucher_no'     => $voucher['voucher_no'],
+                'voucher_no'   => $generatedVoucherNo, // ✅ add this line
+                // 'voucher_no'     => $voucher['voucher_no'],
                 'from_account'   => $voucher['from_account'],
                 'to_account'     => $voucher['to_account'],
                 'amount'         => $amount,
@@ -358,7 +516,6 @@ class VoucherController extends Controller
                     "Narration"          => $voucher['narration'] ?? '',
                 ];
             }
-
             if ($request->voucher_type === "Payment") {
                 $bodies[] = [
                     "Voucher Date"      => $request->voucher_date,
@@ -445,7 +602,8 @@ class VoucherController extends Controller
                     "Narration"            => $voucher['narration'] ?? '',
                 ];
             }
-            if ($request->voucher_type === "Journal") {
+            // if ($request->voucher_type === "Journal") {
+            if (in_array($request->voucher_type, ["Journal", "Credit Note", "Debit Note"])) {
                 
                 $voucherData = is_array($voucher) ? $voucher : $voucher->toArray();
 
@@ -471,13 +629,10 @@ class VoucherController extends Controller
                     "Rate"             => $voucherData['rate'] ?? null,
                     "UOM"              => $voucherData['uom'] ?? null,
                     "Item Amount"      => $voucherData['amount'] ?? null,
-
                     "Narration"        => $voucherData['narration'] ?? '',
                 ];
             }
-
         }
-
         
         DB::table('vouchers')->insert([
             'voucher_type' => $request->voucher_type,
@@ -487,6 +642,8 @@ class VoucherController extends Controller
             'created_at'   => now(),
             'updated_at'   => now(),
         ]);
+        // Generate the voucher number
+        
 
         return response()->json([
             'message'  => 'Voucher stored successfully.',
@@ -494,9 +651,7 @@ class VoucherController extends Controller
             'bodies'   => $bodies,
         ]);
     }
-    
-   
-
+    // Update the specified resource in storage.
     public function update(Request $request, $id)
     {
         // return $request->All();

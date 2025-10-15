@@ -77,15 +77,7 @@
                                                 @endforeach
                                         </tbody>
 
-                                        <!-- Pagination Links -->
-                                        <tfoot>
-                                            <tr>
-                                                <td colspan="4">
-                                                    {{ $groups->links() }}
-                                                </td>
-                                            </tr>
-                                        </tfoot>
-
+                                        
                                     </table>
                                 </div>
                             </div>

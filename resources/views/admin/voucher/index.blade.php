@@ -40,6 +40,7 @@
                      <thead>
                         <tr>
                            <th>#</th>
+                           <th>Voucher No</th>
                            <th>Voucher Type</th>
                            <th>Date</th>
                            <th>Actions</th>
@@ -47,26 +48,28 @@
                      </thead>
                      <tbody>
                         @foreach($vouchers as $key => $voucher)
-                        <tr class="voucher-row" data-id="{{ $voucher->id }}">
-                           <td>{{ $key + 1 }}</td>
-                           <td>{{ $voucher->voucher_type }}</td>
-                           <td>{{ \Carbon\Carbon::parse($voucher->voucher_date)->format('d-m-Y') }}</td>
-                           <!-- Format date properly -->
-                           <!-- From Ledger -->
-                           <td class="text-center">
-                              <div class="d-flex align-items-center gap-2">
-                                 <a href="{{ route('admin.voucher.view', ['id' => $voucher->id]) }}" class="btn btn-sm btn-light view-group-btn">
-                                 <i class="fas fa-eye text-primary"></i>
-                                 </a>
-                                 <a href="{{ route('admin.voucher.edit', ['id' => $voucher->id]) }}" class="btn btn-sm btn-light edit-btn">
-                                 <i class="fas fa-pen text-warning"></i>
-                                 </a>
-                                 <a href="{{ route('admin.voucher.delete', ['id' => $voucher->id]) }}" class="btn btn-sm btn-light delete-btn">
-                                 <i class="fas fa-trash text-danger"></i>
-                                 </a>
-                              </div>
-                           </td>
-                        </tr>
+                           @foreach($voucher->vouchers as $subKey => $subVoucher)
+                           <tr class="voucher-row" data-id="{{ $voucher->id }}">
+                              <td>{{ $key + 1 }}</td>
+                              <td>{{ $subVoucher['voucher_no'] ?? '' }}</td>
+                              <td>{{ $voucher->voucher_type }}</td>
+                              <td>{{ \Carbon\Carbon::parse($voucher->voucher_date)->format('d-m-Y') }}</td>
+                              <!-- Actions -->
+                              <td class="text-center">
+                                 <div class="d-flex align-items-center gap-2">
+                                    <a href="{{ route('admin.voucher.view', ['id' => $voucher->id]) }}" class="btn btn-sm btn-light view-group-btn">
+                                    <i class="fas fa-eye text-primary"></i>
+                                    </a>
+                                    <a href="{{ route('admin.voucher.edit', ['id' => $voucher->id]) }}" class="btn btn-sm btn-light edit-btn">
+                                    <i class="fas fa-pen text-warning"></i>
+                                    </a>
+                                    <a href="{{ route('admin.voucher.delete', ['id' => $voucher->id]) }}" class="btn btn-sm btn-light delete-btn">
+                                    <i class="fas fa-trash text-danger"></i>
+                                    </a>
+                                 </div>
+                              </td>
+                           </tr>
+                           @endforeach
                         @endforeach
                      </tbody>
                   </table>

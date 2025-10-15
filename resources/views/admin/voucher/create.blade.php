@@ -47,10 +47,10 @@
                   <div id="voucherRows">
                      <div class="voucher-row" data-index="0">
                      <div class="row">
-                        <div class="col-md-6 mb-3">
+                        <!-- <div class="col-md-6 mb-3">
                            <label class="form-label">Voucher Number<span class="text-danger">*</span></label>
                            <input type="text" class="form-control" name="vouchers[0][voucher_no]">
-                        </div>
+                        </div> -->
                         {{-- <div class="col-md-6 mb-3 against-voucher-container" style="display: none;">
                            <label class="form-label">Against Voucher<span class="text-danger">*</span></label>
                            <select class="form-control" name="vouchers[0][against_voucher][]" id="against_voucher" multiple></select>
@@ -62,7 +62,7 @@
                                     <!-- Options will be dynamically set in JS -->
                                  </select>
                               </div>
-                           </div>
+                        </div>
                      
                         <div class="col-md-6 mb-3 sales-voucher-container" style="display: none;">
                            <label class="form-label">Receipt Voucher<span class="text-danger">*</span></label>
@@ -277,22 +277,22 @@
                            </select>
                         </div>
                         <div class="col-md-6 mb-3">
-                           <label class="form-label">To Account <span class="text-danger">*</span></label>
+                           <label class="form-label">By Account <span class="text-danger">*</span></label>
                            <select class="form-control to_account" name="vouchers[0][to_account]" required>
-                           <option value="">-- Select To Account --</option>
+                           <option value="">-- Select By Account --</option>
                            </select>
                         </div>
                         <div class="col-md-6 mb-3">
-                           <label class="form-label">Amount <span class="text-danger">*</span></label>
+                           <label class="form-label">Amount<span class="text-danger">*</span></label>
                            <input type="number" class="form-control" name="vouchers[0][amount]" placeholder="Enter amount" required>
                         </div>
                         <div class="col-md-6 mb-3">
                            <label class="form-label">Assign</label>
-                           <select class="form-control" name="vouchers[0][assigned_to]">
-                           <option value="">-- Select Person or Entity --</option>
-                           <option value="Person A">Person A</option>
-                           <option value="Person B">Person B</option>
-                           <option value="Entity X">Entity X</option>
+                            <select class="form-control" name="vouchers[0][assigned_to]">
+                              <option value="">-- Select Person or Entity --</option>
+                              @foreach($ledgers as $ledger)
+                                    <option value="{{ $ledger->id }}">{{ $ledger->name }}</option>
+                              @endforeach
                            </select>
                         </div>
                         <div class="col-md-6 mb-3">
@@ -314,12 +314,10 @@
                      <hr>
                      </div>
                   </div>
-
                   <!-- Add More -->
                   <div class="mb-3">
                      <button type="button" class="btn btn-secondary" id="addMoreBtn">+ Add More</button>
                   </div>
-
                   <!-- Container for hidden inputs -->
                   <div id="againstVoucherLabelsContainer"></div>
 
@@ -351,8 +349,6 @@
        }
    });
 </script>
-
- 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const voucherTypeSelect = document.getElementById('voucher_type');
@@ -395,8 +391,6 @@ document.addEventListener('DOMContentLoaded', function () {
     newRow.querySelectorAll('input:not([type="checkbox"]):not([type="radio"]), textarea, select').forEach(field => {
         field.value = '';
     });
-
-
 
     // Reset checkboxes and radios
     newRow.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
@@ -493,15 +487,15 @@ document.addEventListener('DOMContentLoaded', function () {
         const serviceTaxNoContainer = row.querySelector('.service-tax-no-container');
 
       //   journal fields
-         const journalDrCrContainer = row.querySelector('.journal-dr-cr-container');
-         const journalBillRefNoContainer = row.querySelector('.journal-bill-ref-no-container');
-         const journalCostCenterContainer = row.querySelector('.journal-cost-center-container');
-         const journalStockItemContainer = row.querySelector('.journal-stock-item-container');
-         const journalGodownContainer = row.querySelector('.journal-godown-container');
-         const journalBatchNoContainer = row.querySelector('.journal-batch-no-container');
-         const journalQtyContainer = row.querySelector('.journal-qty-container');
-         const journalRateContainer = row.querySelector('.journal-rate-container');
-         const journalUomContainer = row.querySelector('.journal-uom-container');   
+      const journalDrCrContainer = row.querySelector('.journal-dr-cr-container');
+      const journalBillRefNoContainer = row.querySelector('.journal-bill-ref-no-container');
+      const journalCostCenterContainer = row.querySelector('.journal-cost-center-container');
+      const journalStockItemContainer = row.querySelector('.journal-stock-item-container');
+      const journalGodownContainer = row.querySelector('.journal-godown-container');
+      const journalBatchNoContainer = row.querySelector('.journal-batch-no-container');
+      const journalQtyContainer = row.querySelector('.journal-qty-container');
+      const journalRateContainer = row.querySelector('.journal-rate-container');
+      const journalUomContainer = row.querySelector('.journal-uom-container');   
 
         // Hide all containers first
         againstVoucherContainer.style.display = 'none';
@@ -550,8 +544,8 @@ document.addEventListener('DOMContentLoaded', function () {
             againstVoucherContainer.style.display = 'block';
             transactionIdContainer.style.display = 'block';
              row.querySelectorAll('.payment-container').forEach(div => {
-        div.style.display = 'block';
-      });
+         div.style.display = 'block';
+         });
             
             const options = ['Purchase', 'Expense'];
             options.forEach(opt => {
@@ -613,7 +607,7 @@ document.addEventListener('DOMContentLoaded', function () {
             serviceTaxNoContainer.style.display = 'block';
         }
         // journal fields
-        else if (type === 'Journal') {
+        else if (type === 'Journal' || type === 'Debit Note' || type === 'Credit Note') {
             journalDrCrContainer.style.display = 'block';
             journalBillRefNoContainer.style.display = 'block';
             journalCostCenterContainer.style.display = 'block';
@@ -624,17 +618,15 @@ document.addEventListener('DOMContentLoaded', function () {
             journalRateContainer.style.display = 'block';
             journalUomContainer.style.display = 'block';
         }
-        
     }
 
     function updateRowIndexes(row, index) {
         row.dataset.index = index;
-        
         // Update all name attributes
         row.querySelectorAll('[name]').forEach(el => {
             el.name = el.name.replace(/\[\d+\]/, `[${index}]`);
         });
-        
+
         // Update all IDs and corresponding 'for' attributes
         row.querySelectorAll('[id]').forEach(el => {
             const oldId = el.id;
@@ -664,7 +656,6 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!type) return;
 
     fetch(`/admin/voucher/get-ledgers?voucher_type=${type}`)
-    
     
         .then(response => response.json())
         .then(data => {
@@ -756,9 +747,6 @@ document.addEventListener('DOMContentLoaded', function () {
             alert('An error occurred while fetching the ledgers.');
         });
    }
-
-
-
     // Initial load ledger fetch
     if (voucherTypeSelect.value) {
         fetchLedgerOptions(voucherTypeSelect.value);
