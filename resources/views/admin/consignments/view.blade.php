@@ -5,22 +5,81 @@
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>Khandelwal Roadlines LR</title>
       <style>
-         * {
-         box-sizing: border-box;
-         }
-         body {
-         font-family: Arial, sans-serif;
-         padding: 20px;
-         background-color: #f7f7f7;
-         color: #17356e;
-         }
-         .container {
-         max-width: 1000px;
-         margin: auto;
-         padding: 10px;
-         background-color: #fff;
-         position: relative;
-         }
+      * {
+      box-sizing: border-box;
+      }
+         /* Original CSS */
+/* Ensure body has no margin or padding */
+body {
+    margin: 0 !important;   /* No margin on the body */
+    padding: 20 !important;  /* No padding on the body */
+    font-family: Arial, sans-serif;
+    background-color: #f7f7f7;
+    color: #17356e;
+}
+
+/* Ensure the main container starts at the top with no padding or margin */
+.container {
+    max-width: 1000px;
+    margin: 0 auto !important; /* Center the container */
+    padding: 20 !important; /* Remove any padding */
+    background-color: #fff;
+    position: relative;
+    width: 100%;
+}
+
+/* For print, enforce zero margins and padding */
+/* For print, enforce zero margins and padding */
+@media print {
+    @page {
+        size: 176mm 250mm;   /* Exact B5 size (Portrait) */
+        margin: 0 !important;  /* Set margin to zero */
+    }
+    body {
+        margin: 0 !important;  /* No margin for body */
+        padding: 0 !important; /* No padding for body */
+    }
+
+    .container {
+        margin: 0 !important;    /* Remove container margin */
+        padding: 0 !important;   /* Remove container padding */
+        width: 100%;
+        height: 100%;  /* Ensure the container takes the full height */
+    }
+    /* Remove unnecessary space between sections */
+    .header-section,
+    .bill-section,
+    .freight-section,
+    .left-header,
+    .right-header {
+        margin: 0 !important;   /* Remove margin */
+        padding: 0 !important;  /* Remove padding */
+    }
+
+    /* Ensure terms section is printed correctly */
+    .terms {
+        margin: 0 !important;
+        padding: 5mm !important;  /* Print-safe padding */
+        box-sizing: border-box;
+        width: auto !important;
+        max-width: 100% !important;
+    }
+    .print-btn {
+        display: none !important; /* Hide print button during print */
+    }
+}
+
+/* Add this to remove any extra margin or padding above the printed content */
+@media print {
+    .container {
+        min-height: 100vh; /* Ensures the container takes the full height */
+    }
+
+    /* Override any top margin that might appear unexpectedly */
+    * {
+        margin-top: 0 !important; /* Ensure no top margin for any element */
+    }
+}
          .header-section {
          display: flex;
          justify-content: space-between;
@@ -70,7 +129,7 @@
          border: 2px solid #002366;
          padding: 5px;
          margin-top: 10px;
-         height: 374px;
+         height: 354px;
          }
          /* .right-header p {
          margin: 4px 0;
@@ -147,12 +206,12 @@
          padding-top: 10px;
          border-top: 2px solid #002366;
          }
-         .signature {
-         text-align: right;
-         font-size: 14px;
-         margin-top: 20px;
-         font-weight: bold;
-         }
+      .signature {
+    text-align: LEFT;
+    font-size: 10px;
+    margin-top: 8px;
+    font-weight: bold;
+}
          .terms {
          margin-top: 40px;
          font-size: 16px;
@@ -218,7 +277,7 @@
          width: 100%;
          border-collapse: collapse;
          font-size: 14px;
-         margin-bottom: 20px;
+         margin-bottom: 0px;
          }
          .consignor-consignee-table td {
          border: 2px solid #002366;
@@ -250,6 +309,24 @@
          display: none;
          }
          }
+         @media print {
+         @page {
+            size: 176mm 250mm;   /* ✅ Exact B5 size (Portrait) */
+            margin: 0mm;        /* Adjust as needed */
+         }
+         .terms {
+            width: auto !important;           /* ✅ auto fit to page */
+            max-width: 100% !important;
+            padding: 5mm !important;         /* use print-safe padding */
+            box-sizing: border-box;
+            margin: 0 auto !important;
+      }
+
+         /* Hide print button during print */
+         .print-btn {
+            display: none !important;
+         }
+         }
       </style>
    </head>
    <body>
@@ -261,12 +338,12 @@
             <div class="bill-section">
                <div class="left-header">
                   <div class="left-header-content">
-                     <img src="{{ asset('backend/images/logo.jpg') }}" alt="logo" style="width: 100%;">
-                     <p>Head Office:  Khandelwal RoadLines, Opp. Abhinav Talkies, Ujjain Road, Dewas - 455001  </p>
-                     <small>MOBILE – 9098733332, 9770533332</small><br>
-                     <small>Offices - Mumbai: 9326145500, Indore: 9303188889</small><br>
-                     <small>Email: krl@khandelwalroadlines.com</small><br>
-                     <small>Website: www.khandelwalroadlines.com</small>
+                     <img src="{{ asset('uploads/' . $settings->logo) }}" alt="logo" style="width: 100%;">
+                     <p>Head Office: {{ $settings->head_office }}</p>
+                     <small>MOBILE – {{ $settings->mobile }}</small><br>
+                     <small>Offices - {{ $settings->offices }}</small><br>
+                     <small>Email: {{ $settings->email }}</small><br>
+                     <small>Website: {{ $settings->website }}</small><br>
                   </div>
                   <div class="coly">
                      <strong class="tr1">CONSIGNEE COPY</strong>
@@ -279,22 +356,15 @@
                      </div>
                   </div>
                </div>
-               <div class="notice" style="display: flex; gap: 12px;  font-size: 14px; align-items: stretch;">
-                  <div style="align-self: center;">
-                     <p style="margin: 0; font-weight: bold;">GST to be paid by</p>
+               <div class="notice" style="display: flex; align-items: center; gap: 20px; font-size: 14px;">
+                  <div style="flex: 1; display: flex; align-items: center;">
+                     <span style="font-weight: bold; margin-right: 5px;">GST to be charged from</span>
+                     <div style="flex: 1; border-bottom: 1px solid #000;"></div>
                   </div>
-                  <div style="display: flex; flex-direction: column; justify-content: space-between;">
-                     <label style="display: flex; align-items: center; gap: 4px;"><input type="checkbox">
-                     Consignor</label>
-                     <span style="font-weight: bold; text-align: center;">OR</span>
-                     <label style="display: flex; align-items: center; gap: 4px;"><input type="checkbox">
-                     Consignee</label>
+                  <div style="flex: 1; display: flex; align-items: center;">
+                     <span style="font-weight: bold; margin-right: 5px;">GSTIN</span>
+                     <div style="flex: 1; border-bottom: 1px solid #000;"></div>
                   </div>
-                  <span style="margin-left: auto; align-self: center; text-align: center !important;">
-                  We are registered as GTA under sec 9 (3) of GST act 2017 & GST is 
-                  liable to pay by recipient (consignor / consignee) under RCM 
-                  notification No. 13/2017 CTR dated 28/06/2017 
-                  </span>
                </div>
                <div>
                   @php
@@ -332,7 +402,6 @@
                      </tr>
                   </table>
                </div>
-               
             </div>
             <div class="freight-section">
                <div class="right-header">
@@ -383,7 +452,8 @@
                   @endphp
                   <p><strong>From:</strong> {{ $fromDestination->destination ?? '-' }}</p>
                   <p><strong>To:</strong> {{ $toDestination->destination ?? '-' }}</p>
-             
+
+                  
                </div>
                <div class="freight-box" style="display:none;">
                   <h4>FREIGHT</h4>
@@ -406,109 +476,138 @@
                </div>
             </div>
          </div>
-<div class="container">
-    @php
-               $total_actual_weight = 0;
-               $total_charged_weight = 0;
-               foreach($lrEntries['cargo'] as $cargo) {
-               $isValid = !empty($cargo['packages_no']) || !empty($cargo['package_type']) || !empty($cargo['package_description']) || !empty($cargo['actual_weight']) || !empty($cargo['charged_weight']);
-               if ($isValid) {
-               $total_actual_weight += $cargo['actual_weight'] ?? 0;
-               $total_charged_weight += $cargo['charged_weight'] ?? 0;
-               }
-               }
-               @endphp
-               <table border="1" style="border-collapse: collapse; width: 100%; text-align: center;">
-                  <thead>
-                     <tr>
-                        <th>No. of Packages</th>
-                        <th>Method of Packing</th>
-                        <th>Description Said to contain</th>
-                        <th>Weight</th>
-                     </tr>
-                  </thead>
-                  <tbody>
-                     @php
-                     $totalActualWeight = $totalChargedWeight = 0;
-                     $validCargos = collect($lrEntries['cargo'])->filter(function($cargo) {
-                     return !empty($cargo['packages_no']) || !empty($cargo['package_type']) || !empty($cargo['package_description']);
-                     })->values();
-                     $rowCount = $validCargos->count();
-                     @endphp
-                     @foreach($validCargos as $index => $cargo)
-                     @php
-                     $totalActualWeight += $cargo['actual_weight'] ?? 0;
-                     $totalChargedWeight += $cargo['charged_weight'] ?? 0;
-                     @endphp
-                     <tr>
-                        <td>{{ $cargo['packages_no'] ?? '' }}</td>
-                        <td>{{ $packageTypes[$cargo['package_type']] ?? '' }}</td>
-                        <td style="text-align: left;">
-                           {{ $cargo['package_description'] ?? '' }}
-                           </br>
-                           {{ isset($cargo['document_name']) ? \Illuminate\Support\Str::limit($cargo['document_name']) : '' }},
-                           - {{ $cargo['document_no'] ?? '' }}, <strong>Dt:</strong> {{ isset($cargo['document_date']) ? \Illuminate\Support\Carbon::parse($cargo['document_date'])->format('d/m/Y') : '' }}
-                           </br>
-                           <!-- <strong>Eway Bill No:</strong> {{ $cargo['eway_bill'] ?? '' }} -->
-                        </td>
-                        {{-- Display merged weight cell only for the first row --}}
-                        @if($index === 0)
-                        <td rowspan="{{ $rowCount }}" style="vertical-align: ; text-align: left; padding: 8px;">
-                           <div style="padding-top: 5px;" >
-                              <strong>Actual<br> Weight:</strong> {{ $totalActualWeight }}
-                           </div>
-                           <hr style="width: 100%; height: 3px; background-color: #003366; border: none; margin: 10px 0;">
-                           <div style="padding-top: 5px;">
-                              <strong>Charged Weight:</strong> {{ $totalChargedWeight }}
-                           </div>
-                        </td>
-                        @endif
-                     </tr>
-                     @endforeach
-                  </tbody>
-               </table>
-               @php
-               if (!function_exists('toArray')) {
-               function toArray($value) {
-               return is_array($value) ? $value : json_decode($value, true);
-               }
-               }
-               $ewayBills = toArray($order->eway_bill ?? []);
-               $validUpto = toArray($order->valid_upto ?? []);
-               $declaredValue = $order->declared_value ?? '__________';
-               @endphp
-               <div class="e-way" style="margin-top: 20px; font-size: 16px;">
-                  @for ($i = 0; $i < max(count($ewayBills), count($validUpto)); $i++)
-                  <p style="margin-bottom: 8px;">
-                     <strong>E-WAY BILL NO:</strong> {{ $ewayBills[$i] ?? '__________' }} &nbsp;&nbsp;&nbsp;
-                     <strong>VALID UPTO:</strong> {{ $validUpto[$i] ?? '__________' }}
-                  </p>
-                  @endfor
+         <div class="container" style="padding:10px 0;">
+            @php
+            $total_actual_weight = 0;
+            $total_charged_weight = 0;
+            foreach($lrEntries['cargo'] as $cargo) {
+            $isValid = !empty($cargo['packages_no']) || !empty($cargo['package_type']) || !empty($cargo['package_description']) || !empty($cargo['actual_weight']) || !empty($cargo['charged_weight']);
+            if ($isValid) {
+            $total_actual_weight += $cargo['actual_weight'] ?? 0;
+            $total_charged_weight += $cargo['charged_weight'] ?? 0;
+            }
+            }
+            @endphp
+            <table border="1" style="border-collapse: collapse; width: 100%; text-align: center;">
+               <thead>
+                  <tr>
+                     <th>No. of Packages</th>
+                     <th>Method of Packing</th>
+                     <th>Description Said to contain</th>
+                     <th>Weight</th>
+                  </tr>
+               </thead>
+               <tbody>
                   @php
-                  $lrDetails = is_array($order->lr) ? $order->lr : json_decode($order->lr, true);
+                  $totalActualWeight = $totalChargedWeight = 0;
+                  $validCargos = collect($lrEntries['cargo'])->filter(function($cargo) {
+                  return !empty($cargo['packages_no']) || !empty($cargo['package_type']) || !empty($cargo['package_description']);
+                  })->values();
+                  $rowCount = $validCargos->count();
                   @endphp
+                  @foreach($validCargos as $index => $cargo)
                   @php
-                  $lr = $lrEntries; 
+                  $totalActualWeight += $cargo['actual_weight'] ?? 0;
+                  $totalChargedWeight += $cargo['charged_weight'] ?? 0;
                   @endphp
-                  <p style="margin-top: 10px;">
-                     <strong>Declared Value Rs.</strong> {{ $lr['total_declared_value'] ?? '-' }}
-                  </p>
-                  <p style="margin-top: 10px;">
-                     <strong>Eway Bill No:</strong><br>
-                     @if(!empty($lrEntries['eway_bills']) && is_array($lrEntries['eway_bills']))
-                     @foreach($lrEntries['eway_bills'] as $eway)
-                     {{ $eway }},
-                     @endforeach
-                     @else
-                     <em>No eWay Bills Assigned</em>
-                     @endif
-                  </p>
-               </div>
-</div>
-
-         <div class="signature">
+                  <tr>
+                     <td>{{ $cargo['packages_no'] ?? '' }}</td>
+                     <td>{{ $packageTypes[$cargo['package_type']] ?? '' }}</td>
+                     <td style="text-align: left;">
+                        {{ $cargo['package_description'] ?? '' }}
+                        </br>
+                        {{ isset($cargo['document_name']) ? \Illuminate\Support\Str::limit($cargo['document_name']) : '' }},
+                        - {{ $cargo['document_no'] ?? '' }}, <strong>Dt:</strong> {{ isset($cargo['document_date']) ? \Illuminate\Support\Carbon::parse($cargo['document_date'])->format('d/m/Y') : '' }}
+                        </br>
+                        <!-- <strong>Eway Bill No:</strong> {{ $cargo['eway_bill'] ?? '' }} -->
+                     </td>
+                     {{-- Display merged weight cell only for the first row --}}
+                     @if($index === 0)
+                     <td rowspan="{{ $rowCount }}" style="vertical-align: top; text-align: left; padding: 8px;">
+                        <div style="padding-top: 5px;">
+                           <strong>Actual<br> Weight:</strong> {{ $totalActualWeight }}
+                        </div>
+                        <hr style="width: 100%; height: 3px; background-color: #003366; border: none; margin: 10px 0;">
+                        <div style="padding-top: 5px;">
+                           <strong>Charged Weight:</strong> {{ $totalChargedWeight }}
+                        </div>
+                        <!-- Freight Section Start -->
+                        <hr style="width: 100%; height: 3px; background-color: #003366; border: none; margin: 10px 10px 10px 0;">
+                        <div style="border: 2px solid #003366; padding: 5px; text-align: center; margin-top: 8px;">
+                           <div style="font-weight: bold; color: #003366; font-size: 14px; border-bottom: 2px solid #003366; padding-bottom: 3px; margin-bottom: 5px;">
+                              FREIGHT
+                           </div>
+                           <div style="display: flex; justify-content: space-between; gap: 5px;">
+                              <div style="flex: 1; text-align: center;">
+                                 <div style="border: 2px solid #003366; width: 26px; height: 26px; margin: 0 auto; margin-bottom: 3px;"></div>
+                                 <span style="font-size: 12px; font-weight: bold;">PAID</span>
+                              </div>
+                              <div style="flex: 1; text-align: center;">
+                                 <div style="border: 2px solid #003366; width: 26px; height: 26px; margin: 0 auto; margin-bottom: 3px;"></div>
+                                 <span style="font-size: 12px; font-weight: bold;">TO PAY</span>
+                              </div>
+                              <div style="flex: 1; text-align: center;">
+                                 <div style="border: 2px solid #003366; width: 26px; height: 26px; margin: 0 auto; margin-bottom: 3px;"></div>
+                                 <span style="font-size: 12px; font-weight: bold;">TO BE<br>BILLED</span>
+                              </div>
+                           </div>
+                        </div>
+                        <div class="signature">
             For: KHANDELWAL ROADLINES
          </div>
+                        <!-- Freight Section End -->
+                         
+                     </td>
+                     @endif
+                  </tr>
+                  @endforeach
+               </tbody>
+            </table>
+            @php
+            if (!function_exists('toArray')) {
+            function toArray($value) {
+            return is_array($value) ? $value : json_decode($value, true);
+            }
+            }
+            $ewayBills = toArray($order->eway_bill ?? []);
+            $validUpto = toArray($order->valid_upto ?? []);
+            $declaredValue = $order->declared_value ?? '__________';
+            @endphp
+            <!-- E-Way Bill Section -->
+            <table style="width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; border: 1px solid #003366;">
+               <tr>
+                  <td style="border: 2px solid #003366; padding: 5px; width: 80%;">
+                     <strong>E-WAY BILL NO.</strong><br>
+                     @if(!empty($lrEntries['eway_bills']) && is_array($lrEntries['eway_bills']))
+                        @foreach($lrEntries['eway_bills'] as $eway)
+                           {{ $eway }}@if(!$loop->last), @endif
+                        @endforeach
+                     @else
+                        <em>_______________________</em>
+                     @endif
+                  </td>
+                  <td style="border: px solid #003366; padding: 5px; width: 20%; vertical-align: top;">
+                     <strong>VALID UPTO</strong><br>
+                     @if(!empty($validUpto) && is_array($validUpto))
+                        @foreach($validUpto as $date)
+                           {{ $date }}<br>
+                        @endforeach
+                     @else
+                        <em>__________</em>
+                     @endif
+                  </td>
+               </tr>
+            </table>
+            <div style="display: flex; align-items: center; margin-top: 8px;">
+               <span style="font-weight: bold; margin-right: 5px;">Declared Value Rs.</span>
+               <span style="display: inline-block; border-bottom: 2px solid #000; padding: 0 5px;">
+                  {{ $lr['total_declared_value'] ?? '__________' }}
+               
+               </span>
+            </div>
+
+         </div>
+         
       </div>
       <div class="terms">
          <h3>TERMS & CONDITIONS</h3>
@@ -545,6 +644,139 @@
          </ol>
       </div>
       <!-- Print Button -->
-      <button class="print-btn" onclick="window.print()">🖨️ Print LR-Consignment</button>
-   </body>
+      <button class="print-btn" id="openModalBtn">🖨️ Download / Print LR</button>
+      <!-- Copy Selection Modal -->
+<div id="copyModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:2000; justify-content:center; align-items:center;">
+  <div style="background:#fff; padding:20px; border-radius:8px; width:400px; text-align:center; position:relative;">
+    <h3>Select Copies to Download</h3>
+    <div style="text-align:left; margin:20px 0;">
+      <label><input type="checkbox" id="copyConsignor" checked> Consignor Copy</label><br>
+      <label><input type="checkbox" id="copyConsignee" checked> Consignee Copy</label><br>
+      <label><input type="checkbox" id="copyDriver" checked> Driver Copy</label><br>
+      <label><input type="checkbox" id="copyHO" checked> HO Copy</label>
+    </div>
+    <button id="modalDownloadBtn" style="padding:10px 20px; background:#ca2639; color:white; border:none; border-radius:5px; cursor:pointer;">Download PDF</button>
+    <button id="modalCloseBtn" style="padding:10px 20px; margin-left:10px; background:#999; color:white; border:none; border-radius:5px; cursor:pointer;">Cancel</button>
+  </div>
+</div>
+<script>
+const modal = document.getElementById('copyModal');
+const openModalBtn = document.getElementById('openModalBtn');
+const closeModalBtn = document.getElementById('modalCloseBtn');
+const downloadBtn = document.getElementById('modalDownloadBtn');
+
+openModalBtn.addEventListener('click', () => modal.style.display = 'flex');
+closeModalBtn.addEventListener('click', () => modal.style.display = 'none');
+
+downloadBtn.addEventListener('click', async () => {
+    modal.style.display = 'none';
+
+    const copies = [
+        { id: 'copyConsignor', name: 'CONSIGNOR COPY' },
+        { id: 'copyConsignee', name: 'CONSIGNEE COPY' },
+        { id: 'copyDriver', name: 'DRIVER COPY' },
+        { id: 'copyHO', name: 'HO COPY' }
+    ];
+
+    const selectedCopies = copies.filter(c => document.getElementById(c.id)?.checked);
+    if (selectedCopies.length === 0) {
+        alert("⚠️ Please select at least one copy to download.");
+        return;
+    }
+
+    const originalContainer = document.querySelector('.container');
+    const originalTerms = document.querySelector('.terms');
+
+    if (!originalContainer) {
+        alert("Main container (.container) not found!");
+        return;
+    }
+
+    // Create a wrapper for the content
+    const wrapper = document.createElement('div');
+    wrapper.style.width = '176mm';      // B5 width
+    wrapper.style.margin = '0';         // Remove all wrapper margin
+    wrapper.style.padding = '0';        // Remove all wrapper padding
+    wrapper.style.boxSizing = 'border-box';
+
+    // Loop through each selected copy and generate pages
+    selectedCopies.forEach((copy, index) => {
+        // Create the page container
+        const pageDiv = document.createElement('div');
+        pageDiv.style.pageBreakAfter = index < selectedCopies.length - 1 ? 'always' : 'auto';
+        pageDiv.style.width = '176mm';
+        pageDiv.style.minHeight = '250mm'; // B5 height
+        pageDiv.style.margin = '0';         // Zero margin for the page container
+        pageDiv.style.padding = '0';        // Zero padding for the page container
+        pageDiv.style.boxSizing = 'border-box';
+        pageDiv.style.backgroundColor = '#fff';
+
+        // Clone the container for each copy (Consignor, Consignee, etc.)
+        const copyDiv = originalContainer.cloneNode(true);
+        
+        // Remove print button and modal elements from the clone
+        copyDiv.querySelectorAll('.print-btn, #copyModal').forEach(el => el.remove());
+
+        // Apply custom styling for the clone
+        copyDiv.style.margin = '0';
+        copyDiv.style.padding = '0'; // Top padding set to 0, other sides 10px
+        copyDiv.style.maxWidth = '100%';  // Ensure it fits in the B5 page
+
+        // Update copy label for each selected copy
+        const labelEl = copyDiv.querySelector('.coly .tr1');
+        if (labelEl) labelEl.textContent = copy.name;
+
+        pageDiv.appendChild(copyDiv);
+        wrapper.appendChild(pageDiv); // Append this copy page to the wrapper
+    });
+
+    // After all copies are printed, add Terms & Conditions
+    if (originalTerms) {
+        const termsPageDiv = document.createElement('div');
+        termsPageDiv.style.pageBreakBefore = 'always'; // Forces Terms & Conditions to the last page
+        termsPageDiv.style.width = '176mm'; 
+        termsPageDiv.style.minHeight = '250mm';
+        termsPageDiv.style.margin = '0';
+        termsPageDiv.style.padding = '5mm'; // Padding for readability on the terms page
+        termsPageDiv.style.boxSizing = 'border-box';
+        termsPageDiv.style.backgroundColor = '#fff';
+
+        // Clone the Terms & Conditions content
+        const clonedTerms = originalTerms.cloneNode(true);
+        clonedTerms.style.width = '100%';
+        clonedTerms.style.margin = '0';
+        clonedTerms.style.padding = '0'; 
+        clonedTerms.style.marginTop = '0'; 
+        clonedTerms.style.textAlign = 'center';
+
+        termsPageDiv.appendChild(clonedTerms);
+        wrapper.appendChild(termsPageDiv); // Append Terms & Conditions page to the wrapper
+    }
+
+    // Configure the pdf generation settings
+    const opt = {
+    margin: 0, // Ensure no margin around the PDF
+    filename: 'LR-Copies.pdf',
+    image: { type: 'jpeg', quality: 0.98 },
+    jsPDF: {
+        unit: 'mm',
+        format: 'a4',  // Let the format be 'a4', or use the auto setting below for dynamic size
+        orientation: 'portrait',
+        auto: true  // Dynamically set the height/width of the page based on content
+    }
+};
+
+    // Check if html2pdf is loaded and generate the PDF
+    if (typeof html2pdf === 'undefined') {
+        const script = document.createElement('script');
+        script.src = "https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js";
+        script.onload = () => html2pdf().from(wrapper).set(opt).save();
+        document.body.appendChild(script);
+    } else {
+        html2pdf().from(wrapper).set(opt).save();
+    }
+});
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</body>
 </html>

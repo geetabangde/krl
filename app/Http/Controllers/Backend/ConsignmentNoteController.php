@@ -11,6 +11,7 @@ use App\Models\Vehicle;
 use App\Models\VehicleType;
 use App\Models\Destination;
 use App\Models\PackageType;
+use App\Models\Settings;
 use App\Models\User;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
@@ -332,19 +333,17 @@ class ConsignmentNoteController extends Controller implements HasMiddleware
 
 
     public function show($id)
-    {
+    {   
+        // ✅ Settings data
+        $settings = DB::table('settings')->first();
         $orders = DB::table('orders')->get();
-    
 
         foreach ($orders as $order) {
             $lrData = json_decode($order->lr, true);
         
-        
             if (!is_array($lrData)) {
                 $lrData = json_decode(json_decode($order->lr), true);
             }
-
-        
 
             if (is_array($lrData)) {
                 foreach ($lrData as $entry) {
@@ -355,7 +354,7 @@ class ConsignmentNoteController extends Controller implements HasMiddleware
                         $users = \App\Models\User::all();
                     $packageTypes = \App\Models\PackageType::all()->pluck('package_type', 'id')->toArray();
 
-                        return view('admin.consignments.view', compact('packageTypes','orders', 'order', 'lrEntries', 'vehicles', 'users'));
+                        return view('admin.consignments.view', compact('packageTypes','orders', 'order', 'lrEntries', 'vehicles', 'users','settings'));
                     }
                 }
             }
