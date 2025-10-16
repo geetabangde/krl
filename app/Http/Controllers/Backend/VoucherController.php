@@ -336,7 +336,7 @@ class VoucherController extends Controller
                     $formatVoucherLabel($voucher)
                 );
             }
-
+            
             // dd($response);
 
             return response()->json($response);
