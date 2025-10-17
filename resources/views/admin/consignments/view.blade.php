@@ -824,8 +824,9 @@ downloadBtn.addEventListener('click', async () => {
         pageDiv.className = 'pdf-page';
         pageDiv.style.width = '176mm';
         pageDiv.style.minHeight = '250mm';
-        pageDiv.style.margin = '0';
-        pageDiv.style.padding = '0';
+        pageDiv.style.marginRight = '0';
+        pageDiv.style.paddingRight = '15px';
+        pageDiv.style.paddingTop = '15px';
         pageDiv.style.boxSizing = 'border-box';
         pageDiv.style.backgroundColor = '#fff';
         pageDiv.style.position = 'relative';
@@ -870,7 +871,7 @@ downloadBtn.addEventListener('click', async () => {
         const clonedTerms = originalTerms.cloneNode(true);
         clonedTerms.style.width = '100%';
         clonedTerms.style.margin = '0';
-        clonedTerms.style.padding = '0mm';
+        clonedTerms.style.padding = '5mm';
         clonedTerms.style.fontSize = '10px';
         clonedTerms.style.lineHeight = '1.2';
 
@@ -914,8 +915,6 @@ downloadBtn.addEventListener('click', async () => {
     }
 });
 </script>
-
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </body>
 </html>
