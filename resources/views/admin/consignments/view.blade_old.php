@@ -777,6 +777,9 @@ downloadBtn.addEventListener('click', async () => {
     }
 });
 </script> -->
+
+
+
 <script>
 const modal = document.getElementById('copyModal');
 const openModalBtn = document.getElementById('openModalBtn');
@@ -812,7 +815,7 @@ downloadBtn.addEventListener('click', async () => {
 
     // Create a wrapper for the content
     const wrapper = document.createElement('div');
-    wrapper.style.width = '176mm'; // B5 width
+    wrapper.style.width = '210mm';
     wrapper.style.margin = '0';
     wrapper.style.padding = '0';
     wrapper.style.boxSizing = 'border-box';
@@ -821,10 +824,11 @@ downloadBtn.addEventListener('click', async () => {
     selectedCopies.forEach((copy, index) => {
         const pageDiv = document.createElement('div');
         pageDiv.className = 'pdf-page';
-        pageDiv.style.width = '176mm'; // B5 width
-        pageDiv.style.minHeight = '250mm'; // B5 height
+        pageDiv.style.pageBreakAfter = index < selectedCopies.length - 1 ? 'always' : 'auto';
+        pageDiv.style.width = '210mm';
+        pageDiv.style.minHeight = '297mm';
         pageDiv.style.margin = '0';
-        pageDiv.style.padding = '1mm';
+        pageDiv.style.padding = '15mm';
         pageDiv.style.boxSizing = 'border-box';
         pageDiv.style.backgroundColor = '#fff';
         pageDiv.style.position = 'relative';
@@ -839,7 +843,7 @@ downloadBtn.addEventListener('click', async () => {
         copyDiv.style.margin = '0';
         copyDiv.style.padding = '0';
         copyDiv.style.width = '100%';
-        copyDiv.style.maxWidth = '160mm'; // Adjusted for B5 size
+        copyDiv.style.maxWidth = '180mm';
         copyDiv.style.overflow = 'visible';
 
         // Update copy label
@@ -856,6 +860,7 @@ downloadBtn.addEventListener('click', async () => {
 
         const cells = copyDiv.querySelectorAll('td, th');
         cells.forEach(cell => {
+            cell.style.padding = '4px';
             cell.style.wordWrap = 'break-word';
         });
 
@@ -867,18 +872,20 @@ downloadBtn.addEventListener('click', async () => {
     if (originalTerms) {
         const termsPageDiv = document.createElement('div');
         termsPageDiv.className = 'pdf-page terms-page';
-        termsPageDiv.style.width = '176mm'; // B5 width
-        termsPageDiv.style.minHeight = '250mm'; // B5 height
+        termsPageDiv.style.pageBreakBefore = 'always';
+        termsPageDiv.style.width = '210mm';
+        termsPageDiv.style.minHeight = '297mm';
         termsPageDiv.style.margin = '0';
+        termsPageDiv.style.padding = '20mm';
         termsPageDiv.style.boxSizing = 'border-box';
         termsPageDiv.style.backgroundColor = '#fff';
 
         const clonedTerms = originalTerms.cloneNode(true);
         clonedTerms.style.width = '100%';
         clonedTerms.style.margin = '0';
-        clonedTerms.style.padding = '5mm'; // Added padding to prevent overflow
-        clonedTerms.style.fontSize = '10px'; // Reduced font size
-        clonedTerms.style.lineHeight = '1.2'; // Reduced line height to prevent overflow
+        clonedTerms.style.padding = '0';
+        clonedTerms.style.fontSize = '12px';
+        clonedTerms.style.lineHeight = '1.4';
 
         termsPageDiv.appendChild(clonedTerms);
         wrapper.appendChild(termsPageDiv);
@@ -886,7 +893,7 @@ downloadBtn.addEventListener('click', async () => {
 
     // Simple PDF configuration
     const opt = {
-        margin: 1,
+        margin: 10,
         filename: 'LR-Copies.pdf',
         image: { 
             type: 'jpeg', 
@@ -900,21 +907,12 @@ downloadBtn.addEventListener('click', async () => {
         },
         jsPDF: {
             unit: 'mm',
-            format: [176, 250], // B5 size
+            format: 'a4',
             orientation: 'portrait'
-        },
-        beforePageDraw: function (data) {
-            // Check if the current page is empty and remove it if necessary
-            if (data.pageNumber > 1 && data.pageSize.height === 0) {
-                // If it's the last page and empty, do not add it to the PDF
-                return false;
-            }
         }
     };
 
     // Generate PDF
-        if (html2pdf) {
-        
     if (typeof html2pdf === 'undefined') {
         const script = document.createElement('script');
         script.src = "https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js";
@@ -925,7 +923,6 @@ downloadBtn.addEventListener('click', async () => {
     } else {
         html2pdf().set(opt).from(wrapper).save();
     }
-}
 });
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
