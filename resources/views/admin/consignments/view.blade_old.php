@@ -777,9 +777,6 @@ downloadBtn.addEventListener('click', async () => {
     }
 });
 </script> -->
-
-
-
 <script>
 const modal = document.getElementById('copyModal');
 const openModalBtn = document.getElementById('openModalBtn');
@@ -813,54 +810,46 @@ downloadBtn.addEventListener('click', async () => {
         return;
     }
 
-    // Create a wrapper for the content
+    // Create wrapper
     const wrapper = document.createElement('div');
-    wrapper.style.width = '210mm';
+    wrapper.style.width = '176mm';
     wrapper.style.margin = '0';
     wrapper.style.padding = '0';
     wrapper.style.boxSizing = 'border-box';
+    wrapper.style.backgroundColor = '#fff';
 
-    // First add all selected copies
+    // Add selected copies
     selectedCopies.forEach((copy, index) => {
         const pageDiv = document.createElement('div');
         pageDiv.className = 'pdf-page';
-        pageDiv.style.pageBreakAfter = index < selectedCopies.length - 1 ? 'always' : 'auto';
-        pageDiv.style.width = '210mm';
-        pageDiv.style.minHeight = '297mm';
-        pageDiv.style.margin = '0';
-        pageDiv.style.padding = '15mm';
+        pageDiv.style.width = '176mm';
+        pageDiv.style.minHeight = '250mm';
+        pageDiv.style.marginRight = '0';
+        pageDiv.style.paddingRight = '15px';
+        pageDiv.style.paddingTop = '15px';
         pageDiv.style.boxSizing = 'border-box';
         pageDiv.style.backgroundColor = '#fff';
         pageDiv.style.position = 'relative';
 
-        // Clone the original container
         const copyDiv = originalContainer.cloneNode(true);
-        
-        // Remove unnecessary elements
         copyDiv.querySelectorAll('.print-btn, #copyModal, .no-print').forEach(el => el.remove());
 
-        // Apply proper styling
         copyDiv.style.margin = '0';
         copyDiv.style.padding = '0';
         copyDiv.style.width = '100%';
-        copyDiv.style.maxWidth = '180mm';
+        copyDiv.style.maxWidth = '160mm';
         copyDiv.style.overflow = 'visible';
 
-        // Update copy label
         const labelEl = copyDiv.querySelector('.coly .tr1');
         if (labelEl) labelEl.textContent = copy.name;
 
-        // Ensure all content is properly styled
-        const tables = copyDiv.querySelectorAll('table');
-        tables.forEach(table => {
+        copyDiv.querySelectorAll('table').forEach(table => {
             table.style.width = '100%';
             table.style.maxWidth = '100%';
             table.style.tableLayout = 'auto';
         });
 
-        const cells = copyDiv.querySelectorAll('td, th');
-        cells.forEach(cell => {
-            cell.style.padding = '4px';
+        copyDiv.querySelectorAll('td, th').forEach(cell => {
             cell.style.wordWrap = 'break-word';
         });
 
@@ -868,37 +857,38 @@ downloadBtn.addEventListener('click', async () => {
         wrapper.appendChild(pageDiv);
     });
 
-    // Add Terms & Conditions as last page
+    // Add Terms page at the end
     if (originalTerms) {
         const termsPageDiv = document.createElement('div');
         termsPageDiv.className = 'pdf-page terms-page';
-        termsPageDiv.style.pageBreakBefore = 'always';
-        termsPageDiv.style.width = '210mm';
-        termsPageDiv.style.minHeight = '297mm';
+        termsPageDiv.style.width = '176mm';
+        termsPageDiv.style.height = 'auto';
         termsPageDiv.style.margin = '0';
-        termsPageDiv.style.padding = '20mm';
         termsPageDiv.style.boxSizing = 'border-box';
         termsPageDiv.style.backgroundColor = '#fff';
+        // termsPageDiv.style.pageBreakAfter = 'avoid'; // no extra blank
 
         const clonedTerms = originalTerms.cloneNode(true);
         clonedTerms.style.width = '100%';
         clonedTerms.style.margin = '0';
-        clonedTerms.style.padding = '0';
-        clonedTerms.style.fontSize = '12px';
-        clonedTerms.style.lineHeight = '1.4';
+        clonedTerms.style.padding = '5mm';
+        clonedTerms.style.fontSize = '15px';
+        clonedTerms.style.lineHeight = '1.2';
 
         termsPageDiv.appendChild(clonedTerms);
         wrapper.appendChild(termsPageDiv);
     }
 
-    // Simple PDF configuration
+    // Remove any empty divs (safety)
+    wrapper.querySelectorAll('.pdf-page').forEach(page => {
+        if (!page.textContent.trim()) page.remove();
+    });
+
+    // PDF options
     const opt = {
-        margin: 10,
+        margin: 1,
         filename: 'LR-Copies.pdf',
-        image: { 
-            type: 'jpeg', 
-            quality: 0.98 
-        },
+        image: { type: 'jpeg', quality: 0.98 },
         html2canvas: {
             scale: 2,
             useCORS: true,
@@ -907,21 +897,21 @@ downloadBtn.addEventListener('click', async () => {
         },
         jsPDF: {
             unit: 'mm',
-            format: 'a4',
+            format: [176, 250],
             orientation: 'portrait'
-        }
+        },
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
     };
 
-    // Generate PDF
+    const generatePDF = () => html2pdf().set(opt).from(wrapper).save();
+
     if (typeof html2pdf === 'undefined') {
         const script = document.createElement('script');
         script.src = "https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js";
-        script.onload = () => {
-            html2pdf().set(opt).from(wrapper).save();
-        };
+        script.onload = generatePDF;
         document.body.appendChild(script);
     } else {
-        html2pdf().set(opt).from(wrapper).save();
+        generatePDF();
     }
 });
 </script>

@@ -523,7 +523,7 @@
                      </td>
                      {{-- Display merged weight cell only for the first row --}}
                      @if($index === 0)
-                     <td rowspan="{{ $rowCount }}" style="vertical-align: top; text-align: left; padding: 8px;">
+                     <td rowspan="{{ $rowCount }}" style="vertical-align: top; text-align: left; padding: 8px; font-size:10px;">
                         <div style="padding-top: 5px;">
                            <strong>Actual<br> Weight:</strong> {{ $totalActualWeight }}
                         </div>
@@ -534,7 +534,7 @@
                         <!-- Freight Section Start -->
                         <hr style="width: 100%; height: 3px; background-color: #003366; border: none; margin: 10px 10px 10px 0;">
                         <div style="border: 2px solid #003366; padding: 5px; text-align: center; margin-top: 8px;">
-                           <div style="font-weight: bold; color: #003366; font-size: 14px; border-bottom: 2px solid #003366; padding-bottom: 3px; margin-bottom: 5px;">
+                           <div style="font-weight: bold; color: #003366; font-size: 14px; border-bottom: 2px solid #003366; padding-bottom: 3px; margin-bottom: 5px; ">
                               FREIGHT
                            </div>
                            <div style="display: flex; justify-content: space-between; gap: 5px;">
@@ -777,7 +777,134 @@ downloadBtn.addEventListener('click', async () => {
     }
 });
 </script> -->
+
 <script>
+// const modal = document.getElementById('copyModal');
+// const openModalBtn = document.getElementById('openModalBtn');
+// const closeModalBtn = document.getElementById('modalCloseBtn');
+// const downloadBtn = document.getElementById('modalDownloadBtn');
+
+// openModalBtn.addEventListener('click', () => modal.style.display = 'flex');
+// closeModalBtn.addEventListener('click', () => modal.style.display = 'none');
+
+// downloadBtn.addEventListener('click', async () => {
+//     modal.style.display = 'none';
+
+//     const copies = [
+//         { id: 'copyConsignor', name: 'CONSIGNOR COPY' },
+//         { id: 'copyConsignee', name: 'CONSIGNEE COPY' },
+//         { id: 'copyDriver', name: 'DRIVER COPY' },
+//         { id: 'copyHO', name: 'HO COPY' }
+//     ];
+
+//     const selectedCopies = copies.filter(c => document.getElementById(c.id)?.checked);
+//     if (selectedCopies.length === 0) {
+//         alert("⚠️ Please select at least one copy to download.");
+//         return;
+//     }
+
+//     const originalContainer = document.querySelector('.container');
+//     const originalTerms = document.querySelector('.terms');
+
+//     if (!originalContainer) {
+//         alert("Main container (.container) not found!");
+//         return;
+//     }
+
+//     // --- Main PDF Wrapper (250mm width for landscape format) ---
+//     const wrapper = document.createElement('div');
+//     wrapper.style.width = '250mm'; 
+//     wrapper.style.margin = '0';
+//     wrapper.style.padding = '0px';
+//     wrapper.style.boxSizing = 'border-box';
+//     wrapper.style.backgroundColor = '#fff';
+
+//     // --- 1. Generate Each LR Copy ---
+//     selectedCopies.forEach((copy) => {
+//         const pageDiv = document.createElement('div');
+//         pageDiv.className = 'pdf-page';
+       
+//         pageDiv.style.width = '240mm';
+//         pageDiv.style.height = '170mm';
+//         pageDiv.style.marginBottom = '10px';
+//        pageDiv.style.marginTop = '10px';
+
+//         pageDiv.style.padding = '15px';
+//       //   pageDiv.style.border = '1px solid #ccc';
+//       //   pageDiv.style.boxSizing = 'border-box';
+//         pageDiv.style.backgroundColor = '#fff';
+//         pageDiv.style.position = 'relative';
+//         pageDiv.style.pageBreakAfter = 'always';
+        
+//         const copyDiv = originalContainer.cloneNode(true);
+//         // Remove print buttons/modals from the clone
+//         copyDiv.querySelectorAll('.print-btn, #copyModal, .no-print').forEach(el => el.remove());
+
+//         // Update the copy label text
+//         const labelEl = copyDiv.querySelector('.coly .tr1');
+//         if (labelEl) labelEl.textContent = copy.name;
+        
+//         pageDiv.appendChild(copyDiv);
+//         wrapper.appendChild(pageDiv);
+//     });
+
+//     // --- 2. Add Terms page as the FINAL Page ---
+//     if (originalTerms) {
+//         const termsPageDiv = document.createElement('div');
+//         termsPageDiv.style.width = '240mm';
+//         termsPageDiv.style.height = '170mm';
+//         termsPageDiv.style.padding = '15px';
+//         termsPageDiv.style.border = '1px solid #ccc';
+//         termsPageDiv.style.boxSizing = 'border-box';
+//         termsPageDiv.style.backgroundColor = '#fff';
+//       //   termsPageDiv.style.pageBreakBefore = 'always';
+        
+//         const clonedTerms = originalTerms.cloneNode(true);
+        
+//         clonedTerms.style.width = '100%'; 
+//         clonedTerms.style.padding = '0'; 
+//         clonedTerms.style.boxSizing = 'border-box';
+//         clonedTerms.style.margin = '10px';
+//         clonedTerms.style.fontSize = '10px'; 
+//         clonedTerms.style.lineHeight = '1.3';
+
+//         termsPageDiv.appendChild(clonedTerms);
+//         wrapper.appendChild(termsPageDiv);
+//     }
+
+//     // --- 3. PDF options (B5 Landscape: 250mm x 176mm) ---
+//     const opt = {
+//         margin: [3, 5, 3, 5], // [Top, Right, Bottom, Left] in mm
+//         filename: 'LR-Copies.pdf',
+//         image: { type: 'jpeg', quality: 0.98 },
+//         html2canvas: {
+//             scale: 2,
+//             useCORS: true,
+//             scrollX: 0,
+//             scrollY: 0
+//         },
+//         jsPDF: {
+//             unit: 'mm',
+//             // B5 Landscape: [Width, Height]
+//             format: [250, 176], 
+//             orientation: 'landscape' 
+//         },
+//         // CRUCIAL: Tell the library to respect the CSS page breaks
+//         pagebreak: { mode: ['css'] } 
+//     };
+
+//     const generatePDF = () => html2pdf().set(opt).from(wrapper).save();
+
+//     if (typeof html2pdf === 'undefined') {
+//         const script = document.createElement('script');
+//         script.src = "https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js";
+//         script.onload = generatePDF;
+//         document.body.appendChild(script);
+//     } else {
+//         generatePDF();
+//     }
+// });
+
 const modal = document.getElementById('copyModal');
 const openModalBtn = document.getElementById('openModalBtn');
 const closeModalBtn = document.getElementById('modalCloseBtn');
@@ -810,83 +937,84 @@ downloadBtn.addEventListener('click', async () => {
         return;
     }
 
-    // Create wrapper
+    // --- Main PDF Wrapper (250mm width for landscape format) ---
     const wrapper = document.createElement('div');
-    wrapper.style.width = '176mm';
+    wrapper.style.width = '250mm'; 
     wrapper.style.margin = '0';
-    wrapper.style.padding = '0';
+    wrapper.style.padding = '0px';
     wrapper.style.boxSizing = 'border-box';
     wrapper.style.backgroundColor = '#fff';
 
-    // Add selected copies
-    selectedCopies.forEach((copy, index) => {
+    // --- 1. Generate Each LR Copy ---
+    selectedCopies.forEach((copy) => {
         const pageDiv = document.createElement('div');
         pageDiv.className = 'pdf-page';
-        pageDiv.style.width = '176mm';
-        pageDiv.style.minHeight = '250mm';
-        pageDiv.style.marginRight = '0';
-        pageDiv.style.paddingRight = '15px';
-        pageDiv.style.paddingTop = '15px';
-        pageDiv.style.boxSizing = 'border-box';
+       
+        pageDiv.style.width = '240mm';
+        pageDiv.style.height = '170mm';
+        pageDiv.style.marginBottom = '10px';
+        pageDiv.style.marginTop = '0px';
+        pageDiv.style.padding = '15px';
         pageDiv.style.backgroundColor = '#fff';
+        pageDiv.style.fontSize = '12px';
         pageDiv.style.position = 'relative';
-
+        pageDiv.style.pageBreakAfter = 'always';
+        
         const copyDiv = originalContainer.cloneNode(true);
+        // Remove print buttons/modals from the clone
         copyDiv.querySelectorAll('.print-btn, #copyModal, .no-print').forEach(el => el.remove());
-
-        copyDiv.style.margin = '0';
-        copyDiv.style.padding = '0';
-        copyDiv.style.width = '100%';
-        copyDiv.style.maxWidth = '160mm';
-        copyDiv.style.overflow = 'visible';
-
+        
+        // Update the copy label text
         const labelEl = copyDiv.querySelector('.coly .tr1');
         if (labelEl) labelEl.textContent = copy.name;
-
-        copyDiv.querySelectorAll('table').forEach(table => {
-            table.style.width = '100%';
-            table.style.maxWidth = '100%';
-            table.style.tableLayout = 'auto';
+        
+        // Apply CSS to prevent table rows from breaking across pages
+        const tables = copyDiv.querySelectorAll('table');
+        tables.forEach(table => {
+            table.style.pageBreakInside = 'auto';
+            const rows = table.querySelectorAll('tr');
+            rows.forEach(row => {
+                row.style.pageBreakInside = 'avoid';
+                row.style.pageBreakAfter = 'auto';
+                row.style.pageBreakBefore = 'auto';
+            });
         });
-
-        copyDiv.querySelectorAll('td, th').forEach(cell => {
-            cell.style.wordWrap = 'break-word';
-        });
-
+        
         pageDiv.appendChild(copyDiv);
         wrapper.appendChild(pageDiv);
     });
 
-    // Add Terms page at the end
+    // --- 2. Add Terms page as the FINAL Page ---
     if (originalTerms) {
         const termsPageDiv = document.createElement('div');
-        termsPageDiv.className = 'pdf-page terms-page';
-        termsPageDiv.style.width = '176mm';
-        termsPageDiv.style.height = 'auto';
-        termsPageDiv.style.margin = '0';
+        termsPageDiv.style.width = '240mm';
+        termsPageDiv.style.height = '170mm';
+        termsPageDiv.style.padding = '15px';
         termsPageDiv.style.boxSizing = 'border-box';
         termsPageDiv.style.backgroundColor = '#fff';
-        // termsPageDiv.style.pageBreakAfter = 'avoid'; // no extra blank
-
+        
         const clonedTerms = originalTerms.cloneNode(true);
-        clonedTerms.style.width = '100%';
-        clonedTerms.style.margin = '0';
-        clonedTerms.style.padding = '5mm';
-        clonedTerms.style.fontSize = '10px';
-        clonedTerms.style.lineHeight = '1.2';
+        
+        clonedTerms.style.width = '100%'; 
+        clonedTerms.style.padding = '0'; 
+        clonedTerms.style.boxSizing = 'border-box';
+        clonedTerms.style.margin = '10px';
+        clonedTerms.style.fontSize = '12px'; 
+        clonedTerms.style.lineHeight = '1.3';
 
+        // Apply CSS to prevent content breaking in terms section
+        const paragraphs = clonedTerms.querySelectorAll('p');
+        paragraphs.forEach(p => {
+            p.style.pageBreakInside = 'avoid';
+        });
+        
         termsPageDiv.appendChild(clonedTerms);
         wrapper.appendChild(termsPageDiv);
     }
 
-    // Remove any empty divs (safety)
-    wrapper.querySelectorAll('.pdf-page').forEach(page => {
-        if (!page.textContent.trim()) page.remove();
-    });
-
-    // PDF options
+    // --- 3. PDF options (B5 Landscape: 250mm x 176mm) ---
     const opt = {
-        margin: 1,
+        margin: [3, 5, 3, 5], // [Top, Right, Bottom, Left] in mm
         filename: 'LR-Copies.pdf',
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: {
@@ -897,10 +1025,17 @@ downloadBtn.addEventListener('click', async () => {
         },
         jsPDF: {
             unit: 'mm',
-            format: [176, 250],
-            orientation: 'portrait'
+            // B5 Landscape: [Width, Height]
+            format: [250, 176], 
+            orientation: 'landscape' 
         },
-        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+        // CRUCIAL: Tell the library to respect the CSS page breaks
+        pagebreak: { 
+            mode: ['css'],
+            before: '.page-break-before',
+            after: '.page-break-after',
+            avoid: 'tr' // This ensures table rows don't break across pages
+        } 
     };
 
     const generatePDF = () => html2pdf().set(opt).from(wrapper).save();
@@ -915,6 +1050,7 @@ downloadBtn.addEventListener('click', async () => {
     }
 });
 </script>
+   
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </body>
 </html>
